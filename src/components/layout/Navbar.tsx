@@ -6,6 +6,7 @@ import { LogOut, Menu, Settings, Shield, X } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/lib/supabase";
 import ProfileAvatar from "../ui/ProfileAvatar";
+
 const Navbar = () => {
   const {
     user,
@@ -36,8 +37,11 @@ const Navbar = () => {
     };
     fetchProfileData();
   }, [user]);
+  
   const isAdmin = profileData?.role === 'admin';
+  
   if (!user) return null;
+  
   return <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
@@ -56,9 +60,15 @@ const Navbar = () => {
 
         {/* Desktop navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          
-          {isAdmin}
-          
+          <Link to="/dashboard" className="text-sm font-medium">
+            Dashboard
+          </Link>
+          {isAdmin && (
+            <Link to="/admin" className="text-sm font-medium flex items-center gap-1">
+              <Shield size={16} />
+              Admin
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -123,4 +133,5 @@ const Navbar = () => {
         </div>}
     </header>;
 };
+
 export default Navbar;
