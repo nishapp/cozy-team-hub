@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -23,7 +22,6 @@ const CompanySettings = () => {
   const { toast } = useToast();
   const [profileData, setProfileData] = useState<{ role?: 'admin' | 'user' } | null>(null);
 
-  // Fetch profile data to check if user is admin
   useEffect(() => {
     const fetchProfileData = async () => {
       if (!user) return;
@@ -69,19 +67,16 @@ const CompanySettings = () => {
     fetchCompanyInfo();
   }, []);
 
-  // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setCompanyInfo(prev => prev ? { ...prev, [name]: value } : null);
   };
 
-  // Handle logo file selection
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setLogoFile(file);
       
-      // Create a preview
       const reader = new FileReader();
       reader.onload = (event) => {
         setLogoPreview(event.target?.result as string);
@@ -90,7 +85,6 @@ const CompanySettings = () => {
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyInfo) return;
@@ -98,7 +92,6 @@ const CompanySettings = () => {
     setSaving(true);
     
     try {
-      // Upload logo if a new one was selected
       let logoUrl = companyInfo.logo_url;
       
       if (logoFile) {
@@ -113,7 +106,6 @@ const CompanySettings = () => {
         logoUrl = fileName;
       }
       
-      // Update company information
       const { error: updateError } = await supabase
         .from('company')
         .update({
@@ -143,12 +135,10 @@ const CompanySettings = () => {
     }
   };
 
-  // Redirect unauthenticated users to login
   if (!user && !authLoading) {
     return <Navigate to="/auth" replace />;
   }
   
-  // Redirect non-admin users to dashboard
   if (profileData && profileData.role !== 'admin' && !loading) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -197,7 +187,12 @@ const CompanySettings = () => {
                           <img 
                             src={logoPreview} 
                             alt="Company logo preview" 
-                            className="h-full w-full object-contain"
+                            className="h-full w-full object-contain dark:hidden"
+                          />
+                          <img 
+                            src={logoPreview} 
+                            alt="Company logo preview" 
+                            className="h-full w-full object-contain hidden dark:block filter invert"
                           />
                         </div>
                       )}
@@ -216,6 +211,9 @@ const CompanySettings = () => {
                           onChange={handleLogoChange}
                           className="hidden"
                         />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          The logo will automatically be inverted in dark mode
+                        </p>
                       </div>
                     </div>
                   </div>

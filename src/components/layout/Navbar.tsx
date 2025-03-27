@@ -8,7 +8,7 @@ import { supabase, getStorageUrl } from "@/lib/supabase";
 import ProfileAvatar from "../ui/ProfileAvatar";
 import { Database } from "@/types/supabase";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { CompanyInfo } from "@/lib/supabase";
+import { CompanyInfo as CompanyInfoType } from "@/lib/supabase";
 
 type CompanyInfo = Database['public']['Tables']['company']['Row'];
 
@@ -82,11 +82,18 @@ const Navbar = () => {
         <div className="flex gap-6 md:gap-10">
           <Link to="/" className="flex items-center space-x-2">
             {companyInfo.logo_url ? (
-              <img 
-                src={getStorageUrl('company_logos', companyInfo.logo_url)} 
-                alt={companyInfo.name} 
-                className="h-8 w-auto"
-              />
+              <div className="h-8 w-auto">
+                <img 
+                  src={getStorageUrl('company_logos', companyInfo.logo_url)} 
+                  alt={companyInfo.name} 
+                  className="h-8 w-auto dark:hidden"
+                />
+                <img 
+                  src={getStorageUrl('company_logos', companyInfo.logo_url)} 
+                  alt={companyInfo.name} 
+                  className="h-8 w-auto hidden dark:block filter invert"
+                />
+              </div>
             ) : (
               <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold">
                 {companyInfo.name.charAt(0)}

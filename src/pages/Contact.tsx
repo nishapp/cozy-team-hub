@@ -73,7 +73,12 @@ const Contact = () => {
                       <img 
                         src={getStorageUrl('company_logos', companyInfo.logo_url)} 
                         alt={`${companyInfo.name} logo`}
-                        className="max-h-24 object-contain"
+                        className="max-h-24 object-contain dark:hidden"
+                      />
+                      <img 
+                        src={getStorageUrl('company_logos', companyInfo.logo_url)} 
+                        alt={`${companyInfo.name} logo`}
+                        className="max-h-24 object-contain hidden dark:block filter invert"
                       />
                     </div>
                   )}
