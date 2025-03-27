@@ -1,5 +1,5 @@
 
-import { supabase } from "../integrations/supabase/client";
+import { supabase, getStorageUrl } from "../integrations/supabase/client";
 
 export type Profile = {
   id: string;
@@ -11,4 +11,4 @@ export type Profile = {
 // Add a variable to control the demo mode functionality
 export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 
-export { supabase };
+export { supabase, getStorageUrl };

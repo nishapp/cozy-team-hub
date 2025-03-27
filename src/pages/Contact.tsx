@@ -4,18 +4,12 @@ import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
-import { supabase } from "@/lib/supabase";
+import { supabase, getStorageUrl } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Phone, Globe } from "lucide-react";
+import { Database } from "@/types/supabase";
 
-type CompanyInfo = {
-  id: string;
-  name: string;
-  logo_url: string | null;
-  contact: string | null;
-  email: string | null;
-  website: string | null;
-};
+type CompanyInfo = Database['public']['Tables']['company']['Row'];
 
 const Contact = () => {
   const { user, loading: authLoading } = useAuth();
@@ -77,7 +71,7 @@ const Contact = () => {
                   {companyInfo.logo_url && (
                     <div className="mb-4">
                       <img 
-                        src={`${supabase.storageUrl}/object/public/company_logos/${companyInfo.logo_url}`} 
+                        src={getStorageUrl('company_logos', companyInfo.logo_url)} 
                         alt={`${companyInfo.name} logo`}
                         className="max-h-24 object-contain"
                       />

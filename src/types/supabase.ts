@@ -47,6 +47,39 @@ export interface Database {
           }
         ]
       }
+      company: {
+        Row: {
+          id: string
+          name: string
+          logo_url: string | null
+          contact: string | null
+          email: string | null
+          website: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          logo_url?: string | null
+          contact?: string | null
+          email?: string | null
+          website?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          logo_url?: string | null
+          contact?: string | null
+          email?: string | null
+          website?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

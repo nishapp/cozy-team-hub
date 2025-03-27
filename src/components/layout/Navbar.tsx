@@ -5,14 +5,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LogOut, Menu, Settings, Shield, X, Mail, Building2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { supabase } from "@/lib/supabase";
+import { supabase, getStorageUrl } from "@/lib/supabase";
 import ProfileAvatar from "../ui/ProfileAvatar";
+import { Database } from "@/types/supabase";
 
-type CompanyInfo = {
-  id: string;
-  name: string;
-  logo_url: string | null;
-};
+type CompanyInfo = Database['public']['Tables']['company']['Row'];
 
 const Navbar = () => {
   const {
@@ -76,7 +73,7 @@ const Navbar = () => {
           <Link to="/dashboard" className="flex items-center space-x-2">
             {companyInfo?.logo_url ? (
               <img 
-                src={`${supabase.storageUrl}/object/public/company_logos/${companyInfo.logo_url}`} 
+                src={getStorageUrl('company_logos', companyInfo.logo_url)} 
                 alt={`${companyInfo?.name || 'Company'} logo`}
                 className="h-8 w-auto"
               />

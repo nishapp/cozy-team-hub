@@ -4,20 +4,14 @@ import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
-import { supabase } from "@/lib/supabase";
+import { supabase, getStorageUrl } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Upload } from "lucide-react";
+import { Database } from "@/types/supabase";
 
-type CompanyInfo = {
-  id: string;
-  name: string;
-  logo_url: string | null;
-  contact: string | null;
-  email: string | null;
-  website: string | null;
-};
+type CompanyInfo = Database['public']['Tables']['company']['Row'];
 
 const CompanySettings = () => {
   const { user, loading: authLoading } = useAuth();
@@ -63,7 +57,7 @@ const CompanySettings = () => {
         setCompanyInfo(data);
         
         if (data.logo_url) {
-          setLogoPreview(`${supabase.storageUrl}/object/public/company_logos/${data.logo_url}`);
+          setLogoPreview(getStorageUrl('company_logos', data.logo_url));
         }
       } catch (error) {
         console.error("Error fetching company info:", error);
