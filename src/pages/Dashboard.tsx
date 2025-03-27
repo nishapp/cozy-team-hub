@@ -1,12 +1,49 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
+import { supabase } from "@/lib/supabase";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
+  const [fullName, setFullName] = useState<string>("");
+  const [greeting, setGreeting] = useState<string>("Hello");
+
+  useEffect(() => {
+    // Set greeting based on time of day
+    const hours = new Date().getHours();
+    if (hours >= 5 && hours < 12) {
+      setGreeting("Good Morning");
+    } else if (hours >= 12 && hours < 18) {
+      setGreeting("Good Afternoon");
+    } else {
+      setGreeting("Good Evening");
+    }
+
+    // Fetch user's profile data to get full name
+    const fetchUserProfile = async () => {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user profile:", error);
+        return;
+      }
+
+      if (data && data.full_name) {
+        setFullName(data.full_name);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   // Redirect unauthenticated users to login
   if (!user && !authLoading) {
@@ -26,23 +63,10 @@ const Dashboard = () => {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         
-        <main className="flex-1">
-          <div className="page-container">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-              <p className="text-muted-foreground mt-1">
-                Welcome to your dashboard
-              </p>
-            </div>
-            
-            {/* Empty dashboard - ready for new components */}
-            <div className="mt-6 text-center py-12">
-              <h3 className="text-xl font-semibold mb-2">Your Dashboard is Ready</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                This empty dashboard is ready for new components and functionality.
-              </p>
-            </div>
-          </div>
+        <main className="flex-1 flex items-center justify-center">
+          <h1 className="text-3xl font-bold">
+            {greeting}, {fullName}
+          </h1>
         </main>
       </div>
     </PageTransition>
