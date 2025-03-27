@@ -145,19 +145,42 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
     try {
       setLoading(true);
       
+      console.log("Attempting to remove member:", { memberId, organizationId });
+      
+      // First, find the member to verify it exists
+      const { data: memberData, error: memberError } = await supabase
+        .from("organization_members")
+        .select("*")
+        .eq("id", memberId)
+        .eq("organization_id", organizationId)
+        .single();
+      
+      if (memberError) {
+        console.error("Error finding member:", memberError);
+        throw new Error(`Member not found: ${memberError.message}`);
+      }
+      
+      console.log("Found member to delete:", memberData);
+      
+      // Now perform the deletion
       const { error } = await supabase
         .from("organization_members")
         .delete()
         .eq("id", memberId)
         .eq("organization_id", organizationId);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error during deletion:", error);
+        throw error;
+      }
       
+      console.log("Member deleted successfully");
       toast.success("Member removed successfully");
       
       // Refresh members
       await fetchOrganizationMembers(organizationId);
     } catch (error) {
+      console.error("Remove member error:", error);
       if (error instanceof Error) {
         toast.error(`Error removing member: ${error.message}`);
       } else {

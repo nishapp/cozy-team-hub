@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, UserCheck, UserMinus, UserX } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
 
 interface TeamListProps {
   members: Member[];
@@ -27,6 +29,7 @@ interface TeamListProps {
 
 const TeamList = ({ members }: TeamListProps) => {
   const { userRole, updateMemberRole, removeMember } = useOrganization();
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
   const isAdmin = userRole === "admin";
 
   const getInitials = (name?: string): string => {
@@ -45,9 +48,21 @@ const TeamList = ({ members }: TeamListProps) => {
     }
   };
 
-  const handleRemoveMember = (memberId: string) => {
-    if (confirm("Are you sure you want to remove this member from the organization?")) {
-      removeMember(memberId);
+  const handleRemoveMember = async (memberId: string) => {
+    if (!confirm("Are you sure you want to remove this member from the organization?")) {
+      return;
+    }
+    
+    try {
+      setRemovingMemberId(memberId);
+      console.log("Starting member removal for ID:", memberId);
+      await removeMember(memberId);
+      console.log("Member removal completed");
+    } catch (error) {
+      console.error("Error in TeamList when removing member:", error);
+      toast.error("Failed to remove member. Please try again.");
+    } finally {
+      setRemovingMemberId(null);
     }
   };
 
@@ -85,8 +100,12 @@ const TeamList = ({ members }: TeamListProps) => {
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="h-4 w-4" />
+                      <Button variant="ghost" size="sm" disabled={removingMemberId === member.id}>
+                        {removingMemberId === member.id ? (
+                          <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                        ) : (
+                          <MoreHorizontal className="h-4 w-4" />
+                        )}
                         <span className="sr-only">Open menu</span>
                       </Button>
                     </DropdownMenuTrigger>
@@ -113,9 +132,10 @@ const TeamList = ({ members }: TeamListProps) => {
                       <DropdownMenuItem 
                         onClick={() => handleRemoveMember(member.id)}
                         className="cursor-pointer text-red-600"
+                        disabled={removingMemberId === member.id}
                       >
                         <UserX className="mr-2 h-4 w-4" />
-                        Remove Member
+                        {removingMemberId === member.id ? "Removing..." : "Remove Member"}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
