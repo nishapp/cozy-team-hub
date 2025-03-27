@@ -97,5 +97,5 @@ export function useOrganization(): UseOrganizationReturn {
   };
 }
 
-// Export the main hook as default
+// Make sure the default export is properly defined
 export default useOrganization;
