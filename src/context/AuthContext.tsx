@@ -103,9 +103,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       
-      await supabase.auth.signOut();
+      // Clear any cached data before signing out
+      localStorage.removeItem("supabase.auth.token");
+      localStorage.removeItem("currentOrganizationId");
+      
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Clear state
+      setUser(null);
+      setSession(null);
+      
       toast.success("Signed out successfully");
-      navigate("/auth");
+      navigate("/auth", { replace: true });
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);

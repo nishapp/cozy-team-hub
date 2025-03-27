@@ -1,8 +1,7 @@
-
 import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useOrganization } from "../hooks/useOrganization";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,8 +19,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { supabase } from "../lib/supabase";
 
-// Profile form schema
 const profileSchema = z.object({
   email: z.string().email("Invalid email address").optional(),
   fullName: z.string().min(2, "Full name must be at least 2 characters").optional(),
@@ -29,7 +28,6 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
-// Password change schema
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
   newPassword: z.string().min(6, "New password must be at least 6 characters"),
@@ -43,18 +41,17 @@ type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 const Settings = () => {
   const { user, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
   const { 
     organizations, 
     currentOrganization,
     loading: orgLoading
   } = useOrganization();
 
-  // Redirect unauthenticated users to login
   if (!user && !authLoading) {
     return <Navigate to="/auth" replace />;
   }
 
-  // Redirect users with no organizations to create one
   if (user && !authLoading && !orgLoading && organizations.length === 0) {
     return <Navigate to="/organization" replace />;
   }
@@ -66,6 +63,96 @@ const Settings = () => {
       </div>
     );
   }
+
+  const deleteAccount = async () => {
+    if (!user) return;
+    
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete your account? This action will permanently delete your account and all associated data including organizations you own. This action cannot be undone."
+    );
+    
+    if (!confirmDelete) return;
+    
+    try {
+      toast.loading("Deleting account...");
+      
+      const { data: userOrgs, error: orgsError } = await supabase
+        .from("organizations")
+        .select("id")
+        .eq("created_by", user.id);
+        
+      if (orgsError) {
+        console.error("Error fetching user organizations:", orgsError);
+        throw new Error("Failed to fetch user organizations");
+      }
+      
+      const { error: membershipsError } = await supabase
+        .from("organization_members")
+        .delete()
+        .eq("user_id", user.id);
+        
+      if (membershipsError) {
+        console.error("Error deleting organization memberships:", membershipsError);
+        throw new Error("Failed to delete organization memberships");
+      }
+      
+      if (userOrgs && userOrgs.length > 0) {
+        const orgIds = userOrgs.map(org => org.id);
+        
+        const { error: orgMembersError } = await supabase
+          .from("organization_members")
+          .delete()
+          .in("organization_id", orgIds);
+          
+        if (orgMembersError) {
+          console.error("Error deleting organization members:", orgMembersError);
+          throw new Error("Failed to delete organization members");
+        }
+        
+        const { error: deleteOrgsError } = await supabase
+          .from("organizations")
+          .delete()
+          .in("id", orgIds);
+          
+        if (deleteOrgsError) {
+          console.error("Error deleting organizations:", deleteOrgsError);
+          throw new Error("Failed to delete organizations");
+        }
+      }
+      
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("id", user.id);
+        
+      if (profileError) {
+        console.error("Error deleting profile:", profileError);
+        throw new Error("Failed to delete profile");
+      }
+      
+      const { error: userError } = await supabase.auth.admin.deleteUser(user.id);
+      
+      if (userError) {
+        const { error: clientUserError } = await supabase.auth.deleteUser();
+        
+        if (clientUserError) {
+          console.error("Error deleting user account:", clientUserError);
+          throw new Error("Failed to delete user account");
+        }
+      }
+      
+      toast.dismiss();
+      toast.success("Account successfully deleted");
+      
+      await signOut();
+      navigate("/");
+      
+    } catch (error) {
+      toast.dismiss();
+      console.error("Account deletion error:", error);
+      toast.error(error instanceof Error ? error.message : "An unexpected error occurred");
+    }
+  };
 
   return (
     <PageTransition>
@@ -104,14 +191,7 @@ const Settings = () => {
                 </p>
                 <Button 
                   variant="destructive"
-                  onClick={() => {
-                    const confirmDelete = window.confirm("Are you sure you want to delete your account? This action cannot be undone.");
-                    if (confirmDelete) {
-                      // In a real application, this would call an API to delete the account
-                      toast.success("Account deletion would be triggered here");
-                      signOut();
-                    }
-                  }}
+                  onClick={deleteAccount}
                 >
                   Delete Account
                 </Button>
@@ -134,7 +214,6 @@ function ProfileForm({ user }: { user: any }) {
   });
 
   const onSubmit = (values: ProfileFormValues) => {
-    // In a real application, this would call an API to update the profile
     toast.success("Profile updated successfully!");
     console.log("Profile updated:", values);
   };
@@ -193,7 +272,6 @@ function PasswordForm() {
   });
 
   const onSubmit = (values: PasswordFormValues) => {
-    // In a real application, this would call an API to update the password
     toast.success("Password updated successfully!");
     form.reset();
   };

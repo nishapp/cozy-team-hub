@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase, Organization, isDemoMode } from "../../lib/supabase";
 import { useAuth } from "../../context/AuthContext";
@@ -57,10 +56,13 @@ export function useOrganizations(): UseOrganizationsReturn {
       
       if (!user) return null;
       
-      // Insert organization
+      // Insert organization with created_by field
       const { data: orgData, error: orgError } = await supabase
         .from("organizations")
-        .insert([{ name }])
+        .insert([{ 
+          name,
+          created_by: user.id  // Track the creator of the organization
+        }])
         .select()
         .single();
 

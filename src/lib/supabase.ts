@@ -8,6 +8,7 @@ export type Organization = {
   id: string;
   name: string;
   created_at: string;
+  created_by?: string; // Add created_by field to track organization ownership
 };
 
 export type Member = {
