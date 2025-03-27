@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -26,7 +25,7 @@ const DangerZone = () => {
     try {
       setIsDeleting(true);
       // Call the delete_user function with no parameters
-      const { error } = await supabase.rpc('delete_user', {});
+      const { error } = await supabase.rpc('delete_user');
       
       if (error) throw error;
       
