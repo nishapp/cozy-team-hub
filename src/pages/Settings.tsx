@@ -5,17 +5,9 @@ import { Navigate, useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import ProfileForm from "../components/settings/ProfileForm";
+import PasswordForm from "../components/settings/PasswordForm";
+import DangerZone from "../components/settings/DangerZone";
 import { supabase, isDemoMode } from "../lib/supabase";
 import { toast } from "sonner";
 
