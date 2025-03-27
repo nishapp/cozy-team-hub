@@ -57,20 +57,15 @@ function DangerZone({ signOut, navigate }: DangerZoneProps) {
         // Continue anyway as we want to try to delete the user account
       }
       
-      // Use the auth.signOut() with the additional options to delete the user account
-      const { error: authError } = await supabase.auth.signOut({
-        scope: 'local',
-        cb: async () => {
-          // After signing out, make a request to delete user endpoint
-          // We want to let the user delete their own account via RPC
-          const { error } = await supabase.rpc('delete_user');
-          if (error) throw error;
-        }
-      });
+      // Call the RPC function to delete the user
+      const { error: deleteError } = await supabase.rpc('delete_user');
       
-      if (authError) {
-        throw authError;
+      if (deleteError) {
+        throw deleteError;
       }
+      
+      // Sign out the user locally after deletion
+      await signOut();
       
       toast.dismiss();
       toast.success("Account successfully deleted");
