@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -16,9 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-// Form validation schema for signin - using a more permissive email regex
+// Form validation schema for signin with more permissive email validation
 const signinSchema = z.object({
-  email: z.string().email({
+  email: z.string().min(1, "Email is required").email({
     message: "Please enter a valid email address",
   }),
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -55,6 +55,12 @@ const AuthForm = () => {
       lastName: "",
     },
   });
+
+  // Reset form fields when switching modes
+  useEffect(() => {
+    signinForm.reset();
+    signupForm.reset();
+  }, [authMode]);
 
   const onSignin = async (values: SigninFormValues) => {
     const { email, password } = values;
