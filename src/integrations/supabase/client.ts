@@ -7,3 +7,6 @@ const SUPABASE_URL = "https://znlgxnsizubcplghpokk.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpubGd4bnNpenViY3BsZ2hwb2trIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMDM2MjksImV4cCI6MjA1ODY3OTYyOX0.w4o6oaBc7KXd4dbkR9ajKBZ4Zgm8qyxSmFTu0ERScp4";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+// Add storage URL for easier access to storage items
+supabase.storageUrl = `${SUPABASE_URL}/storage/v1`;

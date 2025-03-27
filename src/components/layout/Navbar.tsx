@@ -1,11 +1,18 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Menu, Settings, Shield, X } from "lucide-react";
+import { LogOut, Menu, Settings, Shield, X, Mail, Building2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/lib/supabase";
 import ProfileAvatar from "../ui/ProfileAvatar";
+
+type CompanyInfo = {
+  id: string;
+  name: string;
+  logo_url: string | null;
+};
 
 const Navbar = () => {
   const {
@@ -18,7 +25,28 @@ const Navbar = () => {
     avatar_url?: string;
     role?: 'admin' | 'user';
   } | null>(null);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
+  
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  // Fetch company info
+  useEffect(() => {
+    const fetchCompanyInfo = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("company")
+          .select("id, name, logo_url")
+          .single();
+
+        if (error) throw error;
+        setCompanyInfo(data);
+      } catch (error) {
+        console.error("Error fetching company info:", error);
+      }
+    };
+
+    fetchCompanyInfo();
+  }, []);
 
   // Fetch profile data
   useEffect(() => {
@@ -46,10 +74,18 @@ const Navbar = () => {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/dashboard" className="flex items-center space-x-2">
-            <div className="h-8 w-8 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">S</span>
-            </div>
-            <span className="font-semibold hidden md:inline-block">SaaS Starter</span>
+            {companyInfo?.logo_url ? (
+              <img 
+                src={`${supabase.storageUrl}/object/public/company_logos/${companyInfo.logo_url}`} 
+                alt={`${companyInfo?.name || 'Company'} logo`}
+                className="h-8 w-auto"
+              />
+            ) : (
+              <div className="h-8 w-8 bg-primary rounded-md flex items-center justify-center">
+                <span className="text-primary-foreground font-bold">{companyInfo?.name?.charAt(0) || "S"}</span>
+              </div>
+            )}
+            <span className="font-semibold hidden md:inline-block">{companyInfo?.name || "SaaS Starter"}</span>
           </Link>
         </div>
 
@@ -63,11 +99,21 @@ const Navbar = () => {
           <Link to="/dashboard" className="text-sm font-medium">
             Dashboard
           </Link>
+          <Link to="/contact" className="text-sm font-medium flex items-center gap-1">
+            <Mail size={16} />
+            Contact
+          </Link>
           {isAdmin && (
-            <Link to="/admin" className="text-sm font-medium flex items-center gap-1">
-              <Shield size={16} />
-              Admin
-            </Link>
+            <>
+              <Link to="/admin" className="text-sm font-medium flex items-center gap-1">
+                <Shield size={16} />
+                Admin
+              </Link>
+              <Link to="/company-settings" className="text-sm font-medium flex items-center gap-1">
+                <Building2 size={16} />
+                Company
+              </Link>
+            </>
           )}
         </nav>
 
@@ -94,12 +140,28 @@ const Navbar = () => {
                   <span>Dashboard</span>
                 </Link>
               </DropdownMenuItem>
-              {isAdmin && <DropdownMenuItem asChild>
-                  <Link to="/admin" className="cursor-pointer w-full flex items-center">
-                    <Shield size={16} className="mr-2" />
-                    <span>Admin Dashboard</span>
-                  </Link>
-                </DropdownMenuItem>}
+              <DropdownMenuItem asChild>
+                <Link to="/contact" className="cursor-pointer w-full flex items-center">
+                  <Mail size={16} className="mr-2" />
+                  <span>Contact</span>
+                </Link>
+              </DropdownMenuItem>
+              {isAdmin && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin" className="cursor-pointer w-full flex items-center">
+                      <Shield size={16} className="mr-2" />
+                      <span>Admin Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/company-settings" className="cursor-pointer w-full flex items-center">
+                      <Building2 size={16} className="mr-2" />
+                      <span>Company Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuItem asChild>
                 <Link to="/settings" className="cursor-pointer w-full flex items-center">
                   <Settings size={16} className="mr-2" />
@@ -122,10 +184,21 @@ const Navbar = () => {
             <Link to="/dashboard" className="block py-2 text-sm font-medium" onClick={toggleMobileMenu}>
               Dashboard
             </Link>
-            {isAdmin && <Link to="/admin" className="block py-2 text-sm font-medium flex items-center gap-1" onClick={toggleMobileMenu}>
-                <Shield size={16} />
-                Admin Dashboard
-              </Link>}
+            <Link to="/contact" className="block py-2 text-sm font-medium" onClick={toggleMobileMenu}>
+              Contact
+            </Link>
+            {isAdmin && (
+              <>
+                <Link to="/admin" className="block py-2 text-sm font-medium flex items-center gap-1" onClick={toggleMobileMenu}>
+                  <Shield size={16} />
+                  Admin Dashboard
+                </Link>
+                <Link to="/company-settings" className="block py-2 text-sm font-medium flex items-center gap-1" onClick={toggleMobileMenu}>
+                  <Building2 size={16} />
+                  Company Settings
+                </Link>
+              </>
+            )}
             <Link to="/settings" className="block py-2 text-sm font-medium" onClick={toggleMobileMenu}>
               Settings
             </Link>
