@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, Link } from "react-router-dom";
 import PageTransition from "../components/ui/PageTransition";
-import { HeroSectionDemo } from "@/components/blocks/hero-section-demo";
+import { HeroDemo } from "@/components/blocks/hero-demo";
 import { BookOpen, Users, Video, Check, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -39,7 +39,7 @@ const Index = () => {
         </header>
         
         {/* Hero section using our new component */}
-        <HeroSectionDemo />
+        <HeroDemo />
 
         {/* Features section */}
         <section id="features" className="py-20">
