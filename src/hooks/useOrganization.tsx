@@ -1,8 +1,38 @@
 
 import { useState, useEffect } from "react";
-import { supabase, Organization, Member, Profile } from "../lib/supabase";
+import { supabase, Organization, Member, Profile, isDemoMode } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
+
+// Mock data for demo mode
+const DEMO_ORGS: Organization[] = [
+  {
+    id: "demo-org-1",
+    name: "Demo Organization",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "demo-org-2",
+    name: "Sample Team",
+    created_at: new Date().toISOString()
+  }
+];
+
+const DEMO_MEMBERS: Member[] = [
+  {
+    id: "demo-member-1",
+    user_id: "demo-user-1",
+    organization_id: "demo-org-1",
+    role: "admin",
+    created_at: new Date().toISOString(),
+    profiles: {
+      id: "demo-user-1",
+      email: "demo@example.com",
+      full_name: "Demo User",
+      avatar_url: null
+    }
+  }
+];
 
 export function useOrganization() {
   const { user } = useAuth();
@@ -13,7 +43,7 @@ export function useOrganization() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
+    if (user || isDemoMode) {
       fetchUserOrganizations();
     } else {
       setOrganizations([]);
@@ -25,10 +55,24 @@ export function useOrganization() {
   }, [user]);
 
   async function fetchUserOrganizations() {
-    if (!user) return;
-    
     try {
       setLoading(true);
+      
+      if (isDemoMode) {
+        // Use demo data
+        setOrganizations(DEMO_ORGS);
+        
+        // Set the first organization as current if none is selected
+        if (!currentOrganization && DEMO_ORGS.length > 0) {
+          setCurrentOrganization(DEMO_ORGS[0]);
+          setUserRole("admin");
+          setMembers(DEMO_MEMBERS);
+        }
+        setLoading(false);
+        return;
+      }
+      
+      if (!user) return;
       
       const { data, error } = await supabase
         .from("organization_members")
@@ -64,10 +108,25 @@ export function useOrganization() {
   }
 
   async function createOrganization(name: string) {
-    if (!user) return null;
-    
     try {
       setLoading(true);
+      
+      if (isDemoMode) {
+        // Create a demo organization
+        const newOrg: Organization = {
+          id: `demo-org-${Date.now()}`,
+          name,
+          created_at: new Date().toISOString()
+        };
+        
+        setOrganizations([...organizations, newOrg]);
+        setCurrentOrganization(newOrg);
+        setUserRole("admin");
+        
+        return newOrg;
+      }
+      
+      if (!user) return null;
       
       // Insert organization
       const { data: orgData, error: orgError } = await supabase
