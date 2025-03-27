@@ -70,4 +70,16 @@
   .text-balance {
     text-wrap: balance;
   }
+  
+  .card-gradient {
+    @apply bg-gradient-to-br from-white to-gray-50;
+  }
+  
+  .saas-shadow {
+    @apply shadow-[0_2px_8px_0_rgba(0,0,0,0.08)];
+  }
+  
+  .input-focus-ring {
+    @apply focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-0;
+  }
 }

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -15,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import { toast } from "sonner";
+import { AlertTriangle, Trash2 } from "lucide-react";
 
 const DangerZone = () => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -44,40 +46,56 @@ const DangerZone = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold">Danger Zone</h2>
-        <p className="text-muted-foreground">
-          Permanently delete your account and all associated data.
-        </p>
+    <div className="p-8">
+      <h2 className="text-xl font-semibold mb-6">Danger Zone</h2>
+      
+      <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-6">
+        <div className="flex flex-col space-y-6">
+          <div className="flex items-start space-x-4">
+            <div className="bg-destructive/10 p-2 rounded">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-medium">Delete Account</h3>
+              <p className="text-sm text-muted-foreground">
+                Permanently delete your account and all associated data. This action cannot be undone.
+              </p>
+            </div>
+          </div>
+          
+          <div className="pl-11">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your account
+                    and remove all your data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {isDeleting ? "Deleting..." : "Delete Account"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
       </div>
-
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button variant="destructive">Delete Account</Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your account
-              and remove all your data from our servers.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteAccount}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? "Deleting..." : "Delete Account"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
-};
+}
 
 export default DangerZone;

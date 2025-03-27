@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
+import { KeyRound, Check } from "lucide-react";
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
@@ -66,58 +67,76 @@ function PasswordForm() {
   };
 
   return (
-    <div className="p-6 border rounded-lg bg-card">
-      <h2 className="text-xl font-bold mb-4">Change Password</h2>
+    <div className="p-8">
+      <h2 className="text-xl font-semibold mb-6">Change Password</h2>
       
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="currentPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Current Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="newPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>New Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm New Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <Button type="submit" className="mt-2" disabled={isSubmitting}>
-            {isSubmitting ? "Updating..." : "Change Password"}
-          </Button>
-        </form>
-      </Form>
+      <div className="max-w-2xl">
+        <div className="bg-primary/5 rounded-lg p-4 mb-6 text-sm border border-primary/10">
+          <div className="flex items-start">
+            <KeyRound className="h-5 w-5 mr-3 mt-0.5 text-primary" />
+            <p>
+              For your security, we recommend using a strong password that you don't use elsewhere.
+              Strong passwords include a mix of letters, numbers, and symbols.
+            </p>
+          </div>
+        </div>
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <FormField
+              control={form.control}
+              name="currentPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="newPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>New Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm New Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <Button type="submit" className="mt-2" disabled={isSubmitting}>
+              {isSubmitting ? (
+                "Updating..."
+              ) : (
+                <>
+                  <Check className="mr-2 h-4 w-4" /> Update password
+                </>
+              )}
+            </Button>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 }

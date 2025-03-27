@@ -9,7 +9,8 @@ import PageTransition from "../components/ui/PageTransition";
 import Navbar from "../components/layout/Navbar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Link } from "react-router-dom";
-import { Home } from "lucide-react";
+import { Home, User, KeyRound, ShieldAlert } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 const Settings = () => {
   const { user } = useAuth();
@@ -21,15 +22,15 @@ const Settings = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-[#f9fafb]">
         <Navbar />
         
-        <div className="container max-w-screen-lg py-8">
-          <Breadcrumb className="mb-4">
+        <div className="container max-w-screen-xl mx-auto px-4 py-10">
+          <Breadcrumb className="mb-6">
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/dashboard">
+                  <Link to="/dashboard" className="flex items-center text-muted-foreground hover:text-primary transition-colors">
                     <Home className="mr-1 h-4 w-4" />
                     Dashboard
                   </Link>
@@ -37,7 +38,7 @@ const Settings = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink>Settings</BreadcrumbLink>
+                <BreadcrumbLink className="font-medium">Settings</BreadcrumbLink>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -45,44 +46,61 @@ const Settings = () => {
           <div className="flex flex-col space-y-8">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mt-1">
                 Manage your account settings and preferences.
               </p>
             </div>
 
-            <Tabs
-              defaultValue="profile"
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="space-y-8"
-            >
-              <TabsList className="grid grid-cols-3 w-full max-w-md">
-                <TabsTrigger value="profile">Profile</TabsTrigger>
-                <TabsTrigger value="password">Password</TabsTrigger>
-                <TabsTrigger value="danger">Danger Zone</TabsTrigger>
-              </TabsList>
-
-              <TabsContent
-                value="profile"
-                className="space-y-8 bg-card p-6 rounded-md border shadow-sm"
+            <Card className="overflow-hidden border bg-card shadow-sm">
+              <Tabs
+                defaultValue="profile"
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
               >
-                <ProfileForm />
-              </TabsContent>
+                <div className="flex flex-col sm:flex-row">
+                  <div className="sm:w-64 p-6 border-b sm:border-b-0 sm:border-r border-border bg-muted/30">
+                    <TabsList className="flex flex-col w-full h-auto gap-1 bg-transparent">
+                      <TabsTrigger 
+                        value="profile" 
+                        className="justify-start w-full px-3 py-2 text-sm h-10 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="password" 
+                        className="justify-start w-full px-3 py-2 text-sm h-10 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                      >
+                        <KeyRound className="mr-2 h-4 w-4" />
+                        Password
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="danger" 
+                        className="justify-start w-full px-3 py-2 text-sm h-10 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                      >
+                        <ShieldAlert className="mr-2 h-4 w-4" />
+                        Danger Zone
+                      </TabsTrigger>
+                    </TabsList>
+                  </div>
 
-              <TabsContent
-                value="password"
-                className="space-y-8 bg-card p-6 rounded-md border shadow-sm"
-              >
-                <PasswordForm />
-              </TabsContent>
+                  <div className="flex-1">
+                    <TabsContent value="profile" className="m-0">
+                      <ProfileForm />
+                    </TabsContent>
 
-              <TabsContent
-                value="danger"
-                className="space-y-8 bg-card p-6 rounded-md border shadow-sm"
-              >
-                <DangerZone />
-              </TabsContent>
-            </Tabs>
+                    <TabsContent value="password" className="m-0">
+                      <PasswordForm />
+                    </TabsContent>
+
+                    <TabsContent value="danger" className="m-0">
+                      <DangerZone />
+                    </TabsContent>
+                  </div>
+                </div>
+              </Tabs>
+            </Card>
           </div>
         </div>
       </div>

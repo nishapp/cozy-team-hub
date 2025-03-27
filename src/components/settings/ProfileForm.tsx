@@ -17,6 +17,7 @@ import { supabase } from "../../lib/supabase";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Camera, Check } from "lucide-react";
 
 const profileSchema = z.object({
   email: z.string().email("Invalid email address").optional(),
@@ -99,26 +100,38 @@ function ProfileForm() {
   };
 
   return (
-    <div className="p-6 border rounded-lg bg-card">
-      <h2 className="text-xl font-bold mb-4">Profile Information</h2>
+    <div className="p-8">
+      <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
       
-      <div className="mb-6 flex flex-col items-center sm:flex-row sm:items-start sm:space-x-4">
-        <Avatar className="h-20 w-20 mb-4 sm:mb-0">
-          <AvatarImage src={form.watch('avatarUrl')} alt="Profile" />
-          <AvatarFallback>{getInitials(form.watch('fullName'))}</AvatarFallback>
-        </Avatar>
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative group">
+            <Avatar className="h-24 w-24 border-4 border-background">
+              <AvatarImage src={form.watch('avatarUrl')} alt="Profile" />
+              <AvatarFallback className="bg-primary/10 text-primary text-lg">
+                {getInitials(form.watch('fullName'))}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <Camera className="h-6 w-6 text-white" />
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Profile picture
+          </p>
+        </div>
         
-        <div className="flex-1">
+        <div className="flex-1 max-w-2xl">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Email address</FormLabel>
                     <FormControl>
-                      <Input {...field} disabled />
+                      <Input {...field} disabled className="bg-muted/50" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -154,7 +167,13 @@ function ProfileForm() {
               />
               
               <Button type="submit" className="mt-2" disabled={isUpdating}>
-                {isUpdating ? "Updating..." : "Update Profile"}
+                {isUpdating ? (
+                  "Updating..."
+                ) : (
+                  <>
+                    <Check className="mr-2 h-4 w-4" /> Save changes
+                  </>
+                )}
               </Button>
             </form>
           </Form>
