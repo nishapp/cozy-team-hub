@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 // Form validation schema
 const organizationSchema = z.object({
@@ -41,9 +42,11 @@ const CreateOrganization = () => {
       const org = await createOrganization(name);
       if (org) {
         navigate("/dashboard");
+        toast.success(`Organization "${name}" created successfully!`);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error creating organization:", error);
+      toast.error("Failed to create organization. Please try again.");
     }
   };
 
