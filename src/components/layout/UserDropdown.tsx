@@ -4,11 +4,10 @@ import { Menu, Mail, Settings, Shield, Building2, LogOut } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
 import { Button } from "@/components/ui/button";
+import { User } from "@supabase/supabase-js";
 
 interface UserDropdownProps {
-  user: {
-    email: string;
-  };
+  user: User | null;
   profileData: {
     full_name?: string;
     avatar_url?: string;
@@ -32,7 +31,7 @@ const UserDropdown = ({ user, profileData, signOut }: UserDropdownProps) => {
           <ProfileAvatar src={profileData?.avatar_url} fallbackText={profileData?.full_name} size="sm" />
           <div className="flex flex-col space-y-0.5 leading-none">
             {profileData?.full_name && <p className="font-medium text-sm">{profileData.full_name}</p>}
-            <p className="text-xs text-muted-foreground">{user.email}</p>
+            <p className="text-xs text-muted-foreground">{user?.email}</p>
           </div>
         </div>
         <DropdownMenuSeparator />
