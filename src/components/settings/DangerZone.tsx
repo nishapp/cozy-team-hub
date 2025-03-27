@@ -19,10 +19,9 @@ import { NavigateFunction } from "react-router-dom";
 type DangerZoneProps = {
   signOut: () => Promise<void>;
   navigate: NavigateFunction;
-  isDemoMode: boolean;
 };
 
-function DangerZone({ signOut, navigate, isDemoMode }: DangerZoneProps) {
+function DangerZone({ signOut, navigate }: DangerZoneProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const deleteAccount = async () => {
@@ -32,17 +31,32 @@ function DangerZone({ signOut, navigate, isDemoMode }: DangerZoneProps) {
       setIsDeleting(true);
       toast.loading("Deleting account...");
       
-      if (isDemoMode) {
-        // In demo mode, just simulate the account deletion
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        await signOut();
-        toast.dismiss();
-        toast.success("Account successfully deleted (Demo mode)");
-        navigate("/");
-        return;
+      // First get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("No authenticated user found");
       }
       
-      // First sign out the user
+      // Delete the user's profile data first (due to foreign key constraints)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', user.id);
+        
+      if (profileError) {
+        console.error("Profile deletion error:", profileError);
+        // Continue anyway as we want to try to delete the user account
+      }
+      
+      // Delete the user's auth account using the Supabase API
+      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+      
+      if (authError) {
+        throw authError;
+      }
+      
+      // Sign out the user
       await signOut();
       
       toast.dismiss();
@@ -52,10 +66,17 @@ function DangerZone({ signOut, navigate, isDemoMode }: DangerZoneProps) {
     } catch (error) {
       toast.dismiss();
       console.error("Account deletion error:", error);
-      toast.error(error instanceof Error ? error.message : "An unexpected error occurred");
       
-      // If deletion failed, inform the user
-      toast.error("Could not delete account. Please contact support.");
+      if (error instanceof Error && error.message.includes("not_admin")) {
+        // If we hit a permission issue, we'll go with the sign out approach instead
+        toast.error("Cannot delete account with current permissions. Please contact support.");
+        
+        // Still sign out the user to end their session
+        await signOut();
+        navigate("/");
+      } else {
+        toast.error(error instanceof Error ? error.message : "An unexpected error occurred");
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -83,11 +104,6 @@ function DangerZone({ signOut, navigate, isDemoMode }: DangerZoneProps) {
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete your
               account and remove all your data from our servers.
-              {isDemoMode && (
-                <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-md">
-                  <strong>Note:</strong> You are in demo mode. No actual account will be deleted.
-                </div>
-              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,9 +1,6 @@
 
 import { supabase } from "../integrations/supabase/client";
 
-// Create a flag to detect if we're using demo mode
-export const isDemoMode = true;
-
 export type Profile = {
   id: string;
   email: string;

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const profileSchema = z.object({
   email: z.string().email("Invalid email address").optional(),
@@ -39,7 +39,7 @@ function ProfileForm({ user }: { user: any }) {
   });
 
   // Fetch profile data when component mounts
-  useState(() => {
+  useEffect(() => {
     const fetchProfile = async () => {
       try {
         const { data, error } = await supabase
@@ -59,7 +59,7 @@ function ProfileForm({ user }: { user: any }) {
     };
     
     if (user) fetchProfile();
-  }, [user]);
+  }, [user, form]);
 
   const onSubmit = async (values: ProfileFormValues) => {
     try {

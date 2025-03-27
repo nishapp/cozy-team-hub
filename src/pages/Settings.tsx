@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileForm from "../components/settings/ProfileForm";
 import PasswordForm from "../components/settings/PasswordForm";
 import DangerZone from "../components/settings/DangerZone";
-import { supabase, isDemoMode } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 import { toast } from "sonner";
 
 const Settings = () => {
@@ -57,7 +57,7 @@ const Settings = () => {
                 </TabsContent>
               </Tabs>
               
-              <DangerZone signOut={signOut} navigate={navigate} isDemoMode={isDemoMode} />
+              <DangerZone signOut={signOut} navigate={navigate} />
             </div>
           </div>
         </main>
