@@ -40,11 +40,13 @@ export function useCurrentOrganization(): UseCurrentOrganizationReturn {
         
       if (roleError) {
         console.error("Error fetching role:", roleError);
-        throw roleError;
+        // Don't throw here, as the user might still have access to the organization
+        // Just set a default role
+        setUserRole("member");
+      } else {
+        console.log("User role:", roleData.role);
+        setUserRole(roleData.role as "admin" | "member");
       }
-      
-      console.log("User role:", roleData.role);
-      setUserRole(roleData.role as "admin" | "member");
       
       // Update user profile with current organization
       const { error: profileError } = await supabase

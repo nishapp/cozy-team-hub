@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase, Member } from "../../lib/supabase";
 import { useAuth } from "../../context/AuthContext";
@@ -20,8 +19,12 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
       const { data, error } = await supabase
         .from("organization_members")
         .select(`
-          *,
-          profiles:user_id(id, email, full_name, avatar_url, organization_id)
+          id,
+          user_id,
+          organization_id,
+          role,
+          created_at,
+          profiles:user_id(*)
         `)
         .eq("organization_id", organizationId);
         
@@ -31,7 +34,13 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
       }
       
       console.log("Fetched members:", data);
-      setMembers(data as Member[]);
+      
+      const transformedMembers = data.map(item => ({
+        ...item,
+        profiles: item.profiles
+      })) as Member[];
+      
+      setMembers(transformedMembers);
     } catch (error) {
       console.error("Error in fetchOrganizationMembers:", error);
       if (error instanceof Error) {
@@ -39,6 +48,7 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
       } else {
         toast.error("An unexpected error occurred");
       }
+      setMembers([]);
     } finally {
       setLoading(false);
     }
@@ -50,19 +60,17 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
     try {
       setLoading(true);
       
-      // First, check if the user exists by email
       const { data: userData, error: userError } = await supabase
         .from("profiles")
         .select("id")
         .eq("email", email)
         .single();
         
-      if (userError && userError.code !== "PGRST116") { // PGRST116 is not found error
+      if (userError && userError.code !== "PGRST116") {
         throw userError;
       }
       
       if (userData) {
-        // User exists, add them directly to organization
         const { error: memberError } = await supabase
           .from("organization_members")
           .insert([
@@ -78,14 +86,11 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
         toast.success(`${email} has been added to the organization!`);
         await fetchOrganizationMembers(organizationId);
       } else {
-        // Generate a random token
         const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         
-        // Set expiration date to 7 days from now
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7);
         
-        // Insert invitation
         const { error } = await supabase
           .from("invitations")
           .insert([
@@ -102,7 +107,6 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
         
         toast.success(`Invitation sent to ${email}`);
         
-        // For demo purposes, generate a link that would be in the email
         const inviteLink = `${window.location.origin}/accept-invite?token=${token}`;
         console.log("Invitation link:", inviteLink);
       }
@@ -133,7 +137,6 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
       
       toast.success(`Member role updated to ${newRole}`);
       
-      // Refresh members
       await fetchOrganizationMembers(organizationId);
     } catch (error) {
       if (error instanceof Error) {
@@ -154,7 +157,6 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
       
       console.log("Attempting to remove member:", { memberId, organizationId });
       
-      // First, find the member to verify it exists
       const { data: memberData, error: memberError } = await supabase
         .from("organization_members")
         .select("*")
@@ -169,7 +171,6 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
       
       console.log("Found member to delete:", memberData);
       
-      // Now perform the deletion
       const { error } = await supabase
         .from("organization_members")
         .delete()
@@ -184,7 +185,6 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
       console.log("Member deleted successfully");
       toast.success("Member removed successfully");
       
-      // Refresh members
       await fetchOrganizationMembers(organizationId);
     } catch (error) {
       console.error("Remove member error:", error);

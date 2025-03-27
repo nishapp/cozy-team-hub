@@ -19,7 +19,8 @@ export function useOrganization(): UseOrganizationReturn {
   // Set up the initial organization when organizations load
   useEffect(() => {
     const setupInitialOrganization = async () => {
-      if (organizationsHook.organizations.length > 0 && !currentOrgHook.currentOrganization) {
+      if (!currentOrgHook.currentOrganization && organizationsHook.organizations.length > 0) {
+        console.log("Setting up initial organization:", organizationsHook.organizations[0].id);
         await currentOrgHook.switchOrganization(organizationsHook.organizations[0].id);
       }
     };

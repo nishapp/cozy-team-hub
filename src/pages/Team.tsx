@@ -8,6 +8,7 @@ import TeamList from "../components/team/TeamList";
 import InviteForm from "../components/team/InviteForm";
 import PageTransition from "../components/ui/PageTransition";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const Team = () => {
   const { user, loading: authLoading } = useAuth();
@@ -21,10 +22,16 @@ const Team = () => {
   } = useOrganization();
 
   useEffect(() => {
-    if (currentOrganization) {
-      fetchOrganizationMembers(currentOrganization.id);
+    // Only try to fetch members if we have a current organization
+    if (currentOrganization?.id) {
+      try {
+        fetchOrganizationMembers(currentOrganization.id);
+      } catch (error) {
+        console.error("Error fetching team members:", error);
+        toast.error("Failed to load team members. Please try again later.");
+      }
     }
-  }, [currentOrganization]);
+  }, [currentOrganization?.id]);
 
   // Redirect unauthenticated users to login
   if (!user && !authLoading) {
@@ -33,6 +40,11 @@ const Team = () => {
 
   // Redirect users with no organizations to create one
   if (user && !authLoading && !orgLoading && organizations.length === 0) {
+    return <Navigate to="/organization" replace />;
+  }
+
+  // Redirect if no current organization
+  if (user && !authLoading && !orgLoading && !currentOrganization) {
     return <Navigate to="/organization" replace />;
   }
 
@@ -50,7 +62,7 @@ const Team = () => {
         <Navbar />
         
         <main className="flex-1">
-          <div className="page-container">
+          <div className="container mx-auto p-4 max-w-6xl">
             <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-bold tracking-tight">Team Members</h1>
@@ -71,7 +83,7 @@ const Team = () => {
               )}
             </div>
             
-            {members.length > 0 ? (
+            {members && members.length > 0 ? (
               <TeamList members={members} />
             ) : (
               <div className="border rounded-lg p-12 text-center bg-muted/50">
