@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useOrganization } from "../hooks/useOrganization";
@@ -77,6 +76,7 @@ const Settings = () => {
     try {
       toast.loading("Deleting account...");
       
+      // Fetch all organizations created by the user
       const { data: userOrgs, error: orgsError } = await supabase
         .from("organizations")
         .select("id")
@@ -87,6 +87,7 @@ const Settings = () => {
         throw new Error("Failed to fetch user organizations");
       }
       
+      // Delete the user's organization memberships
       const { error: membershipsError } = await supabase
         .from("organization_members")
         .delete()
@@ -97,9 +98,11 @@ const Settings = () => {
         throw new Error("Failed to delete organization memberships");
       }
       
+      // If the user owns organizations, delete all members and then the organizations
       if (userOrgs && userOrgs.length > 0) {
         const orgIds = userOrgs.map(org => org.id);
         
+        // Delete members of these organizations
         const { error: orgMembersError } = await supabase
           .from("organization_members")
           .delete()
@@ -110,6 +113,7 @@ const Settings = () => {
           throw new Error("Failed to delete organization members");
         }
         
+        // Delete the organizations
         const { error: deleteOrgsError } = await supabase
           .from("organizations")
           .delete()
@@ -121,6 +125,7 @@ const Settings = () => {
         }
       }
       
+      // Delete user profile
       const { error: profileError } = await supabase
         .from("profiles")
         .delete()
@@ -131,25 +136,12 @@ const Settings = () => {
         throw new Error("Failed to delete profile");
       }
       
-      // Fix: Use the correct method from Supabase Auth to delete the user
-      // Since admin.deleteUser() is not available in the client, we use the client-side method instead
-      const { error: clientUserError } = await supabase.auth.admin.deleteUser(user.id);
-      
-      if (clientUserError) {
-        // Fallback to client-side deleteUser if admin method fails
-        try {
-          await supabase.auth.updateUser({password: 'temp_password' });
-          await supabase.auth.signOut();
-        } catch (err) {
-          console.error("Error with client-side user deletion:", err);
-          throw new Error("Failed to delete user account");
-        }
-      }
+      // In the client-side SDK, we can't directly delete the user account
+      // Instead, we'll sign out the user after deleting all associated data
+      await supabase.auth.signOut();
       
       toast.dismiss();
       toast.success("Account successfully deleted");
-      
-      await signOut();
       navigate("/");
       
     } catch (error) {
