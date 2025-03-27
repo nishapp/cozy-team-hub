@@ -2,29 +2,17 @@
 import { createClient } from "@supabase/supabase-js";
 import { type Database } from "../types/supabase";
 
-// Get environment variables or use empty strings as fallbacks
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+// Get Supabase credentials
+const supabaseUrl = "https://znlgxnsizubcplghpokk.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpubGd4bnNpenViY3BsZ2hwb2trIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMDM2MjksImV4cCI6MjA1ODY3OTYyOX0.w4o6oaBc7KXd4dbkR9ajKBZ4Zgm8qyxSmFTu0ERScp4";
 
 // Create a flag to detect if we're using demo mode
-export const isDemoMode = !supabaseUrl || !supabaseAnonKey;
+export const isDemoMode = false;
 
-// Check if we should show a warning about missing credentials
-if (isDemoMode) {
-  console.warn(
-    "Running in demo mode: Supabase credentials are missing. Some features will not work. To enable full functionality, set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables."
-  );
-}
-
-// Use dummy values for supabase client if real ones aren't available
-// This prevents the "supabaseUrl is required" error
-const clientUrl = supabaseUrl || "https://placeholder-project.supabase.co";
-const clientKey = supabaseAnonKey || "placeholder-key-for-demo-mode";
-
-// Create the Supabase client with available credentials or placeholders
+// Create the Supabase client
 export const supabase = createClient<Database>(
-  clientUrl,
-  clientKey
+  supabaseUrl,
+  supabaseAnonKey
 );
 
 export type Organization = {

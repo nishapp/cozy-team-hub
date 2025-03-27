@@ -1,51 +1,8 @@
 
 import { useState, useEffect } from "react";
-import { supabase, Organization, Member, Profile, isDemoMode } from "../lib/supabase";
+import { supabase, Organization, Member, Profile } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
-
-// Demo data for when running without Supabase credentials
-const DEMO_ORGANIZATIONS: Organization[] = [
-  {
-    id: "demo-org-1",
-    name: "Demo Company",
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "demo-org-2",
-    name: "Personal Workspace",
-    created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-  },
-];
-
-const DEMO_MEMBERS: Member[] = [
-  {
-    id: "demo-member-1",
-    user_id: "demo-user-id",
-    organization_id: "demo-org-1",
-    role: "admin",
-    created_at: new Date().toISOString(),
-    profiles: {
-      id: "demo-user-id",
-      email: "demo@example.com",
-      full_name: "Demo User",
-      avatar_url: null,
-    },
-  },
-  {
-    id: "demo-member-2",
-    user_id: "demo-user-2",
-    organization_id: "demo-org-1",
-    role: "member",
-    created_at: new Date().toISOString(),
-    profiles: {
-      id: "demo-user-2",
-      email: "team.member@example.com",
-      full_name: "Team Member",
-      avatar_url: null,
-    },
-  },
-];
 
 export function useOrganization() {
   const { user } = useAuth();
@@ -72,20 +29,6 @@ export function useOrganization() {
     
     try {
       setLoading(true);
-      
-      if (isDemoMode) {
-        // Use demo data when in demo mode
-        setOrganizations(DEMO_ORGANIZATIONS);
-        
-        // Set the first organization as current if none is selected
-        if (!currentOrganization && DEMO_ORGANIZATIONS.length > 0) {
-          setCurrentOrganization(DEMO_ORGANIZATIONS[0]);
-          setUserRole("admin");
-          await fetchOrganizationMembers(DEMO_ORGANIZATIONS[0].id);
-        }
-        setLoading(false);
-        return;
-      }
       
       const { data, error } = await supabase
         .from("organization_members")
@@ -125,41 +68,6 @@ export function useOrganization() {
     
     try {
       setLoading(true);
-      
-      if (isDemoMode) {
-        // Create a demo organization
-        const newOrg: Organization = {
-          id: `demo-org-${Date.now()}`,
-          name,
-          created_at: new Date().toISOString(),
-        };
-        
-        // Add the organization to the list
-        setOrganizations([...organizations, newOrg]);
-        
-        // Create a new member entry
-        const newMember: Member = {
-          id: `demo-member-${Date.now()}`,
-          user_id: user.id,
-          organization_id: newOrg.id,
-          role: "admin",
-          created_at: new Date().toISOString(),
-          profiles: {
-            id: user.id,
-            email: user.email || "demo@example.com",
-            full_name: "Demo User",
-          },
-        };
-        
-        // Set as current
-        setCurrentOrganization(newOrg);
-        setUserRole("admin");
-        setMembers([newMember]);
-        
-        toast.success(`Organization "${name}" created successfully!`);
-        setLoading(false);
-        return newOrg;
-      }
       
       // Insert organization
       const { data: orgData, error: orgError } = await supabase
@@ -209,19 +117,6 @@ export function useOrganization() {
     if (!user) return;
     
     try {
-      if (isDemoMode) {
-        const org = organizations.find(o => o.id === organizationId);
-        if (!org) throw new Error("Organization not found");
-        
-        setCurrentOrganization(org);
-        setUserRole("admin");
-        
-        // Set demo members for this organization
-        const demoOrgMembers = DEMO_MEMBERS.filter(m => m.organization_id === organizationId);
-        setMembers(demoOrgMembers.length > 0 ? demoOrgMembers : DEMO_MEMBERS);
-        return;
-      }
-      
       const org = organizations.find(o => o.id === organizationId);
       if (!org) throw new Error("Organization not found");
       
@@ -255,13 +150,6 @@ export function useOrganization() {
     if (!user) return;
     
     try {
-      if (isDemoMode) {
-        // Use demo data for members
-        const demoOrgMembers = DEMO_MEMBERS.filter(m => m.organization_id === organizationId);
-        setMembers(demoOrgMembers.length > 0 ? demoOrgMembers : DEMO_MEMBERS);
-        return;
-      }
-      
       const { data, error } = await supabase
         .from("organization_members")
         .select(`
@@ -288,37 +176,62 @@ export function useOrganization() {
     try {
       setLoading(true);
       
-      // Generate a random token
-      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-      
-      // Set expiration date to 7 days from now
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
-      
-      // Insert invitation
-      const { error } = await supabase
-        .from("invitations")
-        .insert([
-          {
-            email,
-            organization_id: currentOrganization.id,
-            role,
-            token,
-            expires_at: expiresAt.toISOString()
-          }
-        ]);
+      // First, check if the user exists by email
+      const { data: userData, error: userError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", email)
+        .single();
         
-      if (error) throw error;
+      if (userError && userError.code !== "PGRST116") { // PGRST116 is not found error
+        throw userError;
+      }
       
-      // In a real app, you would send an email here with the invitation link
-      // For now, we'll just show a success message with the token
-      
-      toast.success(`Invitation sent to ${email}`);
-      
-      // For demo purposes, generate a link that would be in the email
-      const inviteLink = `${window.location.origin}/accept-invite?token=${token}`;
-      console.log("Invitation link:", inviteLink);
-      
+      if (userData) {
+        // User exists, add them directly to organization
+        const { error: memberError } = await supabase
+          .from("organization_members")
+          .insert([
+            {
+              user_id: userData.id,
+              organization_id: currentOrganization.id,
+              role
+            }
+          ]);
+          
+        if (memberError) throw memberError;
+        
+        toast.success(`${email} has been added to the organization!`);
+        await fetchOrganizationMembers(currentOrganization.id);
+      } else {
+        // Generate a random token
+        const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        
+        // Set expiration date to 7 days from now
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7);
+        
+        // Insert invitation
+        const { error } = await supabase
+          .from("invitations")
+          .insert([
+            {
+              email,
+              organization_id: currentOrganization.id,
+              role,
+              token,
+              expires_at: expiresAt.toISOString()
+            }
+          ]);
+          
+        if (error) throw error;
+        
+        toast.success(`Invitation sent to ${email}`);
+        
+        // For demo purposes, generate a link that would be in the email
+        const inviteLink = `${window.location.origin}/accept-invite?token=${token}`;
+        console.log("Invitation link:", inviteLink);
+      }
     } catch (error) {
       if (error instanceof Error) {
         toast.error(`Error inviting member: ${error.message}`);
