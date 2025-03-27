@@ -88,7 +88,7 @@ export function useOrganization() {
       }
       
       const { data, error } = await supabase
-        .from("members")
+        .from("organization_members")
         .select(`
           organization_id,
           role,
@@ -172,7 +172,7 @@ export function useOrganization() {
       
       // Insert member (creator as admin)
       const { error: memberError } = await supabase
-        .from("members")
+        .from("organization_members")
         .insert([
           {
             user_id: user.id,
@@ -229,7 +229,7 @@ export function useOrganization() {
       
       // Get user role in this organization
       const { data, error } = await supabase
-        .from("members")
+        .from("organization_members")
         .select("role")
         .eq("user_id", user.id)
         .eq("organization_id", organizationId)
@@ -263,7 +263,7 @@ export function useOrganization() {
       }
       
       const { data, error } = await supabase
-        .from("members")
+        .from("organization_members")
         .select(`
           *,
           profiles:user_id(id, email, full_name, avatar_url)
@@ -337,7 +337,7 @@ export function useOrganization() {
       setLoading(true);
       
       const { error } = await supabase
-        .from("members")
+        .from("organization_members")
         .update({ role: newRole })
         .eq("id", memberId)
         .eq("organization_id", currentOrganization.id);
@@ -366,7 +366,7 @@ export function useOrganization() {
       setLoading(true);
       
       const { error } = await supabase
-        .from("members")
+        .from("organization_members")
         .delete()
         .eq("id", memberId)
         .eq("organization_id", currentOrganization.id);

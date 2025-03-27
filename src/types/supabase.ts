@@ -28,7 +28,7 @@ export interface Database {
         }
         Relationships: []
       }
-      members: {
+      organization_members: {
         Row: {
           id: string
           user_id: string
@@ -52,13 +52,13 @@ export interface Database {
         }
         Relationships: [
           {
-            foreignKeyName: "members_user_id_fkey"
+            foreignKeyName: "organization_members_user_id_fkey"
             columns: ["user_id"]
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "members_organization_id_fkey"
+            foreignKeyName: "organization_members_organization_id_fkey"
             columns: ["organization_id"]
             referencedRelation: "organizations"
             referencedColumns: ["id"]
