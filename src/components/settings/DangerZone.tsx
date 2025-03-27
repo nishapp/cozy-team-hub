@@ -25,7 +25,7 @@ const DangerZone = () => {
   const handleDeleteAccount = async () => {
     try {
       setIsDeleting(true);
-      // Call the delete_user function with no parameters instead of an empty object
+      // Call the delete_user function with no parameters
       const { error } = await supabase.rpc('delete_user');
       
       if (error) throw error;
@@ -37,7 +37,7 @@ const DangerZone = () => {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("An error occurred while deleting your account");
+        toast.error("An unexpected error occurred while deleting your account");
       }
     } finally {
       setIsDeleting(false);
