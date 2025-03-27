@@ -58,7 +58,8 @@ function DangerZone({ signOut, navigate }: DangerZoneProps) {
       }
       
       // Call the RPC function to delete the user
-      const { error: deleteError } = await supabase.rpc('delete_user');
+      // Pass empty object instead of a string to match the expected type
+      const { error: deleteError } = await supabase.rpc('delete_user', {});
       
       if (deleteError) {
         throw deleteError;
