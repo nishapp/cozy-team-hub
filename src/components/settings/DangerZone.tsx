@@ -25,8 +25,8 @@ const DangerZone = () => {
   const handleDeleteAccount = async () => {
     try {
       setIsDeleting(true);
-      // Call the delete_user function with an empty object as parameter
-      const { error } = await supabase.rpc('delete_user', {});
+      // Call the delete_user function with no parameters instead of an empty object
+      const { error } = await supabase.rpc('delete_user');
       
       if (error) throw error;
       
