@@ -1,66 +1,65 @@
 
-import { useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import { Navigate, useNavigate } from "react-router-dom";
-import Navbar from "../components/layout/Navbar";
-import PageTransition from "../components/ui/PageTransition";
+import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "../context/AuthContext";
 import ProfileForm from "../components/settings/ProfileForm";
 import PasswordForm from "../components/settings/PasswordForm";
 import DangerZone from "../components/settings/DangerZone";
-import { supabase } from "../lib/supabase";
-import { toast } from "sonner";
+import PageTransition from "../components/ui/PageTransition";
 
 const Settings = () => {
-  const { user, loading: authLoading, signOut } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("profile");
 
-  if (!user && !authLoading) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+  if (!user) {
+    return <div>Loading...</div>;
   }
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        
-        <main className="flex-1">
-          <div className="page-container">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-              <p className="text-muted-foreground mt-1">
-                Manage your account and preferences
-              </p>
-            </div>
-            
-            <div className="max-w-3xl">
-              <Tabs defaultValue="profile" className="w-full">
-                <TabsList className="mb-8">
-                  <TabsTrigger value="profile">Profile</TabsTrigger>
-                  <TabsTrigger value="password">Password</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="profile" className="space-y-6">
-                  <ProfileForm user={user} />
-                </TabsContent>
-                
-                <TabsContent value="password" className="space-y-6">
-                  <PasswordForm />
-                </TabsContent>
-              </Tabs>
-              
-              <DangerZone />
-            </div>
+      <div className="container max-w-screen-lg py-8">
+        <div className="flex flex-col space-y-8">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+            <p className="text-muted-foreground">
+              Manage your account settings and preferences.
+            </p>
           </div>
-        </main>
+
+          <Tabs
+            defaultValue="profile"
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-8"
+          >
+            <TabsList className="grid grid-cols-3 w-full max-w-md">
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="password">Password</TabsTrigger>
+              <TabsTrigger value="danger">Danger Zone</TabsTrigger>
+            </TabsList>
+
+            <TabsContent
+              value="profile"
+              className="space-y-8 bg-card p-6 rounded-md border shadow-sm"
+            >
+              <ProfileForm />
+            </TabsContent>
+
+            <TabsContent
+              value="password"
+              className="space-y-8 bg-card p-6 rounded-md border shadow-sm"
+            >
+              <PasswordForm />
+            </TabsContent>
+
+            <TabsContent
+              value="danger"
+              className="space-y-8 bg-card p-6 rounded-md border shadow-sm"
+            >
+              <DangerZone />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </PageTransition>
   );
