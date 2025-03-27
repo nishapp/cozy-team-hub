@@ -17,10 +17,10 @@ export function HeroDemo() {
         icon: <Icons.gitHub className="mr-2 h-4 w-4" />,
       }}
       mockupImage={{
-        alt: "WDYLT Platform Preview",
+        alt: "WDYLT Platform Dashboard",
         width: 1248,
         height: 765,
-        src: "https://placehold.co/1200x800/e2e8f0/a1a1aa?text=WDYLT+Dashboard"
+        src: "/lovable-uploads/bb5b13e9-98d3-46ea-92ea-a17b713ea2f4.png"
       }}
     />
   )
