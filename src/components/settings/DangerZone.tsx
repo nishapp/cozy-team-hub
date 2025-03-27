@@ -29,11 +29,16 @@ const DangerZone = () => {
           .eq('id', user.id)
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error checking suspension status:', error);
+          setIsSuspended(false);
+          return;
+        }
         
-        setIsSuspended(data.is_suspended);
+        setIsSuspended(data?.is_suspended || false);
       } catch (error) {
         console.error('Error checking suspension status:', error);
+        setIsSuspended(false);
       } finally {
         setIsCheckingSuspension(false);
       }

@@ -48,7 +48,7 @@ const UsersTable = () => {
       
       if (error) throw error;
       
-      setUsers(data);
+      setUsers(data || []);
     } catch (error: any) {
       console.error('Error fetching users:', error);
       setError(error.message || "Failed to fetch users");
@@ -214,7 +214,7 @@ const UsersTable = () => {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={user.is_suspended ? "destructive" : "success"}>
+                  <Badge variant={user.is_suspended ? "destructive" : "outline"} className={!user.is_suspended ? "bg-green-100 text-green-800 hover:bg-green-200" : ""}>
                     {user.is_suspended ? 'Suspended' : 'Active'}
                   </Badge>
                 </TableCell>

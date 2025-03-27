@@ -86,7 +86,11 @@ const Dashboard = () => {
                           <p className="font-medium">{profileData.full_name}</p>
                         )}
                         <p className="text-sm text-muted-foreground">{user?.email}</p>
-                        {isAdmin && <p className="text-xs text-primary">Administrator</p>}
+                        <p className="text-xs">
+                          User Type: <span className={isAdmin ? "text-primary font-medium" : "text-muted-foreground"}>
+                            {isAdmin ? "Admin" : "Normal"}
+                          </span>
+                        </p>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
