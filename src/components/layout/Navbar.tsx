@@ -2,10 +2,8 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
-import { useOrganization } from "../../hooks/useOrganization";
 import { Button } from "@/components/ui/button";
 import {
-  ChevronDown,
   LogOut,
   Menu,
   Settings,
@@ -22,7 +20,6 @@ import {
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
-  const { organizations, currentOrganization, switchOrganization } = useOrganization();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -55,45 +52,12 @@ const Navbar = () => {
           <Link to="/dashboard" className="text-sm font-medium hover:text-primary smooth-transition">
             Dashboard
           </Link>
-          <Link to="/organization" className="text-sm font-medium hover:text-primary smooth-transition">
-            Organization
-          </Link>
-          <Link to="/team" className="text-sm font-medium hover:text-primary smooth-transition">
-            Team
-          </Link>
           <Link to="/settings" className="text-sm font-medium hover:text-primary smooth-transition">
             Settings
           </Link>
         </nav>
 
         <div className="flex items-center gap-2">
-          {/* Organization selector */}
-          {organizations.length > 0 && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="hidden md:flex"
-                >
-                  {currentOrganization?.name || "Select Organization"}
-                  <ChevronDown size={16} className="ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                {organizations.map((org) => (
-                  <DropdownMenuItem 
-                    key={org.id}
-                    onClick={() => switchOrganization(org.id)}
-                    className={org.id === currentOrganization?.id ? "bg-accent text-accent-foreground" : ""}
-                  >
-                    {org.name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-
           {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -140,49 +104,12 @@ const Navbar = () => {
               Dashboard
             </Link>
             <Link 
-              to="/organization" 
-              className="block py-2 text-sm font-medium"
-              onClick={toggleMobileMenu}
-            >
-              Organization
-            </Link>
-            <Link 
-              to="/team" 
-              className="block py-2 text-sm font-medium"
-              onClick={toggleMobileMenu}
-            >
-              Team
-            </Link>
-            <Link 
               to="/settings" 
               className="block py-2 text-sm font-medium"
               onClick={toggleMobileMenu}
             >
               Settings
             </Link>
-
-            {/* Organization selector on mobile */}
-            {organizations.length > 0 && (
-              <div className="pt-2 border-t">
-                <p className="text-sm font-medium text-muted-foreground mb-2">Switch Organization</p>
-                <div className="space-y-1">
-                  {organizations.map((org) => (
-                    <Button 
-                      key={org.id}
-                      variant="ghost" 
-                      size="sm"
-                      className={`w-full justify-start ${org.id === currentOrganization?.id ? "bg-accent text-accent-foreground" : ""}`}
-                      onClick={() => {
-                        switchOrganization(org.id);
-                        toggleMobileMenu();
-                      }}
-                    >
-                      {org.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
