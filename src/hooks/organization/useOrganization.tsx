@@ -42,7 +42,9 @@ export function useOrganization(): UseOrganizationReturn {
   // Enhanced switch organization function to update members as well
   const switchOrganization = async (organizationId: string) => {
     await currentOrgHook.switchOrganization(organizationId);
-    await membersHook.fetchOrganizationMembers(organizationId);
+    if (organizationId) {
+      await membersHook.fetchOrganizationMembers(organizationId);
+    }
   };
   
   // Enhanced create organization function to set it as the current org
@@ -52,6 +54,22 @@ export function useOrganization(): UseOrganizationReturn {
       await switchOrganization(org.id);
     }
     return org;
+  };
+
+  // Wrapper functions that handle the current organization ID
+  const inviteMember = (email: string, role: "admin" | "member") => {
+    if (!currentOrgHook.currentOrganization) return Promise.resolve();
+    return membersHook.inviteMember(email, role, currentOrgHook.currentOrganization.id);
+  };
+
+  const updateMemberRole = (memberId: string, role: "admin" | "member") => {
+    if (!currentOrgHook.currentOrganization) return Promise.resolve();
+    return membersHook.updateMemberRole(memberId, role, currentOrgHook.currentOrganization.id);
+  };
+
+  const removeMember = (memberId: string) => {
+    if (!currentOrgHook.currentOrganization) return Promise.resolve();
+    return membersHook.removeMember(memberId, currentOrgHook.currentOrganization.id);
   };
   
   return {
@@ -65,18 +83,9 @@ export function useOrganization(): UseOrganizationReturn {
     
     // From useOrganizationMembers
     members: membersHook.members,
-    inviteMember: (email, role) => {
-      if (!currentOrgHook.currentOrganization) return Promise.resolve();
-      return membersHook.inviteMember(email, role, currentOrgHook.currentOrganization.id);
-    },
-    updateMemberRole: (memberId, role) => {
-      if (!currentOrgHook.currentOrganization) return Promise.resolve();
-      return membersHook.updateMemberRole(memberId, role, currentOrgHook.currentOrganization.id);
-    },
-    removeMember: (memberId) => {
-      if (!currentOrgHook.currentOrganization) return Promise.resolve();
-      return membersHook.removeMember(memberId, currentOrgHook.currentOrganization.id);
-    },
+    inviteMember,
+    updateMemberRole,
+    removeMember,
     fetchOrganizationMembers: membersHook.fetchOrganizationMembers,
     
     // Enhanced functions
