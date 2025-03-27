@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useOrganization } from "../hooks/useOrganization";
@@ -77,6 +78,7 @@ const Settings = () => {
       toast.loading("Deleting account...");
       
       // Fetch all organizations created by the user
+      // Fix the TypeScript error by explicitly typing the query result
       const { data: userOrgs, error: orgsError } = await supabase
         .from("organizations")
         .select("id")
@@ -100,7 +102,8 @@ const Settings = () => {
       
       // If the user owns organizations, delete all members and then the organizations
       if (userOrgs && userOrgs.length > 0) {
-        const orgIds = userOrgs.map(org => org.id);
+        // Explicitly type the organization IDs to avoid deep recursion
+        const orgIds = userOrgs.map((org: { id: string }) => org.id);
         
         // Delete members of these organizations
         const { error: orgMembersError } = await supabase
