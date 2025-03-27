@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase, Member } from "../../lib/supabase";
 import { useAuth } from "../../context/AuthContext";
@@ -16,31 +17,48 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
       setLoading(true);
       console.log("Fetching members for organization:", organizationId);
       
-      const { data, error } = await supabase
+      // Get all member records for this organization
+      const { data: memberData, error: memberError } = await supabase
         .from("organization_members")
-        .select(`
-          id,
-          user_id,
-          organization_id,
-          role,
-          created_at,
-          profiles:user_id(*)
-        `)
+        .select("id, user_id, organization_id, role, created_at")
         .eq("organization_id", organizationId);
         
-      if (error) {
-        console.error("Error fetching members:", error);
-        throw error;
+      if (memberError) {
+        console.error("Error fetching member records:", memberError);
+        throw memberError;
       }
       
-      console.log("Fetched members:", data);
-      
-      const transformedMembers = data.map(item => ({
-        ...item,
-        profiles: item.profiles
-      })) as Member[];
-      
-      setMembers(transformedMembers);
+      // If we have members, fetch their profiles separately
+      if (memberData && memberData.length > 0) {
+        // Get the user_ids to fetch profiles for
+        const userIds = memberData.map(member => member.user_id);
+        
+        // Fetch profiles for these users
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, email, full_name, avatar_url, organization_id")
+          .in("id", userIds);
+          
+        if (profileError) {
+          console.error("Error fetching profiles:", profileError);
+          throw profileError;
+        }
+        
+        // Combine the member data with profile data
+        const membersWithProfiles = memberData.map(member => {
+          const profile = profileData?.find(p => p.id === member.user_id);
+          return {
+            ...member,
+            profiles: profile || null
+          };
+        });
+        
+        console.log("Fetched members with profiles:", membersWithProfiles);
+        setMembers(membersWithProfiles as Member[]);
+      } else {
+        console.log("No members found for this organization");
+        setMembers([]);
+      }
     } catch (error) {
       console.error("Error in fetchOrganizationMembers:", error);
       if (error instanceof Error) {

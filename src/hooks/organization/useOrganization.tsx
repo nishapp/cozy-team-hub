@@ -15,20 +15,30 @@ export function useOrganization(): UseOrganizationReturn {
   const currentOrgHook = useCurrentOrganization();
   const membersHook = useOrganizationMembers();
   const [loading, setLoading] = useState(true);
+  const [initializationAttempted, setInitializationAttempted] = useState(false);
   
   // Set up the initial organization when organizations load
   useEffect(() => {
     const setupInitialOrganization = async () => {
-      if (!currentOrgHook.currentOrganization && organizationsHook.organizations.length > 0) {
+      if (
+        !initializationAttempted && 
+        !currentOrgHook.currentOrganization && 
+        organizationsHook.organizations.length > 0
+      ) {
         console.log("Setting up initial organization:", organizationsHook.organizations[0].id);
-        await currentOrgHook.switchOrganization(organizationsHook.organizations[0].id);
+        setInitializationAttempted(true);
+        try {
+          await currentOrgHook.switchOrganization(organizationsHook.organizations[0].id);
+        } catch (error) {
+          console.error("Error setting up initial organization:", error);
+        }
       }
     };
     
     if (!loading && organizationsHook.organizations.length > 0) {
       setupInitialOrganization();
     }
-  }, [organizationsHook.organizations, currentOrgHook.currentOrganization, loading]);
+  }, [organizationsHook.organizations, currentOrgHook.currentOrganization, loading, initializationAttempted]);
   
   // Update members when current organization changes
   useEffect(() => {
@@ -44,19 +54,28 @@ export function useOrganization(): UseOrganizationReturn {
   
   // Enhanced switch organization function to update members as well
   const switchOrganization = async (organizationId: string) => {
-    await currentOrgHook.switchOrganization(organizationId);
-    if (organizationId) {
-      await membersHook.fetchOrganizationMembers(organizationId);
+    try {
+      await currentOrgHook.switchOrganization(organizationId);
+      if (organizationId) {
+        await membersHook.fetchOrganizationMembers(organizationId);
+      }
+    } catch (error) {
+      console.error("Error switching organization:", error);
     }
   };
   
   // Enhanced create organization function to set it as the current org
   const createOrganization = async (name: string) => {
-    const org = await organizationsHook.createOrganization(name);
-    if (org) {
-      await switchOrganization(org.id);
+    try {
+      const org = await organizationsHook.createOrganization(name);
+      if (org) {
+        await switchOrganization(org.id);
+      }
+      return org;
+    } catch (error) {
+      console.error("Error creating organization:", error);
+      return null;
     }
-    return org;
   };
 
   // Wrapper functions that handle the current organization ID
