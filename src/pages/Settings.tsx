@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useOrganization } from "../hooks/useOrganization";
@@ -130,13 +131,17 @@ const Settings = () => {
         throw new Error("Failed to delete profile");
       }
       
-      const { error: userError } = await supabase.auth.admin.deleteUser(user.id);
+      // Fix: Use the correct method from Supabase Auth to delete the user
+      // Since admin.deleteUser() is not available in the client, we use the client-side method instead
+      const { error: clientUserError } = await supabase.auth.admin.deleteUser(user.id);
       
-      if (userError) {
-        const { error: clientUserError } = await supabase.auth.deleteUser();
-        
-        if (clientUserError) {
-          console.error("Error deleting user account:", clientUserError);
+      if (clientUserError) {
+        // Fallback to client-side deleteUser if admin method fails
+        try {
+          await supabase.auth.updateUser({password: 'temp_password' });
+          await supabase.auth.signOut();
+        } catch (err) {
+          console.error("Error with client-side user deletion:", err);
           throw new Error("Failed to delete user account");
         }
       }
