@@ -20,10 +20,11 @@ export function useOrganizations(): UseOrganizationsReturn {
   }, [user]);
 
   async function fetchUserOrganizations() {
+    if (!user) return;
+    
     try {
       setLoading(true);
-      
-      if (!user) return;
+      console.log("Fetching organizations for user:", user.id);
       
       const { data, error } = await supabase
         .from("organization_members")
@@ -34,13 +35,21 @@ export function useOrganizations(): UseOrganizationsReturn {
         `)
         .eq("user_id", user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching organizations:", error);
+        throw error;
+      }
 
+      console.log("Fetched organization data:", data);
+      
       if (data && data.length > 0) {
         const orgs = data.map((item) => item.organizations as Organization);
         setOrganizations(orgs);
+      } else {
+        setOrganizations([]);
       }
     } catch (error) {
+      console.error("Error in fetchUserOrganizations:", error);
       if (error instanceof Error) {
         toast.error(`Error fetching organizations: ${error.message}`);
       } else {

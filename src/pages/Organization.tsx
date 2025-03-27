@@ -7,14 +7,23 @@ import Navbar from "../components/layout/Navbar";
 import CreateOrganization from "../components/organizations/CreateOrganization";
 import OrganizationCard from "../components/organizations/OrganizationCard";
 import PageTransition from "../components/ui/PageTransition";
+import { Card } from "@/components/ui/card";
 
 const Organization = () => {
   const { user, loading: authLoading } = useAuth();
   const { 
     organizations, 
     currentOrganization,
-    loading: orgLoading
+    loading: orgLoading,
+    fetchUserOrganizations
   } = useOrganization();
+
+  // Fetch organizations when component mounts
+  useEffect(() => {
+    if (user && !orgLoading) {
+      fetchUserOrganizations();
+    }
+  }, [user]);
 
   // Redirect unauthenticated users to login
   if (!user && !authLoading) {
@@ -46,7 +55,7 @@ const Organization = () => {
         <Navbar />
         
         <main className="flex-1">
-          <div className="page-container">
+          <div className="container mx-auto p-4 max-w-6xl">
             <div className="mb-8">
               <h1 className="text-3xl font-bold tracking-tight">Organizations</h1>
               <p className="text-muted-foreground mt-1">
@@ -102,17 +111,5 @@ const Organization = () => {
     </PageTransition>
   );
 };
-
-// Card component for the "Create New Organization" card
-function Card({ children, className, ...props }: React.HTMLProps<HTMLDivElement>) {
-  return (
-    <div 
-      className={`rounded-lg overflow-hidden ${className}`}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
 
 export default Organization;

@@ -24,8 +24,10 @@ export function useOrganization(): UseOrganizationReturn {
       }
     };
     
-    setupInitialOrganization();
-  }, [organizationsHook.organizations]);
+    if (!loading && organizationsHook.organizations.length > 0) {
+      setupInitialOrganization();
+    }
+  }, [organizationsHook.organizations, currentOrgHook.currentOrganization, loading]);
   
   // Update members when current organization changes
   useEffect(() => {

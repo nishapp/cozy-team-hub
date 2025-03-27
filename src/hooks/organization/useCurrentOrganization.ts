@@ -11,17 +11,23 @@ export function useCurrentOrganization(): UseCurrentOrganizationReturn {
   const [userRole, setUserRole] = useState<"admin" | "member" | null>(null);
 
   async function switchOrganization(organizationId: string) {
-    if (!user) return;
+    if (!user || !organizationId) return;
     
     try {
+      console.log("Switching to organization:", organizationId);
+      
       const { data, error } = await supabase
         .from("organizations")
         .select("*")
         .eq("id", organizationId)
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching organization:", error);
+        throw error;
+      }
       
+      console.log("Organization data:", data);
       setCurrentOrganization(data as Organization);
       
       // Get user role in this organization
@@ -32,8 +38,12 @@ export function useCurrentOrganization(): UseCurrentOrganizationReturn {
         .eq("organization_id", organizationId)
         .single();
         
-      if (roleError) throw roleError;
+      if (roleError) {
+        console.error("Error fetching role:", roleError);
+        throw roleError;
+      }
       
+      console.log("User role:", roleData.role);
       setUserRole(roleData.role as "admin" | "member");
       
       // Update user profile with current organization
@@ -45,9 +55,11 @@ export function useCurrentOrganization(): UseCurrentOrganizationReturn {
       if (profileError) {
         console.warn("Could not update profile with organization ID:", profileError);
         // Non-blocking error, we'll continue even if this fails
+      } else {
+        console.log("Profile updated with organization ID:", organizationId);
       }
-      
     } catch (error) {
+      console.error("Error in switchOrganization:", error);
       if (error instanceof Error) {
         toast.error(`Error switching organization: ${error.message}`);
       } else {

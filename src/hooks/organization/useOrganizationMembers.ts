@@ -11,22 +11,29 @@ export function useOrganizationMembers(): UseOrganizationMembersReturn {
   const [loading, setLoading] = useState(false);
 
   async function fetchOrganizationMembers(organizationId: string) {
-    if (!user) return;
+    if (!user || !organizationId) return;
     
     try {
       setLoading(true);
+      console.log("Fetching members for organization:", organizationId);
+      
       const { data, error } = await supabase
         .from("organization_members")
         .select(`
           *,
-          profiles:user_id(id, email, full_name, avatar_url)
+          profiles:user_id(id, email, full_name, avatar_url, organization_id)
         `)
         .eq("organization_id", organizationId);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching members:", error);
+        throw error;
+      }
       
+      console.log("Fetched members:", data);
       setMembers(data as Member[]);
     } catch (error) {
+      console.error("Error in fetchOrganizationMembers:", error);
       if (error instanceof Error) {
         toast.error(`Error fetching members: ${error.message}`);
       } else {
