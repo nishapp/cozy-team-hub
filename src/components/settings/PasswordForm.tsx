@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,6 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { supabase } from "../../lib/supabase";
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
@@ -26,6 +28,8 @@ const passwordSchema = z.object({
 type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 function PasswordForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const form = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
@@ -35,9 +39,30 @@ function PasswordForm() {
     },
   });
 
-  const onSubmit = (values: PasswordFormValues) => {
-    toast.success("Password updated successfully!");
-    form.reset();
+  const onSubmit = async (values: PasswordFormValues) => {
+    try {
+      setIsSubmitting(true);
+      
+      // Update the password using Supabase Auth API
+      const { error } = await supabase.auth.updateUser({
+        password: values.newPassword
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success("Password updated successfully!");
+      form.reset();
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to update password. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -88,8 +113,8 @@ function PasswordForm() {
             )}
           />
           
-          <Button type="submit" className="mt-2">
-            Change Password
+          <Button type="submit" className="mt-2" disabled={isSubmitting}>
+            {isSubmitting ? "Updating..." : "Change Password"}
           </Button>
         </form>
       </Form>
