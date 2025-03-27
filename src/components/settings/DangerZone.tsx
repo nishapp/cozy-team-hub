@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { supabase } from "../../lib/supabase";
+import { supabase, isDemoMode } from "../../lib/supabase";
 import { toast } from "sonner";
 import { NavigateFunction } from "react-router-dom";
 
@@ -36,6 +36,14 @@ function DangerZone({ signOut, navigate }: DangerZoneProps) {
       
       if (!user) {
         throw new Error("No authenticated user found");
+      }
+      
+      if (isDemoMode) {
+        // In demo mode, simulate account deletion without actually deleting
+        toast.success("Demo mode: Account would be deleted in production");
+        await signOut();
+        navigate("/");
+        return;
       }
       
       // Delete the user's profile data first (due to foreign key constraints)
