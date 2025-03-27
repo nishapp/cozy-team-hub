@@ -14,10 +14,11 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Check } from "lucide-react";
+import { Camera, Check, Upload, X } from "lucide-react";
+import { useImageUpload } from "@/hooks/useImageUpload";
+import ProfileAvatar from "../ui/ProfileAvatar";
 
 const profileSchema = z.object({
   email: z.string().email("Invalid email address").optional(),
@@ -29,7 +30,10 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 
 function ProfileForm() {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploading, uploadImage } = useImageUpload();
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -57,6 +61,8 @@ function ProfileForm() {
         if (data) {
           form.setValue('fullName', data.full_name || '');
           form.setValue('avatarUrl', data.avatar_url || '');
+          // Set the preview URL for the current avatar
+          setPreviewUrl(data.avatar_url);
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -92,11 +98,42 @@ function ProfileForm() {
     }
   };
 
-  const getInitials = (name: string) => {
-    return name
-      ?.split(' ')
-      .map(part => part.charAt(0).toUpperCase())
-      .join('') || user?.email?.charAt(0).toUpperCase() || '?';
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user || !e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
+    
+    // Create a local preview URL
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+    
+    // Upload the image to Supabase
+    const publicUrl = await uploadImage(file, user.id);
+    
+    if (publicUrl) {
+      form.setValue('avatarUrl', publicUrl);
+      toast.success("Image uploaded successfully!");
+    } else {
+      // Reset preview if upload failed
+      setPreviewUrl(form.getValues('avatarUrl'));
+    }
+    
+    // Reset the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImage = () => {
+    // Clear the avatar URL and preview
+    form.setValue('avatarUrl', '');
+    setPreviewUrl(null);
+  };
+
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   return (
@@ -106,19 +143,54 @@ function ProfileForm() {
       <div className="flex flex-col md:flex-row gap-8">
         <div className="flex flex-col items-center space-y-4">
           <div className="relative group">
-            <Avatar className="h-24 w-24 border-4 border-background">
-              <AvatarImage src={form.watch('avatarUrl')} alt="Profile" />
-              <AvatarFallback className="bg-primary/10 text-primary text-lg">
-                {getInitials(form.watch('fullName'))}
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+            <ProfileAvatar 
+              src={previewUrl} 
+              fallbackText={form.watch('fullName')} 
+              size="xl" 
+              className="border-4 border-background"
+            />
+            
+            <div 
+              className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              onClick={triggerFileInput}
+            >
               <Camera className="h-6 w-6 text-white" />
             </div>
+            
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={uploading}
+            />
           </div>
-          <p className="text-sm text-muted-foreground">
-            Profile picture
-          </p>
+          
+          <div className="flex items-center gap-2">
+            <Button 
+              type="button" 
+              size="sm" 
+              variant="outline"
+              onClick={triggerFileInput}
+              disabled={uploading}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              {uploading ? "Uploading..." : "Upload image"}
+            </Button>
+            
+            {previewUrl && (
+              <Button 
+                type="button" 
+                size="sm" 
+                variant="outline" 
+                className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+                onClick={handleRemoveImage}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
         
         <div className="flex-1 max-w-2xl">
@@ -152,21 +224,7 @@ function ProfileForm() {
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="avatarUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Avatar URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/avatar.jpg" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button type="submit" className="mt-2" disabled={isUpdating}>
+              <Button type="submit" className="mt-2" disabled={isUpdating || uploading}>
                 {isUpdating ? (
                   "Updating..."
                 ) : (

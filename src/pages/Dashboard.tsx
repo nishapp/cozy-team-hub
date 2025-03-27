@@ -1,13 +1,38 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/lib/supabase";
+import ProfileAvatar from "@/components/ui/ProfileAvatar";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
+  const [profileData, setProfileData] = useState<{ full_name?: string, avatar_url?: string } | null>(null);
+
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url')
+          .eq('id', user.id)
+          .single();
+          
+        if (error) throw error;
+        setProfileData(data);
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    };
+    
+    fetchProfileData();
+  }, [user]);
 
   // Redirect unauthenticated users to login
   if (!user && !authLoading) {
@@ -43,10 +68,19 @@ const Dashboard = () => {
                   <CardDescription>Your account information</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Email:</span>
-                      <span>{user?.email}</span>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <ProfileAvatar 
+                        src={profileData?.avatar_url} 
+                        fallbackText={profileData?.full_name}
+                        size="md"
+                      />
+                      <div>
+                        {profileData?.full_name && (
+                          <p className="font-medium">{profileData.full_name}</p>
+                        )}
+                        <p className="text-sm text-muted-foreground">{user?.email}</p>
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">User ID:</span>
@@ -78,11 +112,23 @@ const Dashboard = () => {
                   <CardDescription>Your profile information</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Email:</span>
-                      <span>{user?.email}</span>
+                  <div className="flex items-center gap-4 mb-4">
+                    <ProfileAvatar 
+                      src={profileData?.avatar_url} 
+                      fallbackText={profileData?.full_name}
+                      size="lg"
+                    />
+                    <div>
+                      <h3 className="font-medium">{profileData?.full_name || "Update your profile"}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {profileData?.full_name ? "Your profile is complete" : "Add your details in settings"}
+                      </p>
                     </div>
+                  </div>
+                  <div className="mt-2">
+                    <a href="/settings" className="text-sm text-primary hover:underline">
+                      Edit profile →
+                    </a>
                   </div>
                 </CardContent>
               </Card>

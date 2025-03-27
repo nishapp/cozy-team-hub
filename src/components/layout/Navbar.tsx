@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,6 @@ import {
   LogOut,
   Menu,
   Settings,
-  User,
   X
 } from "lucide-react";
 import {
@@ -17,12 +16,37 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { supabase } from "@/lib/supabase";
+import ProfileAvatar from "../ui/ProfileAvatar";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [profileData, setProfileData] = useState<{ full_name?: string, avatar_url?: string } | null>(null);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url')
+          .eq('id', user.id)
+          .single();
+          
+        if (error) throw error;
+        setProfileData(data);
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    };
+    
+    fetchProfileData();
+  }, [user]);
 
   if (!user) return null;
 
@@ -64,15 +88,27 @@ const Navbar = () => {
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="h-9 w-9 rounded-full"
+                className="h-9 w-9 rounded-full p-0"
               >
-                <User size={18} />
+                <ProfileAvatar 
+                  src={profileData?.avatar_url} 
+                  fallbackText={profileData?.full_name}
+                  size="sm"
+                />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <div className="flex items-center justify-start gap-2 p-2">
-                <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">{user.email}</p>
+                <ProfileAvatar 
+                  src={profileData?.avatar_url} 
+                  fallbackText={profileData?.full_name}
+                  size="sm"
+                />
+                <div className="flex flex-col space-y-0.5 leading-none">
+                  {profileData?.full_name && (
+                    <p className="font-medium text-sm">{profileData.full_name}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
               </div>
               <DropdownMenuSeparator />
