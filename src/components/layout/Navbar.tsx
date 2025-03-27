@@ -7,6 +7,7 @@ import {
   LogOut,
   Menu,
   Settings,
+  Shield,
   X
 } from "lucide-react";
 import {
@@ -22,7 +23,7 @@ import ProfileAvatar from "../ui/ProfileAvatar";
 const Navbar = () => {
   const { user, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [profileData, setProfileData] = useState<{ full_name?: string, avatar_url?: string } | null>(null);
+  const [profileData, setProfileData] = useState<{ full_name?: string, avatar_url?: string, role?: 'admin' | 'user' } | null>(null);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -34,7 +35,7 @@ const Navbar = () => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('full_name, avatar_url')
+          .select('full_name, avatar_url, role')
           .eq('id', user.id)
           .single();
           
@@ -47,6 +48,8 @@ const Navbar = () => {
     
     fetchProfileData();
   }, [user]);
+
+  const isAdmin = profileData?.role === 'admin';
 
   if (!user) return null;
 
@@ -76,6 +79,12 @@ const Navbar = () => {
           <Link to="/dashboard" className="text-sm font-medium hover:text-primary smooth-transition">
             Dashboard
           </Link>
+          {isAdmin && (
+            <Link to="/admin" className="text-sm font-medium hover:text-primary smooth-transition flex items-center gap-1">
+              <Shield size={16} />
+              Admin
+            </Link>
+          )}
           <Link to="/settings" className="text-sm font-medium hover:text-primary smooth-transition">
             Settings
           </Link>
@@ -113,6 +122,20 @@ const Navbar = () => {
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
+                <Link to="/dashboard" className="cursor-pointer w-full flex items-center">
+                  <Menu size={16} className="mr-2" />
+                  <span>Dashboard</span>
+                </Link>
+              </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem asChild>
+                  <Link to="/admin" className="cursor-pointer w-full flex items-center">
+                    <Shield size={16} className="mr-2" />
+                    <span>Admin Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem asChild>
                 <Link to="/settings" className="cursor-pointer w-full flex items-center">
                   <Settings size={16} className="mr-2" />
                   <span>Settings</span>
@@ -139,6 +162,16 @@ const Navbar = () => {
             >
               Dashboard
             </Link>
+            {isAdmin && (
+              <Link 
+                to="/admin" 
+                className="block py-2 text-sm font-medium flex items-center gap-1"
+                onClick={toggleMobileMenu}
+              >
+                <Shield size={16} />
+                Admin Dashboard
+              </Link>
+            )}
             <Link 
               to="/settings" 
               className="block py-2 text-sm font-medium"

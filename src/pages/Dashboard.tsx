@@ -7,7 +7,6 @@ import PageTransition from "../components/ui/PageTransition";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
-import AdminSection from "@/components/admin/AdminSection";
 
 type ProfileData = {
   full_name?: string | null;
@@ -120,8 +119,8 @@ const Dashboard = () => {
                       → Update Settings
                     </a>
                     {isAdmin && (
-                      <a href="#admin-section" className="block p-2 text-sm text-primary hover:underline">
-                        → Manage Users
+                      <a href="/admin" className="block p-2 text-sm text-primary hover:underline">
+                        → Admin Dashboard
                       </a>
                     )}
                   </div>
@@ -156,22 +155,13 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Admin section */}
-            {isAdmin && (
-              <div id="admin-section" className="mt-12">
-                <AdminSection />
-              </div>
-            )}
-
-            {/* Empty state placeholder (only show if not admin) */}
-            {!isAdmin && (
-              <div className="mt-12 border rounded-lg p-8 text-center bg-muted/50">
-                <h3 className="text-xl font-semibold">Your Dashboard is Ready</h3>
-                <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-                  This is where your application content would go. Customize this section based on your specific needs.
-                </p>
-              </div>
-            )}
+            {/* Empty state placeholder */}
+            <div className="mt-12 border rounded-lg p-8 text-center bg-muted/50">
+              <h3 className="text-xl font-semibold">Your Dashboard is Ready</h3>
+              <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+                This is where your application content would go. Customize this section based on your specific needs.
+              </p>
+            </div>
           </div>
         </main>
       </div>
