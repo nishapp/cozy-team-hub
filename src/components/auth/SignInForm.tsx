@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, AlertCircle } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Form validation schema for signin
 const signinSchema = z.object({
@@ -29,6 +31,7 @@ interface SignInFormProps {
 
 const SignInForm = ({ onSuccess }: SignInFormProps) => {
   const { signIn, loading } = useAuth();
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const form = useForm<SigninFormValues>({
     resolver: zodResolver(signinSchema),
@@ -40,18 +43,30 @@ const SignInForm = ({ onSuccess }: SignInFormProps) => {
 
   const onSubmit = async (values: SigninFormValues) => {
     try {
+      setAuthError(null);
       await signIn(values.email, values.password);
       if (onSuccess) {
         onSuccess();
       }
     } catch (error) {
-      console.error(error);
+      if (error instanceof Error && error.message.includes("suspended")) {
+        setAuthError("Your account has been suspended. Please contact an administrator.");
+      } else {
+        console.error(error);
+      }
     }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {authError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{authError}</AlertDescription>
+          </Alert>
+        )}
+        
         <FormField
           control={form.control}
           name="email"

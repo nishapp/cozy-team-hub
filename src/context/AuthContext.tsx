@@ -79,13 +79,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error: authError, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        throw error;
+      if (authError) {
+        throw authError;
+      }
+
+      // Check if user is suspended
+      if (data?.user) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_suspended')
+          .eq('id', data.user.id)
+          .single();
+          
+        if (profileError) {
+          console.error("Error checking suspension status:", profileError);
+        }
+        
+        if (profileData?.is_suspended) {
+          // Sign out the user as they are suspended
+          await supabase.auth.signOut();
+          throw new Error("Your account has been suspended. Please contact an administrator.");
+        }
       }
 
       navigate("/dashboard");
