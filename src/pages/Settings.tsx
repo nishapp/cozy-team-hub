@@ -57,7 +57,7 @@ const Settings = () => {
                 </TabsContent>
               </Tabs>
               
-              <DangerZone signOut={signOut} navigate={navigate} />
+              <DangerZone />
             </div>
           </div>
         </main>

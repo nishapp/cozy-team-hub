@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,8 @@ const DangerZone = () => {
 
   const deleteAccount = async () => {
     try {
+      setIsDeleting(true);
+      
       // Call the RPC function with an empty object as parameter
       const { error } = await supabase.rpc('delete_user', {});
       
@@ -32,6 +35,8 @@ const DangerZone = () => {
     } catch (error) {
       console.error("Error deleting account:", error);
       toast.error("Failed to delete account");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
