@@ -113,7 +113,7 @@ const AuthForm = () => {
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input 
-                        type="text"
+                        type="email"
                         placeholder="your.email@example.com" 
                         className="pl-10"
                         {...field} 
@@ -166,7 +166,7 @@ const AuthForm = () => {
       ) : (
         <Form {...signupForm}>
           <form onSubmit={signupForm.handleSubmit(onSignup)} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={signupForm.control}
                 name="firstName"
@@ -216,7 +216,7 @@ const AuthForm = () => {
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input 
-                        type="text"
+                        type="email"
                         placeholder="your.email@example.com" 
                         className="pl-10"
                         {...field} 
