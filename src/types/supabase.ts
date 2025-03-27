@@ -15,18 +15,28 @@ export interface Database {
           id: string
           name: string
           created_at: string
+          created_by?: string
         }
         Insert: {
           id?: string
           name: string
           created_at?: string
+          created_by?: string
         }
         Update: {
           id?: string
           name?: string
           created_at?: string
+          created_by?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "organizations_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       organization_members: {
         Row: {
@@ -72,6 +82,7 @@ export interface Database {
           full_name: string | null
           avatar_url: string | null
           created_at: string
+          organization_id: string | null
         }
         Insert: {
           id: string
@@ -79,6 +90,7 @@ export interface Database {
           full_name?: string | null
           avatar_url?: string | null
           created_at?: string
+          organization_id?: string | null
         }
         Update: {
           id?: string
@@ -86,12 +98,19 @@ export interface Database {
           full_name?: string | null
           avatar_url?: string | null
           created_at?: string
+          organization_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "profiles_id_fkey"
             columns: ["id"]
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           }
         ]
