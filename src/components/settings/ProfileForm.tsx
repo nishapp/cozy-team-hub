@@ -13,26 +13,75 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { supabase } from "../../lib/supabase";
+import { useState } from "react";
 
 const profileSchema = z.object({
   email: z.string().email("Invalid email address").optional(),
   fullName: z.string().min(2, "Full name must be at least 2 characters").optional(),
+  firstName: z.string().min(2, "First name must be at least 2 characters").optional(),
+  lastName: z.string().min(2, "Last name must be at least 2 characters").optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 function ProfileForm({ user }: { user: any }) {
+  const [isUpdating, setIsUpdating] = useState(false);
+  
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       email: user?.email || "",
       fullName: "",
+      firstName: "",
+      lastName: "",
     },
   });
 
-  const onSubmit = (values: ProfileFormValues) => {
-    toast.success("Profile updated successfully!");
-    console.log("Profile updated:", values);
+  // Fetch profile data when component mounts
+  useState(() => {
+    const fetchProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+          
+        if (error) throw error;
+        
+        if (data) {
+          form.setValue('fullName', data.full_name || '');
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+    
+    if (user) fetchProfile();
+  }, [user]);
+
+  const onSubmit = async (values: ProfileFormValues) => {
+    try {
+      setIsUpdating(true);
+      
+      // Update profile in Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          full_name: values.fullName,
+        })
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error("Failed to update profile. Please try again.");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -69,8 +118,8 @@ function ProfileForm({ user }: { user: any }) {
             )}
           />
           
-          <Button type="submit" className="mt-2">
-            Update Profile
+          <Button type="submit" className="mt-2" disabled={isUpdating}>
+            {isUpdating ? "Updating..." : "Update Profile"}
           </Button>
         </form>
       </Form>
