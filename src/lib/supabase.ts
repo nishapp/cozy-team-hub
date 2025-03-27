@@ -9,6 +9,6 @@ export type Profile = {
 };
 
 // Add a variable to control the demo mode functionality
-export const isDemoMode = false;
+export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 
 export { supabase };
