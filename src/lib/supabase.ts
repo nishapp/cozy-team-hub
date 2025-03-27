@@ -2,7 +2,7 @@
 import { supabase } from "../integrations/supabase/client";
 
 // Create a flag to detect if we're using demo mode
-export const isDemoMode = true;
+export const isDemoMode = false;
 
 export type Organization = {
   id: string;
