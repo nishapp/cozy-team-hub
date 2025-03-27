@@ -9,9 +9,15 @@ import { supabase } from "@/lib/supabase";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
 import AdminSection from "@/components/admin/AdminSection";
 
+type ProfileData = {
+  full_name?: string | null;
+  avatar_url?: string | null;
+  role?: 'admin' | 'user';
+};
+
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
-  const [profileData, setProfileData] = useState<{ full_name?: string, avatar_url?: string, role?: string } | null>(null);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
 
   // Fetch profile data
   useEffect(() => {
