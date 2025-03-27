@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useOrganization } from "../hooks/useOrganization";
 import { Navigate, useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
@@ -42,21 +41,12 @@ type PasswordFormValues = z.infer<typeof passwordSchema>;
 const Settings = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
-  const { 
-    organizations, 
-    currentOrganization,
-    loading: orgLoading
-  } = useOrganization();
 
   if (!user && !authLoading) {
     return <Navigate to="/auth" replace />;
   }
 
-  if (user && !authLoading && !orgLoading && organizations.length === 0) {
-    return <Navigate to="/organization" replace />;
-  }
-
-  if (authLoading || orgLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -68,7 +58,7 @@ const Settings = () => {
     if (!user) return;
     
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete your account? This action will permanently delete your account and all associated data including organizations you own. This action cannot be undone."
+      "Are you sure you want to delete your account? This action will permanently delete your account and all associated data. This action cannot be undone."
     );
     
     if (!confirmDelete) return;
@@ -76,13 +66,10 @@ const Settings = () => {
     try {
       toast.loading("Deleting account...");
       
-      // With our updated database schema, we can now directly sign out and delete the account
-      // The foreign key constraints will handle the cascading deletions or NULL settings
-      
       // First, sign out to clear session
       await supabase.auth.signOut();
       
-      // Then delete the user (this will work now that we've updated the constraints)
+      // Then delete the user
       const { error } = await supabase.auth.admin.deleteUser(user.id);
       
       if (error) {
