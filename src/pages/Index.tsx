@@ -1,10 +1,8 @@
-
 import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import PageTransition from "../components/ui/PageTransition";
-import { BookOpen, Users, Video, Share2, Check } from "lucide-react";
+import { HeroSectionDemo } from "@/components/blocks/hero-section-demo";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -28,38 +26,17 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-4">
               <Link to="/auth">
-                <Button variant="ghost" size="sm">Sign in</Button>
+                <button className="text-sm font-medium hover:text-foreground/80">Sign in</button>
               </Link>
               <Link to="/auth">
-                <Button size="sm">Create account</Button>
+                <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90">Create account</button>
               </Link>
             </div>
           </div>
         </header>
-
-        {/* Hero section */}
-        <section className="flex-1 flex flex-col items-center justify-center text-center px-4 py-20 bg-gradient-to-b from-background to-muted/30">
-          <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-              What Did You Learn Today?
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Bookmark, categorize, and share your learning journey. Transform knowledge into compelling short-form videos.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Link to="/auth">
-                <Button size="lg" className="w-full sm:w-auto">
-                  Start Learning
-                </Button>
-              </Link>
-              <a href="#features">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                  Learn more
-                </Button>
-              </a>
-            </div>
-          </div>
-        </section>
+        
+        {/* Hero section using our new component */}
+        <HeroSectionDemo />
 
         {/* Features section */}
         <section id="features" className="py-20">

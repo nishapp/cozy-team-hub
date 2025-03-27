@@ -101,6 +101,14 @@ export default {
         'slide-out': {
           '0%': { transform: 'translateY(0)', opacity: '1' },
           '100%': { transform: 'translateY(10px)', opacity: '0' }
+        },
+        'appear': {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
+        },
+        'appear-zoom': {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' }
         }
 			},
 			animation: {
@@ -109,8 +117,13 @@ export default {
         'fade-in': 'fade-in 0.3s ease-out',
         'fade-out': 'fade-out 0.3s ease-out',
         'slide-in': 'slide-in 0.4s ease-out',
-        'slide-out': 'slide-out 0.4s ease-out'
-			}
+        'slide-out': 'slide-out 0.4s ease-out',
+        'appear': 'appear 0.5s ease-out forwards',
+        'appear-zoom': 'appear-zoom 0.5s ease-out forwards'
+			},
+      maxWidth: {
+        'container': '1200px',
+      }
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
