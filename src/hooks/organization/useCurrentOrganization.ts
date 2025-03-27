@@ -36,6 +36,17 @@ export function useCurrentOrganization(): UseCurrentOrganizationReturn {
       
       setUserRole(roleData.role as "admin" | "member");
       
+      // Update user profile with current organization
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ organization_id: organizationId })
+        .eq("id", user.id);
+      
+      if (profileError) {
+        console.warn("Could not update profile with organization ID:", profileError);
+        // Non-blocking error, we'll continue even if this fails
+      }
+      
     } catch (error) {
       if (error instanceof Error) {
         toast.error(`Error switching organization: ${error.message}`);

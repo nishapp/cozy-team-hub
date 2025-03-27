@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useOrganization } from "../hooks/useOrganization";
@@ -77,71 +76,18 @@ const Settings = () => {
     try {
       toast.loading("Deleting account...");
       
-      // Fetch all organizations created by the user
-      // Fix the TypeScript error by explicitly typing the query result
-      const { data: userOrgs, error: orgsError } = await supabase
-        .from("organizations")
-        .select("id")
-        .eq("created_by", user.id);
-        
-      if (orgsError) {
-        console.error("Error fetching user organizations:", orgsError);
-        throw new Error("Failed to fetch user organizations");
-      }
+      // With our updated database schema, we can now directly sign out and delete the account
+      // The foreign key constraints will handle the cascading deletions or NULL settings
       
-      // Delete the user's organization memberships
-      const { error: membershipsError } = await supabase
-        .from("organization_members")
-        .delete()
-        .eq("user_id", user.id);
-        
-      if (membershipsError) {
-        console.error("Error deleting organization memberships:", membershipsError);
-        throw new Error("Failed to delete organization memberships");
-      }
-      
-      // If the user owns organizations, delete all members and then the organizations
-      if (userOrgs && userOrgs.length > 0) {
-        // Explicitly type the organization IDs to avoid deep recursion
-        const orgIds = userOrgs.map((org: { id: string }) => org.id);
-        
-        // Delete members of these organizations
-        const { error: orgMembersError } = await supabase
-          .from("organization_members")
-          .delete()
-          .in("organization_id", orgIds);
-          
-        if (orgMembersError) {
-          console.error("Error deleting organization members:", orgMembersError);
-          throw new Error("Failed to delete organization members");
-        }
-        
-        // Delete the organizations
-        const { error: deleteOrgsError } = await supabase
-          .from("organizations")
-          .delete()
-          .in("id", orgIds);
-          
-        if (deleteOrgsError) {
-          console.error("Error deleting organizations:", deleteOrgsError);
-          throw new Error("Failed to delete organizations");
-        }
-      }
-      
-      // Delete user profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("id", user.id);
-        
-      if (profileError) {
-        console.error("Error deleting profile:", profileError);
-        throw new Error("Failed to delete profile");
-      }
-      
-      // In the client-side SDK, we can't directly delete the user account
-      // Instead, we'll sign out the user after deleting all associated data
+      // First, sign out to clear session
       await supabase.auth.signOut();
+      
+      // Then delete the user (this will work now that we've updated the constraints)
+      const { error } = await supabase.auth.admin.deleteUser(user.id);
+      
+      if (error) {
+        throw new Error(`Failed to delete user account: ${error.message}`);
+      }
       
       toast.dismiss();
       toast.success("Account successfully deleted");
@@ -151,6 +97,9 @@ const Settings = () => {
       toast.dismiss();
       console.error("Account deletion error:", error);
       toast.error(error instanceof Error ? error.message : "An unexpected error occurred");
+      
+      // If deletion failed, inform the user
+      toast.error("Could not delete account. Please contact support.");
     }
   };
 

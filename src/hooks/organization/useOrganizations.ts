@@ -82,6 +82,17 @@ export function useOrganizations(): UseOrganizationsReturn {
 
       if (memberError) throw memberError;
       
+      // Update user profile to associate with this organization
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ organization_id: orgData.id })
+        .eq("id", user.id);
+        
+      if (profileError) {
+        console.warn("Could not update profile with organization ID:", profileError);
+        // Non-blocking error, we'll continue even if this fails
+      }
+      
       toast.success(`Organization "${name}" created successfully!`);
       
       // Refresh organizations

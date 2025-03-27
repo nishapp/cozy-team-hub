@@ -8,7 +8,7 @@ export type Organization = {
   id: string;
   name: string;
   created_at: string;
-  created_by?: string; // Add created_by field to track organization ownership
+  created_by?: string; // This field now references the user who created the organization
 };
 
 export type Member = {
@@ -22,6 +22,7 @@ export type Member = {
     email: string;
     full_name?: string;
     avatar_url?: string;
+    organization_id?: string; // Add the new organization_id field
   };
 };
 
@@ -30,6 +31,7 @@ export type Profile = {
   email: string;
   full_name?: string;
   avatar_url?: string;
+  organization_id?: string; // Add the new organization_id field
 };
 
 export { supabase };
