@@ -1,7 +1,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
-import { supabase } from "../lib/supabase";
+import { supabase, isDemoMode } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -13,6 +13,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  isDemoMode: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +25,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Skip Supabase auth check if in demo mode
+    if (isDemoMode) {
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -48,6 +55,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signUp(email: string, password: string) {
     try {
       setLoading(true);
+      
+      if (isDemoMode) {
+        // In demo mode, simulate successful signup
+        toast.success("Demo Mode: Sign up successful! In a real app, verification would be sent.");
+        return;
+      }
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -73,6 +87,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signIn(email: string, password: string) {
     try {
       setLoading(true);
+      
+      if (isDemoMode) {
+        // In demo mode, create a mock user and session
+        const mockUser = {
+          id: "demo-user-id",
+          email,
+          // Add other required User properties
+        } as User;
+        
+        setUser(mockUser);
+        navigate("/dashboard");
+        toast.success("Demo Mode: Signed in successfully!");
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -99,6 +128,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signOut() {
     try {
       setLoading(true);
+      
+      if (isDemoMode) {
+        // In demo mode, just clear the mock user
+        setUser(null);
+        setSession(null);
+        toast.success("Demo Mode: Signed out successfully");
+        navigate("/auth");
+        return;
+      }
+      
       await supabase.auth.signOut();
       toast.success("Signed out successfully");
       navigate("/auth");
@@ -116,6 +155,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function resetPassword(email: string) {
     try {
       setLoading(true);
+      
+      if (isDemoMode) {
+        // In demo mode, simulate password reset
+        toast.success("Demo Mode: Password reset email would be sent in a real app");
+        return;
+      }
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
@@ -145,6 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signIn,
     signOut,
     resetPassword,
+    isDemoMode,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
