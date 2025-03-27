@@ -71,7 +71,7 @@ function createTemplate() {
     fs.mkdirSync(sqlTemplateDir, { recursive: true });
     
     // Copy the schema SQL file to sql-templates directory
-    const schemaFile = path.resolve(__dirname, 'sql-templates/00_schema.sql');
+    const schemaFile = path.resolve(__dirname, '../sql-templates/00_schema.sql');
     if (fs.existsSync(schemaFile)) {
       fs.copyFileSync(
         schemaFile,

@@ -1,69 +1,90 @@
-# Welcome to your Lovable project
 
-## Project info
+# SaaS Boilerplate
 
-**URL**: https://lovable.dev/projects/24361960-79d5-451c-bed5-143892b0ed40
+A complete SaaS application boilerplate with Supabase authentication, role-based access control, and a modern React frontend.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- 🔒 Authentication with Supabase
+- 👥 Role-based access control (Admin / User)
+- 🏢 Company settings management
+- 🎨 Responsive UI with Tailwind CSS and shadcn/ui
+- 🌙 Dark/light mode support
+- 📱 Mobile-friendly design
+- 🔄 Automatic template generation
+- 🚀 Quick project setup
 
-**Use Lovable**
+## Prerequisites
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/24361960-79d5-451c-bed5-143892b0ed40) and start prompting.
+- Node.js 16+
+- npm or yarn
+- Supabase CLI (for new Supabase projects)
 
-Changes made via Lovable will be committed automatically to this repo.
+## Installation
 
-**Use your preferred IDE**
+1. Clone this repository
+   ```bash
+   git clone <repo-url>
+   cd saas-boilerplate
+   ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+2. Install dependencies
+   ```bash
+   npm install
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+3. Run the installation script
+   ```bash
+   node install.js
+   ```
 
-Follow these steps:
+## Creating a New SaaS Project
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+After installation, you can create a new project:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```bash
+node scripts/init.js
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+Follow the prompts to:
+1. Enter project name
+2. Choose to use an existing or create a new Supabase project
+3. Customize your application
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+The script will set up everything you need to start building your SaaS application.
+
+## Project Structure
+
+- `/src/components`: UI components
+- `/src/pages`: Application pages
+- `/src/context`: React context providers
+- `/src/hooks`: Custom React hooks
+- `/src/lib`: Utility functions
+- `/src/integrations`: Third-party integrations
+- `/template`: Base template for new projects
+- `/scripts`: Setup and utility scripts
+- `/sql-templates`: SQL migration templates for Supabase
+
+## Development
+
+Once you've created a project, navigate to its directory and run:
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Visit `http://localhost:8080` to see your application.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Updating the Template
 
-**Use GitHub Codespaces**
+To update the template based on your current codebase:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+node scripts/create-template.js
+```
 
-## What technologies are used for this project?
+This will copy your current project structure to the template directory, excluding non-essential files.
 
-This project is built with .
+## License
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/24361960-79d5-451c-bed5-143892b0ed40) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+MIT
