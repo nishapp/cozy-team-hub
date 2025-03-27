@@ -15,6 +15,8 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          is_suspended: boolean
+          role: Database["public"]["Enums"]["user_role"]
           updated_at: string
         }
         Insert: {
@@ -22,6 +24,8 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id: string
+          is_suspended?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Update: {
@@ -29,6 +33,8 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          is_suspended?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Relationships: []
@@ -38,13 +44,55 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_delete_user: {
+        Args: {
+          user_id: string
+        }
+        Returns: undefined
+      }
       delete_user: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      demote_to_user: {
+        Args: {
+          user_id: string
+        }
+        Returns: undefined
+      }
+      get_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          email: string
+          last_sign_in_at: string
+          created_at: string
+          full_name: string
+          avatar_url: string
+          role: Database["public"]["Enums"]["user_role"]
+          is_suspended: boolean
+        }[]
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      promote_to_admin: {
+        Args: {
+          user_id: string
+        }
+        Returns: undefined
+      }
+      suspend_user: {
+        Args: {
+          user_id: string
+          suspend?: boolean
+        }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "user" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never

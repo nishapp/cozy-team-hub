@@ -7,10 +7,11 @@ import PageTransition from "../components/ui/PageTransition";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
+import AdminSection from "@/components/admin/AdminSection";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
-  const [profileData, setProfileData] = useState<{ full_name?: string, avatar_url?: string } | null>(null);
+  const [profileData, setProfileData] = useState<{ full_name?: string, avatar_url?: string, role?: string } | null>(null);
 
   // Fetch profile data
   useEffect(() => {
@@ -20,7 +21,7 @@ const Dashboard = () => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('full_name, avatar_url')
+          .select('full_name, avatar_url, role')
           .eq('id', user.id)
           .single();
           
@@ -47,6 +48,8 @@ const Dashboard = () => {
     );
   }
 
+  const isAdmin = profileData?.role === 'admin';
+
   return (
     <PageTransition>
       <div className="min-h-screen flex flex-col">
@@ -58,6 +61,9 @@ const Dashboard = () => {
               <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
               <p className="text-muted-foreground mt-1">
                 Welcome to your dashboard
+                {isAdmin && <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground">
+                  Admin
+                </span>}
               </p>
             </div>
             
@@ -80,6 +86,7 @@ const Dashboard = () => {
                           <p className="font-medium">{profileData.full_name}</p>
                         )}
                         <p className="text-sm text-muted-foreground">{user?.email}</p>
+                        {isAdmin && <p className="text-xs text-primary">Administrator</p>}
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
@@ -102,6 +109,11 @@ const Dashboard = () => {
                     <a href="/settings" className="block p-2 text-sm text-primary hover:underline">
                       → Update Settings
                     </a>
+                    {isAdmin && (
+                      <a href="#admin-section" className="block p-2 text-sm text-primary hover:underline">
+                        → Manage Users
+                      </a>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -134,13 +146,22 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Empty state placeholder */}
-            <div className="mt-12 border rounded-lg p-8 text-center bg-muted/50">
-              <h3 className="text-xl font-semibold">Your Dashboard is Ready</h3>
-              <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-                This is where your application content would go. Customize this section based on your specific needs.
-              </p>
-            </div>
+            {/* Admin section */}
+            {isAdmin && (
+              <div id="admin-section" className="mt-12">
+                <AdminSection />
+              </div>
+            )}
+
+            {/* Empty state placeholder (only show if not admin) */}
+            {!isAdmin && (
+              <div className="mt-12 border rounded-lg p-8 text-center bg-muted/50">
+                <h3 className="text-xl font-semibold">Your Dashboard is Ready</h3>
+                <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+                  This is where your application content would go. Customize this section based on your specific needs.
+                </p>
+              </div>
+            )}
           </div>
         </main>
       </div>
