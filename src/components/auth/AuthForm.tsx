@@ -1,9 +1,10 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Mail, Lock, User } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -16,18 +17,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-// Form validation schema for signin with more permissive email validation
+// Form validation schema for signin
 const signinSchema = z.object({
-  email: z.string().min(1, "Email is required").email({
-    message: "Please enter a valid email address",
-  }),
+  email: z.string().min(1, "Email is required").email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-// Extended schema for signup including name fields
-const signupSchema = signinSchema.extend({
+// Extended schema for signup
+const signupSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().min(1, "Email is required").email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type SigninFormValues = z.infer<typeof signinSchema>;
@@ -37,7 +38,6 @@ const AuthForm = () => {
   const { signIn, signUp, loading } = useAuth();
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
 
-  // Create separate forms for signin and signup
   const signinForm = useForm<SigninFormValues>({
     resolver: zodResolver(signinSchema),
     defaultValues: {
@@ -49,46 +49,31 @@ const AuthForm = () => {
   const signupForm = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      email: "",
-      password: "",
       firstName: "",
       lastName: "",
+      email: "",
+      password: "",
     },
   });
 
-  // Reset form fields when switching modes
-  useEffect(() => {
-    signinForm.reset();
-    signupForm.reset();
-  }, [authMode]);
-
   const onSignin = async (values: SigninFormValues) => {
-    const { email, password } = values;
-    
     try {
-      await signIn(email, password);
+      await signIn(values.email, values.password);
     } catch (error) {
       console.error(error);
     }
   };
 
   const onSignup = async (values: SignupFormValues) => {
-    const { email, password, firstName, lastName } = values;
-    
     try {
-      // Pass the names as user metadata
-      await signUp(email, password, {
-        full_name: `${firstName} ${lastName}`,
-        first_name: firstName,
-        last_name: lastName,
+      await signUp(values.email, values.password, {
+        full_name: `${values.firstName} ${values.lastName}`,
+        first_name: values.firstName,
+        last_name: values.lastName,
       });
       
-      // Reset form after successful signup
-      signupForm.reset();
-      
-      // Switch to sign in
-      setAuthMode("signin");
       toast.success("Account created successfully! Check your email for verification.");
+      setAuthMode("signin");
     } catch (error) {
       console.error(error);
     }
@@ -96,6 +81,10 @@ const AuthForm = () => {
 
   const toggleAuthMode = () => {
     setAuthMode(authMode === "signin" ? "signup" : "signin");
+    
+    // Reset forms when toggling
+    signinForm.reset();
+    signupForm.reset();
   };
 
   return (
@@ -121,12 +110,15 @@ const AuthForm = () => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="email" 
-                      placeholder="your.email@example.com" 
-                      {...field} 
-                      disabled={loading}
-                    />
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        type="text"
+                        placeholder="your.email@example.com" 
+                        className="pl-10"
+                        {...field} 
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -140,12 +132,15 @@ const AuthForm = () => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="password" 
-                      placeholder="••••••••" 
-                      {...field} 
-                      disabled={loading}
-                    />
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        type="password" 
+                        placeholder="••••••••" 
+                        className="pl-10"
+                        {...field} 
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -179,11 +174,14 @@ const AuthForm = () => {
                   <FormItem>
                     <FormLabel>First Name</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="John" 
-                        {...field} 
-                        disabled={loading}
-                      />
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          placeholder="John" 
+                          className="pl-10"
+                          {...field} 
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -200,7 +198,6 @@ const AuthForm = () => {
                       <Input 
                         placeholder="Doe" 
                         {...field} 
-                        disabled={loading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -216,12 +213,15 @@ const AuthForm = () => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="email" 
-                      placeholder="your.email@example.com" 
-                      {...field} 
-                      disabled={loading}
-                    />
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        type="text"
+                        placeholder="your.email@example.com" 
+                        className="pl-10"
+                        {...field} 
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -235,12 +235,15 @@ const AuthForm = () => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="password" 
-                      placeholder="••••••••" 
-                      {...field} 
-                      disabled={loading}
-                    />
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        type="password" 
+                        placeholder="••••••••" 
+                        className="pl-10"
+                        {...field} 
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -255,10 +258,10 @@ const AuthForm = () => {
               {loading ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  Signing up...
+                  Creating account...
                 </span>
               ) : (
-                "Sign up"
+                "Create account"
               )}
             </Button>
           </form>

@@ -1,125 +1,81 @@
-
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { supabase, isDemoMode } from "../../lib/supabase";
 import { toast } from "sonner";
-import { NavigateFunction } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 
-type DangerZoneProps = {
-  signOut: () => Promise<void>;
-  navigate: NavigateFunction;
-};
-
-function DangerZone({ signOut, navigate }: DangerZoneProps) {
+const DangerZone = () => {
+  const { signOut } = useAuth();
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Confirmation flow state
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const initiateDelete = () => {
+    setShowConfirmation(true);
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmation(false);
+  };
+
   const deleteAccount = async () => {
-    if (isDeleting) return;
-    
     try {
-      setIsDeleting(true);
-      toast.loading("Deleting account...");
+      // Call the RPC function with an empty object as parameter
+      const { error } = await supabase.rpc('delete_user', {});
       
-      // First get the current user
-      const { data: { user } } = await supabase.auth.getUser();
+      if (error) throw error;
       
-      if (!user) {
-        throw new Error("No authenticated user found");
-      }
-      
-      if (isDemoMode) {
-        // In demo mode, simulate account deletion without actually deleting
-        toast.success("Demo mode: Account would be deleted in production");
-        await signOut();
-        navigate("/");
-        return;
-      }
-      
-      // Delete the user's profile data first (due to foreign key constraints)
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', user.id);
-        
-      if (profileError) {
-        console.error("Profile deletion error:", profileError);
-        // Continue anyway as we want to try to delete the user account
-      }
-      
-      // Call the RPC function to delete the user
-      // Pass empty object instead of a string to match the expected type
-      const { error: deleteError } = await supabase.rpc('delete_user', {});
-      
-      if (deleteError) {
-        throw deleteError;
-      }
-      
-      // Sign out the user locally after deletion
-      await signOut();
-      
-      toast.dismiss();
-      toast.success("Account successfully deleted");
-      navigate("/");
-      
+      // Handle successful deletion
+      signOut();
+      toast.success("Your account has been deleted");
     } catch (error) {
-      toast.dismiss();
-      console.error("Account deletion error:", error);
-      
-      toast.error(error instanceof Error ? error.message : "An unexpected error occurred while deleting your account");
-      
-      // Still sign out the user to end their session
-      await signOut();
-      navigate("/");
-    } finally {
-      setIsDeleting(false);
+      console.error("Error deleting account:", error);
+      toast.error("Failed to delete account");
     }
   };
 
   return (
-    <div className="mt-12 border-t pt-6">
-      <h3 className="text-lg font-semibold text-red-600 mb-2">Danger Zone</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        Permanently delete your account and all associated data
+    <div className="space-y-4">
+      <h2 className="text-lg font-semibold">Danger Zone</h2>
+      <p className="text-sm text-muted-foreground">
+        Be careful, actions in this section are irreversible.
       </p>
-      
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button 
+
+      {/* Delete Account Section */}
+      <div className="rounded-md border p-4">
+        <h3 className="text-sm font-medium">Delete Account</h3>
+        <p className="text-sm text-muted-foreground">
+          Permanently delete your account and all associated data. This action
+          cannot be undone.
+        </p>
+
+        {!showConfirmation ? (
+          <Button
             variant="destructive"
+            onClick={initiateDelete}
             disabled={isDeleting}
+            className="mt-4"
           >
-            {isDeleting ? "Deleting..." : "Delete Account"}
+            Delete Account
           </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              account and remove all your data from our servers.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={deleteAccount} className="bg-red-600 hover:bg-red-700">
-              Delete Account
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        ) : (
+          <div className="flex items-center space-x-4 mt-4">
+            <Button variant="ghost" onClick={cancelDelete} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={deleteAccount}
+              disabled={isDeleting}
+            >
+              Confirm Delete
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
 
 export default DangerZone;
