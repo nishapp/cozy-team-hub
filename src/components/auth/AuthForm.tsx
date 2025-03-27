@@ -16,9 +16,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-// Form validation schema for signin
+// Form validation schema for signin - using a more permissive email regex
 const signinSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email({
+    message: "Please enter a valid email address",
+  }),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
