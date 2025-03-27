@@ -57,15 +57,20 @@ function DangerZone({ signOut, navigate }: DangerZoneProps) {
         // Continue anyway as we want to try to delete the user account
       }
       
-      // Delete the user's auth account using the Supabase API
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+      // Use the auth.signOut() with the additional options to delete the user account
+      const { error: authError } = await supabase.auth.signOut({
+        scope: 'local',
+        cb: async () => {
+          // After signing out, make a request to delete user endpoint
+          // We want to let the user delete their own account via RPC
+          const { error } = await supabase.rpc('delete_user');
+          if (error) throw error;
+        }
+      });
       
       if (authError) {
         throw authError;
       }
-      
-      // Sign out the user
-      await signOut();
       
       toast.dismiss();
       toast.success("Account successfully deleted");
@@ -75,16 +80,11 @@ function DangerZone({ signOut, navigate }: DangerZoneProps) {
       toast.dismiss();
       console.error("Account deletion error:", error);
       
-      if (error instanceof Error && error.message.includes("not_admin")) {
-        // If we hit a permission issue, we'll go with the sign out approach instead
-        toast.error("Cannot delete account with current permissions. Please contact support.");
-        
-        // Still sign out the user to end their session
-        await signOut();
-        navigate("/");
-      } else {
-        toast.error(error instanceof Error ? error.message : "An unexpected error occurred");
-      }
+      toast.error(error instanceof Error ? error.message : "An unexpected error occurred while deleting your account");
+      
+      // Still sign out the user to end their session
+      await signOut();
+      navigate("/");
     } finally {
       setIsDeleting(false);
     }
