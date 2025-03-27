@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase, Organization, isDemoMode } from "../../lib/supabase";
 import { useAuth } from "../../context/AuthContext";
