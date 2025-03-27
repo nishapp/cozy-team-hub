@@ -1,101 +1,90 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger 
-} from "@/components/ui/alert-dialog";
-import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { ShieldAlert, UserX } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { AlertTriangle, Trash2 } from "lucide-react";
 
 const DangerZone = () => {
+  const { user, signOut } = useAuth();
   const [isDeleting, setIsDeleting] = useState(false);
-  const { signOut } = useAuth();
-  const navigate = useNavigate();
-
+  
   const handleDeleteAccount = async () => {
+    if (!user) return;
+    
     try {
       setIsDeleting(true);
-      // Call the delete_user function with no parameters
+      
+      // Call the delete_user function
       const { error } = await supabase.rpc('delete_user');
       
       if (error) throw error;
       
+      // Sign out the user
       await signOut();
-      navigate("/auth", { replace: true });
-      toast.success("Your account has been deleted successfully");
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("An unexpected error occurred while deleting your account");
-      }
+      
+      toast.success("Your account has been deleted");
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      toast.error(error.message || "Failed to delete account");
     } finally {
       setIsDeleting(false);
     }
   };
-
+  
   return (
     <div className="p-8">
-      <h2 className="text-xl font-semibold mb-6">Danger Zone</h2>
+      <h2 className="text-xl font-semibold mb-6 flex items-center">
+        <ShieldAlert className="h-5 w-5 mr-2 text-destructive" />
+        Danger Zone
+      </h2>
       
-      <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-6">
-        <div className="flex flex-col space-y-6">
-          <div className="flex items-start space-x-4">
-            <div className="bg-destructive/10 p-2 rounded">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-medium">Delete Account</h3>
-              <p className="text-sm text-muted-foreground">
-                Permanently delete your account and all associated data. This action cannot be undone.
-              </p>
-            </div>
-          </div>
-          
-          <div className="pl-11">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Account
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete your account
-                    and remove all your data from our servers.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteAccount}
-                    disabled={isDeleting}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    {isDeleting ? "Deleting..." : "Delete Account"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
-      </div>
+      <Card className="border-destructive/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center text-destructive">
+            <UserX className="h-5 w-5 mr-2" />
+            Delete Account
+          </CardTitle>
+          <CardDescription>
+            Permanently delete your account and all of your data
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            This action is irreversible. Once you delete your account, all of your data will be permanently removed.
+          </p>
+        </CardContent>
+        <CardFooter>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">Delete Account</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete your account and remove all of your data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleDeleteAccount} 
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? "Deleting..." : "Delete Account"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardFooter>
+      </Card>
     </div>
   );
-}
+};
 
 export default DangerZone;
