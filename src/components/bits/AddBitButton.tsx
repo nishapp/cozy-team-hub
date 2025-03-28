@@ -47,9 +47,9 @@ const AddBitButton: React.FC<AddBitButtonProps> = ({ onBitAdded }) => {
       <DialogTrigger asChild>
         <Button 
           size="sm" 
-          className="gap-1 rounded-full fixed bottom-6 right-6 shadow-lg z-10"
+          className="gap-1 rounded-full fixed bottom-6 right-6 shadow-lg z-10 border-[2.5px] border-black bg-primary"
         >
-          <Plus size={18} />
+          <Plus size={20} className="text-black stroke-[2.5px]" />
           <span className="hidden sm:inline">Add Bit</span>
         </Button>
       </DialogTrigger>
