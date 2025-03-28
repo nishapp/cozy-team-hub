@@ -1,5 +1,5 @@
 
-import { Award, Info, Shield } from "lucide-react";
+import { Award, Info, Shield, UserPlus, Zap, BookOpen } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -31,6 +31,22 @@ const BadgesDisplay = ({
   className = "",
   showEmptyState = true,
 }: BadgesDisplayProps) => {
+  // Function to get the appropriate icon based on badge name
+  const getBadgeIcon = (badgeName: string) => {
+    const name = badgeName.toLowerCase();
+    if (name.includes('newcomer') || name.includes('new')) {
+      return <Zap className="h-6 w-6 text-primary" />;
+    } else if (name.includes('consistency') || name.includes('streak') || name.includes('dedicated')) {
+      return <Award className="h-6 w-6 text-primary" />;
+    } else if (name.includes('buddy') || name.includes('network') || name.includes('social')) {
+      return <UserPlus className="h-6 w-6 text-primary" />;
+    } else if (name.includes('book') || name.includes('read')) {
+      return <BookOpen className="h-6 w-6 text-primary" />;
+    } else {
+      return <Shield className="h-6 w-6 text-primary" />;
+    }
+  };
+
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="flex items-center justify-between">
@@ -67,12 +83,18 @@ const BadgesDisplay = ({
                               src={badge.imageUrl}
                               alt={badge.name}
                               className="object-cover"
+                              onError={(e) => {
+                                // If image fails to load, replace with icon
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.parentElement!.querySelector('.fallback-icon')!.style.display = 'flex';
+                              }}
                             />
-                          ) : (
-                            <div className="flex items-center justify-center h-full w-full bg-primary/10">
-                              <Shield className="h-6 w-6 text-primary" />
-                            </div>
-                          )}
+                          ) : null}
+                          <div 
+                            className={`fallback-icon h-full w-full flex items-center justify-center bg-primary/10 ${badge.imageUrl ? 'hidden' : 'flex'}`}
+                          >
+                            {getBadgeIcon(badge.name)}
+                          </div>
                         </AspectRatio>
                       </div>
                       <span className="text-xs font-medium text-center">

@@ -102,7 +102,7 @@ const sampleBadges = [
     id: "1",
     name: "Newcomer",
     description: "Created your first bit",
-    imageUrl: "/badges/newcomer.png", 
+    imageUrl: null, // Using null now to show our fallback icons
     pointsReward: 50,
     earnedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -110,7 +110,7 @@ const sampleBadges = [
     id: "2",
     name: "Consistency",
     description: "Maintained a 3-day streak",
-    imageUrl: "/badges/streak.png",
+    imageUrl: null, // Using null to show our fallback icons
     pointsReward: 75,
     earnedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -118,7 +118,7 @@ const sampleBadges = [
     id: "3",
     name: "Buddy Network",
     description: "Connected with 5 buddies",
-    imageUrl: "/badges/network.png",
+    imageUrl: null, // Using null to show our fallback icons
     pointsReward: 100,
     earnedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
   }
