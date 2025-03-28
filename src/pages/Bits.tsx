@@ -9,7 +9,7 @@ import BitCard from "@/components/bits/BitCard";
 import HeaderAddBitButton from "@/components/bits/HeaderAddBitButton";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import FeaturedBits from "@/components/bits/FeaturedBits";
+import { ArrowLeft } from "lucide-react";
 
 // Define the Bit type
 interface Bit {
@@ -58,39 +58,38 @@ const sampleBits = [
     image_url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
     created_at: new Date().toISOString(),
   },
+  {
+    id: "4",
+    title: "Garden Progress",
+    description: "My vegetable garden is thriving this year. The tomatoes and peppers are coming in nicely.",
+    tags: ["gardening", "vegetables", "hobby"],
+    category: "hobbies",
+    visibility: "public",
+    wdylt_comment: "Growing my own food is so rewarding!",
+    image_url: "https://images.unsplash.com/photo-1466692476655-ab0c26c69cbf?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "5",
+    title: "Book Review: Atomic Habits",
+    description: "James Clear's book on building good habits and breaking bad ones. Highly recommended for anyone looking to make positive changes in their life.",
+    tags: ["books", "productivity", "habits"],
+    category: "reading",
+    visibility: "public",
+    wdylt_comment: "This book changed my approach to habits!",
+    image_url: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    created_at: new Date().toISOString(),
+  },
 ];
 
-// Featured images for the top row (representative images like in Pinterest)
-const featuredImages = [
-  "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-  "https://images.unsplash.com/photo-1550439062-609e1531270e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-  "https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-  "https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-  "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-  "https://images.unsplash.com/photo-1519748771451-a94c596ffd67?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-  "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-  "https://images.unsplash.com/photo-1529245856630-f4853233d2ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-];
-
-const Dashboard = () => {
+const Bits = () => {
   const { user, loading: authLoading } = useAuth();
   const [fullName, setFullName] = useState<string>("");
-  const [greeting, setGreeting] = useState<string>("Hello");
   const [bits, setBits] = useState<Bit[]>(sampleBits);
   const [bitCount, setBitCount] = useState<number>(0);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set greeting based on time of day
-    const hours = new Date().getHours();
-    if (hours >= 5 && hours < 12) {
-      setGreeting("Good Morning");
-    } else if (hours >= 12 && hours < 18) {
-      setGreeting("Good Afternoon");
-    } else {
-      setGreeting("Good Evening");
-    }
-
     // Fetch user's profile data to get full name
     const fetchUserProfile = async () => {
       if (!user) return;
@@ -159,41 +158,29 @@ const Dashboard = () => {
         <Navbar />
         
         <main className="flex-1 container py-8">
-          {/* Pinterest-inspired board header */}
           <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex flex-col">
-                <div className="flex items-baseline gap-4">
-                  <h1 className="text-4xl font-bold">My Inspiration Board</h1>
-                  <span className="text-muted-foreground">{bitCount} Pins</span>
-                </div>
-                <p className="text-muted-foreground mt-1">
-                  {greeting}, {fullName}. Here are your bits ready to be shared.
-                </p>
-              </div>
-              <HeaderAddBitButton onBitAdded={handleBitAdded} />
+            <div className="flex items-center gap-3 mb-6">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate('/dashboard')}
+                className="h-8 w-8"
+              >
+                <ArrowLeft size={18} />
+              </Button>
+              <h1 className="text-3xl font-bold">My Bits</h1>
+              <span className="text-muted-foreground">{bitCount} Pins</span>
             </div>
             
-            <div className="mt-4">
-              <Button 
-                variant="secondary" 
-                className="rounded-full px-6 py-1 h-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-sm font-medium"
-                onClick={() => navigate('/bits')}
-              >
-                View board
-              </Button>
+            <div className="flex justify-between items-center mb-8">
+              <p className="text-muted-foreground">
+                All your bits in one place. Browse and organize your collection.
+              </p>
+              <HeaderAddBitButton onBitAdded={handleBitAdded} />
             </div>
           </div>
           
-          {/* Featured bits row (Pinterest style) */}
-          <FeaturedBits images={featuredImages} />
-          
-          {/* "More ideas for this board" section */}
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4">More ideas for this board</h2>
-          </div>
-          
-          {/* Pinterest-style masonry grid with limited number of bits */}
+          {/* Pinterest-style masonry grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
             {bits.map((bit) => (
               <BitCard 
@@ -209,4 +196,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Bits;

@@ -12,6 +12,7 @@ import { AnimatePresence } from "framer-motion";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Bits from "./pages/Bits";
 import AdminDashboard from "./pages/AdminDashboard";
 import Settings from "./pages/Settings";
 import Contact from "./pages/Contact";
@@ -30,6 +31,7 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/bits" element={<Bits />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/settings" element={<Settings />} />
