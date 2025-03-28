@@ -164,8 +164,8 @@ const FriendBits = () => {
         
         <main className="flex-1 container py-8">
           <div className="relative overflow-hidden rounded-xl mb-8">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-purple-500 to-pink-500 opacity-90" />
-            <Glow className="opacity-70" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-purple-600 to-pink-600 opacity-95" />
+            <Glow className="opacity-75" />
             <div className="relative z-10 p-8">
               <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
                 <ProfileAvatar 
@@ -198,15 +198,6 @@ const FriendBits = () => {
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="absolute bottom-0 left-0 right-0">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 80" className="w-full h-auto">
-                <path 
-                  fill="#ffffff" 
-                  fillOpacity="1" 
-                  d="M0,64L80,58.7C160,53,320,43,480,48C640,53,800,75,960,74.7C1120,75,1280,53,1360,42.7L1440,32L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z"
-                ></path>
-              </svg>
             </div>
           </div>
           
