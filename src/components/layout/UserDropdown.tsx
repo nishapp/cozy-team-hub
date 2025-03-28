@@ -60,7 +60,7 @@ const UserDropdown = () => {
             Posts
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate("/friends")}>
-            Friends
+            Buddies
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
