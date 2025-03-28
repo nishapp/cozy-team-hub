@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { useAuth } from "@/context/AuthContext";
@@ -21,7 +21,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [uploading, setUploading] = useState(false);
   const { uploadImage } = useImageUpload();
   const { user } = useAuth();
-  const editorRef = React.useRef<HTMLDivElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   // Handle formatting commands
   const handleCommand = (command: string, value?: string) => {
@@ -177,8 +177,24 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         dangerouslySetInnerHTML={{ __html: value }}
         onInput={updateValue}
         onBlur={updateValue}
-        placeholder={placeholder}
+        data-placeholder={placeholder}
+        style={{ 
+          position: 'relative',
+        }}
       />
+      {/* Add placeholder with CSS */}
+      {!value && (
+        <div 
+          className="absolute pointer-events-none text-muted-foreground p-4"
+          style={{ 
+            top: 0, 
+            marginTop: '4.5rem', // Adjust this value to properly position the placeholder
+            zIndex: 1 
+          }}
+        >
+          {placeholder}
+        </div>
+      )}
     </div>
   );
 };
