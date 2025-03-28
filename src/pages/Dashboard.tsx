@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import FeaturedBits from "@/components/bits/FeaturedBits";
 import SharedBitsCarousel from "@/components/bits/SharedBitsCarousel";
 
-// Update the Bit interface to include shared_by
 interface Bit {
   id: string;
   title: string;
@@ -23,8 +22,9 @@ interface Bit {
   wdylt_comment?: string;
   image_url?: string;
   created_at: string;
-  shared_by?: string; // Add shared_by as optional
+  shared_by?: string;
 }
+
 const sampleBits = [{
   id: "1",
   title: "Learning TypeScript",
@@ -55,6 +55,7 @@ const sampleBits = [{
   image_url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString()
 }];
+
 const friendSharedBits = [{
   id: "f1",
   title: "Travel Photography Tips",
@@ -85,7 +86,7 @@ const friendSharedBits = [{
   category: "gardening",
   visibility: "public",
   wdylt_comment: "My balcony has never looked better!",
-  image_url: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+  image_url: "https://images.unsplash.com/photo-1585320806297-1c62238fa333?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
   shared_by: "Martha Stewart"
 }, {
@@ -95,7 +96,7 @@ const friendSharedBits = [{
   tags: ["design", "web", "minimal"],
   category: "design",
   visibility: "public",
-  image_url: "https://images.unsplash.com/photo-1494797262163-102fae527c62?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+  image_url: "https://images.unsplash.com/photo-1494797262163-44adaa06623a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
   shared_by: "John Doe"
 }, {
@@ -140,8 +141,10 @@ const friendSharedBits = [{
   created_at: new Date().toISOString(),
   shared_by: "Sarah Connor"
 }];
+
 const categoryImages = ["https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1550439062-609e1531270e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1529245856630-f4853233d2ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1519748771451-a94c596ffd67?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1529245856630-f4853233d2ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"];
 const categoryTitles = ["Fashion", "Home Decor", "Technology", "Travel", "Food & Recipes", "Health & Fitness", "Art & Design", "DIY & Crafts"];
+
 const Dashboard = () => {
   const {
     user,
@@ -150,10 +153,12 @@ const Dashboard = () => {
   const [fullName, setFullName] = useState<string>("");
   const [greeting, setGreeting] = useState<string>("Hello");
   const [bits, setBits] = useState<Bit[]>(sampleBits);
+  const [publicBits, setPublicBits] = useState<Bit[]>([]);
   const [bitCount, setBitCount] = useState<number>(0);
   const [sharedBits, setSharedBits] = useState<any[]>(friendSharedBits);
   const [selectedBit, setSelectedBit] = useState<Bit | null>(null);
   const navigate = useNavigate();
+
   useEffect(() => {
     const hours = new Date().getHours();
     if (hours >= 5 && hours < 12) {
@@ -163,6 +168,7 @@ const Dashboard = () => {
     } else {
       setGreeting("Good Evening");
     }
+
     const fetchUserProfile = async () => {
       if (!user) return;
       const {
@@ -178,32 +184,58 @@ const Dashboard = () => {
       }
     };
     fetchUserProfile();
+
+    // Filter public bits
+    const filteredPublicBits = sampleBits.filter(bit => bit.visibility === "public");
+    setPublicBits(filteredPublicBits);
     setBitCount(sampleBits.length);
   }, [user]);
+
   const handleBitAdded = (newBit: Bit) => {
     const bitWithId = {
       ...newBit,
       id: newBit.id || `temp-${Date.now()}`
     };
     setBits([bitWithId, ...bits]);
+    
+    if (bitWithId.visibility === "public") {
+      setPublicBits([bitWithId, ...publicBits]);
+    }
+    
     setBitCount(bitCount + 1);
     toast.success("Bit added successfully!");
   };
+
   const handleBitUpdated = (updatedBit: Bit) => {
     setBits(bits.map(bit => bit.id === updatedBit.id ? updatedBit : bit));
+    
+    if (updatedBit.visibility === "public") {
+      if (publicBits.some(bit => bit.id === updatedBit.id)) {
+        setPublicBits(publicBits.map(bit => bit.id === updatedBit.id ? updatedBit : bit));
+      } else {
+        setPublicBits([updatedBit, ...publicBits]);
+      }
+    } else {
+      setPublicBits(publicBits.filter(bit => bit.id !== updatedBit.id));
+    }
+    
     toast.success("Bit updated successfully!");
   };
+
   const handleBitSelected = (bit: Bit) => {
     setSelectedBit(bit);
   };
+
   if (!user && !authLoading) {
     return <Navigate to="/auth" replace />;
   }
+
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center">
         <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>;
   }
+
   return <PageTransition>
       <div className="min-h-screen flex flex-col">
         <Navbar />
@@ -234,10 +266,17 @@ const Dashboard = () => {
           
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-4">My sharable bits</h2>
+            <p className="text-muted-foreground">Bits with public visibility that can be shared with others</p>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max mb-12">
-            {bits.map(bit => <BitCard key={bit.id} bit={bit} onBitUpdated={handleBitUpdated} onClick={() => handleBitSelected(bit)} />)}
+            {publicBits.length > 0 ? 
+              publicBits.map(bit => <BitCard key={bit.id} bit={bit} onBitUpdated={handleBitUpdated} onClick={() => handleBitSelected(bit)} />)
+              : 
+              <div className="col-span-full text-center py-8">
+                <p className="text-muted-foreground">No public bits found. Make some of your bits public to share them!</p>
+              </div>
+            }
           </div>
 
           <SharedBitsCarousel sharedBits={sharedBits} />
@@ -251,4 +290,5 @@ const Dashboard = () => {
       </div>
     </PageTransition>;
 };
+
 export default Dashboard;
