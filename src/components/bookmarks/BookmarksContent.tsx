@@ -7,7 +7,9 @@ import {
   Pencil, 
   Trash2, 
   Search,
-  ChevronRight
+  ChevronRight,
+  LayoutGrid,
+  LayoutList
 } from "lucide-react";
 import { BookmarkFolder, BookmarkItem } from "@/types/bookmark";
 import { FolderDialog } from "./FolderDialog";
@@ -68,6 +70,7 @@ export const BookmarksContent = ({
   const [isDeleteBookmarkOpen, setIsDeleteBookmarkOpen] = useState(false);
   const [folderToEdit, setFolderToEdit] = useState<BookmarkFolder | null>(null);
   const [bookmarkToEdit, setBookmarkToEdit] = useState<BookmarkItem | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list"); // Default to list view
   
   const filteredFolders = folders.filter(folder => 
     folder.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -337,6 +340,26 @@ export const BookmarksContent = ({
           </div>
           
           <div className="flex items-center space-x-2">
+            <div className="flex bg-muted rounded-md p-1 mr-2">
+              <Button
+                variant={viewMode === "grid" ? "secondary" : "ghost"}
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setViewMode("grid")}
+              >
+                <LayoutGrid className="h-4 w-4" />
+                <span className="sr-only">Grid view</span>
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "secondary" : "ghost"}
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setViewMode("list")}
+              >
+                <LayoutList className="h-4 w-4" />
+                <span className="sr-only">List view</span>
+              </Button>
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -366,114 +389,18 @@ export const BookmarksContent = ({
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredFolders.length > 0 && (
-          <>
-            {filteredFolders.map((folder) => (
-              <Card key={folder.id} className="group hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
-                  <div 
-                    className="flex items-center cursor-pointer flex-1"
-                    onClick={() => onSelectFolder(folder.id)}
-                  >
-                    <FolderIcon className="h-5 w-5 mr-2 text-amber-500" />
-                    <CardTitle className="text-base">{folder.name}</CardTitle>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setFolderToEdit(folder);
-                          setIsEditFolderOpen(true);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Edit Folder
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={() => {
-                          setFolderToEdit(folder);
-                          setIsDeleteFolderOpen(true);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Folder
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </CardHeader>
-                <CardContent>
-                  {folder.description ? (
-                    <CardDescription className="line-clamp-2">
-                      {folder.description}
-                    </CardDescription>
-                  ) : (
-                    <CardDescription className="text-muted-foreground italic">
-                      No description
-                    </CardDescription>
-                  )}
-                </CardContent>
-                <CardFooter className="text-xs text-muted-foreground">
-                  {folder.bookmarks.length} bookmark{folder.bookmarks.length !== 1 && 's'}
-                </CardFooter>
-              </Card>
-            ))}
-          </>
-        )}
-        
-        {filteredBookmarks.map((bookmark) => (
-          <Card key={bookmark.id} className="group hover:shadow-md transition-shadow">
-            <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
-              <div className="flex items-center flex-1">
-                <div className="h-5 w-5 mr-2 flex-shrink-0">
-                  {bookmark.icon ? (
-                    <>
-                      <img
-                        src={bookmark.icon}
-                        alt=""
-                        className="h-full w-full object-contain"
-                        onError={(e) => {
-                          const imgElement = e.target as HTMLImageElement;
-                          imgElement.style.display = 'none';
-                          const nextElement = imgElement.nextElementSibling as HTMLElement;
-                          if (nextElement) {
-                            nextElement.style.display = 'block';
-                          }
-                        }}
-                      />
-                      <LinkIcon className="h-full w-full text-blue-500 hidden" />
-                    </>
-                  ) : (
-                    <LinkIcon className="h-full w-full text-blue-500" />
-                  )}
-                </div>
-                <CardTitle className="text-base truncate">
-                  {bookmark.title}
-                </CardTitle>
-              </div>
-              <div className="flex space-x-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  asChild
+      {viewMode === "grid" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredFolders.length > 0 && filteredFolders.map((folder) => (
+            <Card key={folder.id} className="group hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
+                <div 
+                  className="flex items-center cursor-pointer flex-1"
+                  onClick={() => onSelectFolder(folder.id)}
                 >
-                  <a
-                    href={bookmark.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    <span className="sr-only">Open link</span>
-                  </a>
-                </Button>
+                  <FolderIcon className="h-5 w-5 mr-2 text-amber-500" />
+                  <CardTitle className="text-base">{folder.name}</CardTitle>
+                </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -483,78 +410,351 @@ export const BookmarksContent = ({
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
                       onClick={() => {
-                        setBookmarkToEdit(bookmark);
-                        setIsEditBookmarkOpen(true);
+                        setFolderToEdit(folder);
+                        setIsEditFolderOpen(true);
                       }}
                     >
                       <Pencil className="h-4 w-4 mr-2" />
-                      Edit Bookmark
+                      Edit Folder
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
                       onClick={() => {
-                        setBookmarkToEdit(bookmark);
-                        setIsDeleteBookmarkOpen(true);
+                        setFolderToEdit(folder);
+                        setIsDeleteFolderOpen(true);
                       }}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Bookmark
+                      Delete Folder
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="line-clamp-2">
-                {bookmark.description || (
-                  <span className="text-muted-foreground italic">
+              </CardHeader>
+              <CardContent>
+                {folder.description ? (
+                  <CardDescription className="line-clamp-2">
+                    {folder.description}
+                  </CardDescription>
+                ) : (
+                  <CardDescription className="text-muted-foreground italic">
                     No description
-                  </span>
+                  </CardDescription>
                 )}
-              </CardDescription>
-              <p className="text-xs text-muted-foreground mt-2 truncate">
-                {bookmark.url}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-
-        {filteredFolders.length === 0 && filteredBookmarks.length === 0 && (
-          <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
-            {searchQuery ? (
-              <>
-                <Search className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">No results found</h3>
-                <p className="text-muted-foreground mt-2">
-                  Try adjusting your search terms
-                </p>
-              </>
-            ) : (
-              <>
-                <LinkIcon className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">No bookmarks yet</h3>
-                <p className="text-muted-foreground mt-2">
-                  Add your first bookmark to get started
-                </p>
-                <div className="mt-4 space-x-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsCreateFolderOpen(true)}
-                  >
-                    <FolderIcon className="h-4 w-4 mr-2" />
-                    New Folder
-                  </Button>
-                  <Button onClick={() => setIsCreateBookmarkOpen(true)}>
-                    <LinkIcon className="h-4 w-4 mr-2" />
-                    Add Bookmark
-                  </Button>
+              </CardContent>
+              <CardFooter className="text-xs text-muted-foreground">
+                {folder.bookmarks.length} bookmark{folder.bookmarks.length !== 1 && 's'}
+              </CardFooter>
+            </Card>
+          ))}
+          
+          {filteredBookmarks.map((bookmark) => (
+            <Card key={bookmark.id} className="group hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
+                <div className="flex items-center flex-1">
+                  <div className="h-5 w-5 mr-2 flex-shrink-0">
+                    {bookmark.icon ? (
+                      <>
+                        <img
+                          src={bookmark.icon}
+                          alt=""
+                          className="h-full w-full object-contain"
+                          onError={(e) => {
+                            const imgElement = e.target as HTMLImageElement;
+                            imgElement.style.display = 'none';
+                            const nextElement = imgElement.nextElementSibling as HTMLElement;
+                            if (nextElement) {
+                              nextElement.style.display = 'block';
+                            }
+                          }}
+                        />
+                        <LinkIcon className="h-full w-full text-blue-500 hidden" />
+                      </>
+                    ) : (
+                      <LinkIcon className="h-full w-full text-blue-500" />
+                    )}
+                  </div>
+                  <CardTitle className="text-base truncate">
+                    {bookmark.title}
+                  </CardTitle>
                 </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+                <div className="flex space-x-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    asChild
+                  >
+                    <a
+                      href={bookmark.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      <span className="sr-only">Open link</span>
+                    </a>
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setBookmarkToEdit(bookmark);
+                          setIsEditBookmarkOpen(true);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit Bookmark
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => {
+                          setBookmarkToEdit(bookmark);
+                          setIsDeleteBookmarkOpen(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Bookmark
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="line-clamp-2">
+                  {bookmark.description || (
+                    <span className="text-muted-foreground italic">
+                      No description
+                    </span>
+                  )}
+                </CardDescription>
+                <p className="text-xs text-muted-foreground mt-2 truncate">
+                  {bookmark.url}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {/* Folder rows */}
+          {filteredFolders.length > 0 && (
+            <div className="mb-4">
+              <h2 className="text-lg font-medium mb-2">Folders</h2>
+              <div className="rounded-md border overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3 font-medium text-muted-foreground text-sm">Name</th>
+                      <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden md:table-cell">Description</th>
+                      <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden lg:table-cell">Items</th>
+                      <th className="text-right p-3 font-medium text-muted-foreground text-sm w-24">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {filteredFolders.map((folder) => (
+                      <tr key={folder.id} className="bg-card hover:bg-muted/30 transition-colors">
+                        <td className="p-3">
+                          <div 
+                            className="flex items-center cursor-pointer"
+                            onClick={() => onSelectFolder(folder.id)}
+                          >
+                            <FolderIcon className="h-4 w-4 mr-2 text-amber-500 flex-shrink-0" />
+                            <span className="font-medium truncate">{folder.name}</span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-muted-foreground text-sm hidden md:table-cell">
+                          {folder.description ? (
+                            <span className="truncate block max-w-md">{folder.description}</span>
+                          ) : (
+                            <span className="italic">No description</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-muted-foreground text-sm hidden lg:table-cell">
+                          {folder.bookmarks.length} bookmark{folder.bookmarks.length !== 1 && 's'}
+                        </td>
+                        <td className="p-3 text-right">
+                          <div className="flex justify-end space-x-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => {
+                                setFolderToEdit(folder);
+                                setIsEditFolderOpen(true);
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => {
+                                setFolderToEdit(folder);
+                                setIsDeleteFolderOpen(true);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          
+          {/* Bookmark rows */}
+          {filteredBookmarks.length > 0 && (
+            <div>
+              <h2 className="text-lg font-medium mb-2">Bookmarks</h2>
+              <div className="rounded-md border overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left p-3 font-medium text-muted-foreground text-sm">Title</th>
+                      <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden md:table-cell">URL</th>
+                      <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden lg:table-cell">Description</th>
+                      <th className="text-right p-3 font-medium text-muted-foreground text-sm w-28">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {filteredBookmarks.map((bookmark) => (
+                      <tr key={bookmark.id} className="bg-card hover:bg-muted/30 transition-colors">
+                        <td className="p-3">
+                          <div className="flex items-center">
+                            <div className="h-4 w-4 mr-2 flex-shrink-0">
+                              {bookmark.icon ? (
+                                <>
+                                  <img
+                                    src={bookmark.icon}
+                                    alt=""
+                                    className="h-full w-full object-contain"
+                                    onError={(e) => {
+                                      const imgElement = e.target as HTMLImageElement;
+                                      imgElement.style.display = 'none';
+                                      const nextElement = imgElement.nextElementSibling as HTMLElement;
+                                      if (nextElement) {
+                                        nextElement.style.display = 'block';
+                                      }
+                                    }}
+                                  />
+                                  <LinkIcon className="h-full w-full text-blue-500 hidden" />
+                                </>
+                              ) : (
+                                <LinkIcon className="h-full w-full text-blue-500" />
+                              )}
+                            </div>
+                            <span className="font-medium truncate">{bookmark.title}</span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-muted-foreground text-sm hidden md:table-cell">
+                          <span className="truncate block max-w-xs">{bookmark.url}</span>
+                        </td>
+                        <td className="p-3 text-muted-foreground text-sm hidden lg:table-cell">
+                          {bookmark.description ? (
+                            <span className="truncate block max-w-md">{bookmark.description}</span>
+                          ) : (
+                            <span className="italic">No description</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-right">
+                          <div className="flex justify-end space-x-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              asChild
+                            >
+                              <a
+                                href={bookmark.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                                <span className="sr-only">Open</span>
+                              </a>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => {
+                                setBookmarkToEdit(bookmark);
+                                setIsEditBookmarkOpen(true);
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => {
+                                setBookmarkToEdit(bookmark);
+                                setIsDeleteBookmarkOpen(true);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {filteredFolders.length === 0 && filteredBookmarks.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          {searchQuery ? (
+            <>
+              <Search className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium">No results found</h3>
+              <p className="text-muted-foreground mt-2">
+                Try adjusting your search terms
+              </p>
+            </>
+          ) : (
+            <>
+              <LinkIcon className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium">No bookmarks yet</h3>
+              <p className="text-muted-foreground mt-2">
+                Add your first bookmark to get started
+              </p>
+              <div className="mt-4 space-x-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsCreateFolderOpen(true)}
+                >
+                  <FolderIcon className="h-4 w-4 mr-2" />
+                  New Folder
+                </Button>
+                <Button onClick={() => setIsCreateBookmarkOpen(true)}>
+                  <LinkIcon className="h-4 w-4 mr-2" />
+                  Add Bookmark
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       <FolderDialog
         isOpen={isCreateFolderOpen}
