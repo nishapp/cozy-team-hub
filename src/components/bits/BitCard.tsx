@@ -1,14 +1,14 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
-import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Bookmark, ExternalLink, Users } from "lucide-react";
+import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Bookmark, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import EditBitButton from "./EditBitButton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import ProfileAvatar from "@/components/ui/ProfileAvatar";
 
 interface Bit {
   id: string;
@@ -89,23 +89,6 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmar
       onClick={onClick}
     >
       {onBitUpdated && <EditBitButton bit={bit} onBitUpdated={onBitUpdated} />}
-      
-      {/* Author Avatar and Friends Count - Top-left of card */}
-      <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
-        <ProfileAvatar 
-          src={bit.author_avatar || bit.shared_by ? `https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&h=150&fit=crop` : undefined}
-          fallbackText={bit.shared_by || "You"}
-          size="sm"
-          className="border-2 border-white"
-        />
-        
-        {bit.friend_count && bit.friend_count > 0 && (
-          <div className="bg-white/80 backdrop-blur-sm text-xs px-2 py-1 rounded-full flex items-center shadow-sm">
-            <Users size={12} className="mr-1 text-primary" />
-            <span className="font-medium">{bit.friend_count}</span>
-          </div>
-        )}
-      </div>
       
       {bit.image_url ? (
         <AspectRatio ratio={4/3} className="bg-muted">
