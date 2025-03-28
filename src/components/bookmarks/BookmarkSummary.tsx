@@ -1,19 +1,22 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { BookmarkItem } from "@/types/bookmark";
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface BookmarkSummaryProps {
   bookmark: BookmarkItem;
+  onSaveSummary?: (bookmarkId: string, summary: string) => void;
 }
 
-export function BookmarkSummary({ bookmark }: BookmarkSummaryProps) {
-  const [summary, setSummary] = useState<string | null>(null);
+export function BookmarkSummary({ bookmark, onSaveSummary }: BookmarkSummaryProps) {
+  const [summary, setSummary] = useState<string | null>(bookmark.summary || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+  const [saving, setSaving] = useState(false);
+  const { toast: uiToast } = useToast();
 
   const generateSummary = async () => {
     setLoading(true);
@@ -36,7 +39,7 @@ export function BookmarkSummary({ bookmark }: BookmarkSummaryProps) {
       const data = await response.json();
       setSummary(data.summary);
       
-      toast({
+      uiToast({
         title: "Summary Generated",
         description: "The webpage content has been successfully summarized with Claude AI.",
       });
@@ -44,13 +47,28 @@ export function BookmarkSummary({ bookmark }: BookmarkSummaryProps) {
       console.error('Error generating summary:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
       
-      toast({
+      uiToast({
         title: "Summary Failed",
         description: err instanceof Error ? err.message : 'Failed to generate summary',
         variant: "destructive",
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveSummary = async () => {
+    if (!summary || !onSaveSummary) return;
+    
+    setSaving(true);
+    try {
+      await onSaveSummary(bookmark.id, summary);
+      toast.success("Summary saved to bookmark");
+    } catch (err) {
+      toast.error("Failed to save summary");
+      console.error("Failed to save summary:", err);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -91,7 +109,29 @@ export function BookmarkSummary({ bookmark }: BookmarkSummaryProps) {
 
       {summary && (
         <div className="bg-muted p-4 rounded-md">
-          <h3 className="font-semibold mb-2">Summary</h3>
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="font-semibold">Summary</h3>
+            {onSaveSummary && !bookmark.summary && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={saveSummary}
+                disabled={saving}
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-3 w-3 mr-1" />
+                    Save
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
           <p className="text-sm whitespace-pre-line">{summary}</p>
           <Button 
             variant="outline" 

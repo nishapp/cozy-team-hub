@@ -62,7 +62,7 @@ interface BookmarksContentProps {
   rootBookmarks: BookmarkItem[];
 }
 
-export const BookmarksContent = ({
+export function BookmarksContent({
   folders,
   bookmarks,
   breadcrumbs,
@@ -72,7 +72,7 @@ export const BookmarksContent = ({
   updateBookmarksData,
   allFolders,
   rootBookmarks,
-}: BookmarksContentProps) => {
+}: BookmarksContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isCreateBookmarkOpen, setIsCreateBookmarkOpen] = useState(false);
@@ -362,8 +362,87 @@ export const BookmarksContent = ({
     };
   };
 
+  const handleSaveSummary = (bookmarkId: string, summary: string) => {
+    let updatedBookmark: BookmarkItem | null = null;
+    let updatedFolders: BookmarkFolder[] = [...allFolders];
+    let updatedRootBookmarks: BookmarkItem[] = [...rootBookmarks];
+    
+    if (selectedFolderId) {
+      const folderIndex = updatedFolders.findIndex(f => f.id === selectedFolderId);
+      if (folderIndex !== -1) {
+        const bookmarkIndex = updatedFolders[folderIndex].bookmarks.findIndex(b => b.id === bookmarkId);
+        if (bookmarkIndex !== -1) {
+          updatedBookmark = {
+            ...updatedFolders[folderIndex].bookmarks[bookmarkIndex],
+            summary,
+            updatedAt: new Date().toISOString()
+          };
+          
+          updatedFolders[folderIndex] = {
+            ...updatedFolders[folderIndex],
+            bookmarks: [
+              ...updatedFolders[folderIndex].bookmarks.slice(0, bookmarkIndex),
+              updatedBookmark,
+              ...updatedFolders[folderIndex].bookmarks.slice(bookmarkIndex + 1)
+            ]
+          };
+        }
+      }
+    } else {
+      const bookmarkIndex = updatedRootBookmarks.findIndex(b => b.id === bookmarkId);
+      if (bookmarkIndex !== -1) {
+        updatedBookmark = {
+          ...updatedRootBookmarks[bookmarkIndex],
+          summary,
+          updatedAt: new Date().toISOString()
+        };
+        
+        updatedRootBookmarks = [
+          ...updatedRootBookmarks.slice(0, bookmarkIndex),
+          updatedBookmark,
+          ...updatedRootBookmarks.slice(bookmarkIndex + 1)
+        ];
+      }
+    }
+    
+    if (!updatedBookmark) {
+      outerLoop: for (let i = 0; i < updatedFolders.length; i++) {
+        const bookmarkIndex = updatedFolders[i].bookmarks.findIndex(b => b.id === bookmarkId);
+        if (bookmarkIndex !== -1) {
+          updatedBookmark = {
+            ...updatedFolders[i].bookmarks[bookmarkIndex],
+            summary,
+            updatedAt: new Date().toISOString()
+          };
+          
+          updatedFolders[i] = {
+            ...updatedFolders[i],
+            bookmarks: [
+              ...updatedFolders[i].bookmarks.slice(0, bookmarkIndex),
+              updatedBookmark,
+              ...updatedFolders[i].bookmarks.slice(bookmarkIndex + 1)
+            ]
+          };
+          
+          break outerLoop;
+        }
+      }
+    }
+    
+    if (updatedBookmark) {
+      updateBookmarksData({
+        folders: updatedFolders,
+        rootBookmarks: updatedRootBookmarks
+      });
+      
+      if (selectedBookmark && selectedBookmark.id === bookmarkId) {
+        setSelectedBookmark(updatedBookmark);
+      }
+    }
+  };
+
   return (
-    <div className="flex-1 overflow-auto p-6">
+    <div className="flex-1 p-6 overflow-auto">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -1008,17 +1087,11 @@ export const BookmarksContent = ({
 
       <BookmarkDetailModal
         bookmark={selectedBookmark}
-        isOpen={isDetailModalOpen}
-        onClose={() => {
-          setIsDetailModalOpen(false);
-          setSelectedBookmark(null);
-        }}
-        onEdit={(bookmark) => {
-          setBookmarkToEdit(bookmark);
-          setIsDetailModalOpen(false);
-          setIsEditBookmarkOpen(true);
-        }}
+        isOpen={!!selectedBookmark}
+        onClose={() => setSelectedBookmark(null)}
+        onEdit={handleEditBookmark}
+        onSaveSummary={handleSaveSummary}
       />
     </div>
   );
-};
+}

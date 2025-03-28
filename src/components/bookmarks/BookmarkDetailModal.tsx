@@ -18,6 +18,7 @@ interface BookmarkDetailModalProps {
   onClose: () => void;
   onEdit?: (bookmark: BookmarkItem) => void;
   onCopy?: (bookmark: BookmarkItem) => void;
+  onSaveSummary?: (bookmarkId: string, summary: string) => void;
   friendName?: string;
   friendAvatar?: string;
 }
@@ -28,6 +29,7 @@ const BookmarkDetailModal = ({
   onClose,
   onEdit,
   onCopy,
+  onSaveSummary,
   friendName,
   friendAvatar,
 }: BookmarkDetailModalProps) => {
@@ -66,7 +68,7 @@ const BookmarkDetailModal = ({
         </div>
 
         {/* Summary Component */}
-        <BookmarkSummary bookmark={bookmark} />
+        <BookmarkSummary bookmark={bookmark} onSaveSummary={onSaveSummary} />
 
         <div className="flex gap-2 justify-end mt-6">
           {onCopy && (
