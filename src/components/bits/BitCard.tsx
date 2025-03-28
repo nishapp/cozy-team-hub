@@ -1,10 +1,12 @@
-import React from "react";
+
+import React, { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
-import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image } from "lucide-react";
+import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Bookmark } from "lucide-react";
+import { toast } from "sonner";
 import EditBitButton from "./EditBitButton";
 
 interface Bit {
@@ -18,15 +20,19 @@ interface Bit {
   image_url?: string;
   created_at: string;
   shared_by?: string;
+  isBookmarked?: boolean;
 }
 
 interface BitCardProps {
   bit: Bit;
   onBitUpdated?: (bit: Bit) => void;
   onClick?: () => void;
+  onBookmarkToggle?: (bit: Bit, isBookmarked: boolean) => void;
 }
 
-const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick }) => {
+const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmarkToggle }) => {
+  const [isBookmarked, setIsBookmarked] = useState(bit.isBookmarked || false);
+  
   const formattedDate = new Date(bit.created_at).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -48,6 +54,19 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick }) => {
     };
     
     return gradients[category as keyof typeof gradients] || gradients.default;
+  };
+
+  const handleBookmarkToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const newBookmarkState = !isBookmarked;
+    setIsBookmarked(newBookmarkState);
+    
+    if (onBookmarkToggle) {
+      onBookmarkToggle(bit, newBookmarkState);
+    }
+    
+    toast.success(newBookmarkState ? "Bit bookmarked" : "Bookmark removed");
   };
 
   return (
@@ -131,8 +150,17 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick }) => {
           </Button>
         </div>
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={(e) => e.stopPropagation()}>
-            <BookmarkPlus size={16} />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full h-8 w-8" 
+            onClick={handleBookmarkToggle}
+          >
+            {isBookmarked ? (
+              <Bookmark size={16} className="fill-current" />
+            ) : (
+              <BookmarkPlus size={16} />
+            )}
           </Button>
           <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={(e) => e.stopPropagation()}>
             <Share2 size={16} />
