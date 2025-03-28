@@ -45,7 +45,7 @@ const getPublicBookmarks = () => {
               friendBookmarks.push({
                 friendId: friend.id,
                 friendName: friend.name,
-                friendAvatar: friend.avatar_url, // Fixed from image to avatar_url
+                friendAvatar: friend.avatar_url,
                 bookmark,
                 folderName: folder.name
               });
@@ -61,7 +61,7 @@ const getPublicBookmarks = () => {
           friendBookmarks.push({
             friendId: friend.id,
             friendName: friend.name,
-            friendAvatar: friend.avatar_url, // Fixed from image to avatar_url
+            friendAvatar: friend.avatar_url,
             bookmark
           });
         }
@@ -147,7 +147,7 @@ const FriendBookmarks = () => {
               <SelectContent>
                 <SelectItem value="all">All Buddies</SelectItem>
                 {uniqueFriends.map(friend => (
-                  <SelectItem key={friend.id} value={friend.id}>
+                  <SelectItem key={friend.id} value={friend.id || "unknown-id"}>
                     {friend.name}
                   </SelectItem>
                 ))}
