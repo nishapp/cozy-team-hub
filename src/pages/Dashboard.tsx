@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import FeaturedBits from "@/components/bits/FeaturedBits";
 import SharedBitsCarousel from "@/components/bits/SharedBitsCarousel";
+
 interface Bit {
   id: string;
   title: string;
@@ -23,7 +24,10 @@ interface Bit {
   created_at: string;
   shared_by?: string;
   link?: string;
+  author_avatar?: string;
+  friend_count?: number;
 }
+
 const sampleBits = [{
   id: "1",
   title: "Learning TypeScript",
@@ -34,7 +38,9 @@ const sampleBits = [{
   wdylt_comment: "Excited to master TypeScript!",
   image_url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
-  link: "https://www.typescriptlang.org/docs/"
+  link: "https://www.typescriptlang.org/docs/",
+  author_avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop",
+  friend_count: 3
 }, {
   id: "2",
   title: "React Hooks Deep Dive",
@@ -44,7 +50,9 @@ const sampleBits = [{
   visibility: "public",
   wdylt_comment: "Hooks have changed the way I write React!",
   created_at: new Date().toISOString(),
-  link: "https://reactjs.org/docs/hooks-intro.html"
+  link: "https://reactjs.org/docs/hooks-intro.html",
+  author_avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop",
+  friend_count: 5
 }, {
   id: "3",
   title: "Mindfulness Meditation",
@@ -55,8 +63,11 @@ const sampleBits = [{
   wdylt_comment: "Feeling centered and calm.",
   image_url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
-  link: "https://www.mindful.org/meditation/mindfulness-getting-started/"
+  link: "https://www.mindful.org/meditation/mindfulness-getting-started/",
+  author_avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop",
+  friend_count: 1
 }];
+
 const friendSharedBits = [{
   id: "f1",
   title: "Travel Photography Tips",
@@ -67,7 +78,9 @@ const friendSharedBits = [{
   wdylt_comment: "These tips changed my travel photography game!",
   image_url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
-  shared_by: "Emma Watson"
+  shared_by: "Emma Watson",
+  author_avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
+  friend_count: 2
 }, {
   id: "f2",
   title: "Homemade Pasta Recipe",
@@ -78,7 +91,9 @@ const friendSharedBits = [{
   wdylt_comment: "Never buying store pasta again!",
   image_url: "https://images.unsplash.com/photo-1556761223-4c4282c73f77?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
-  shared_by: "Gordon Ramsay"
+  shared_by: "Gordon Ramsay",
+  author_avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop",
+  friend_count: 6
 }, {
   id: "f3",
   title: "Urban Gardening Ideas",
@@ -89,7 +104,9 @@ const friendSharedBits = [{
   wdylt_comment: "My balcony has never looked better!",
   image_url: "https://images.unsplash.com/photo-1585320806297-1c62238fa333?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
-  shared_by: "Martha Stewart"
+  shared_by: "Martha Stewart",
+  author_avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop",
+  friend_count: 3
 }, {
   id: "f4",
   title: "Minimal Web Design Principles",
@@ -99,7 +116,9 @@ const friendSharedBits = [{
   visibility: "public",
   image_url: "https://images.unsplash.com/photo-1494797262163-44adaa06623a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
-  shared_by: "John Doe"
+  shared_by: "John Doe",
+  author_avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&h=150&fit=crop",
+  friend_count: 0
 }, {
   id: "f5",
   title: "Beginner's Guide to Houseplants",
@@ -109,7 +128,9 @@ const friendSharedBits = [{
   visibility: "public",
   image_url: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
-  shared_by: "Jane Smith"
+  shared_by: "Jane Smith",
+  author_avatar: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=150&h=150&fit=crop",
+  friend_count: 4
 }, {
   id: "f6",
   title: "Modern Calligraphy Basics",
@@ -119,7 +140,9 @@ const friendSharedBits = [{
   visibility: "public",
   image_url: "https://images.unsplash.com/photo-1455651192900-d9d2a5c3091e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
-  shared_by: "Mark Johnson"
+  shared_by: "Mark Johnson",
+  author_avatar: "https://images.unsplash.com/photo-1552058544-f2b08422138a?w=150&h=150&fit=crop",
+  friend_count: 2
 }, {
   id: "f7",
   title: "DIY Natural Cleaning Solutions",
@@ -130,7 +153,9 @@ const friendSharedBits = [{
   wdylt_comment: "My house smells amazing now!",
   image_url: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
-  shared_by: "David Green"
+  shared_by: "David Green",
+  author_avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop",
+  friend_count: 1
 }, {
   id: "f8",
   title: "Effective Home Office Setup",
@@ -140,10 +165,14 @@ const friendSharedBits = [{
   visibility: "public",
   image_url: "https://images.unsplash.com/photo-1593642634443-44adaa06623a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
-  shared_by: "Sarah Connor"
+  shared_by: "Sarah Connor",
+  author_avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop",
+  friend_count: 3
 }];
+
 const categoryImages = ["https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1550439062-609e1531270e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1529245856630-f4853233d2ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1519748771451-a94c596ffd67?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1529245856630-f4853233d2ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"];
 const categoryTitles = ["Fashion", "Home Decor", "Technology", "Travel", "Food & Recipes", "Health & Fitness", "Art & Design", "DIY & Crafts"];
+
 const Dashboard = () => {
   const {
     user,
@@ -157,6 +186,7 @@ const Dashboard = () => {
   const [sharedBits, setSharedBits] = useState<any[]>(friendSharedBits);
   const [selectedBit, setSelectedBit] = useState<Bit | null>(null);
   const navigate = useNavigate();
+
   useEffect(() => {
     const hours = new Date().getHours();
     if (hours >= 5 && hours < 12) {
@@ -187,6 +217,7 @@ const Dashboard = () => {
     setPublicBits(filteredPublicBits);
     setBitCount(sampleBits.length);
   }, [user]);
+
   const handleBitAdded = (newBit: Bit) => {
     const bitWithId = {
       ...newBit,
@@ -199,6 +230,7 @@ const Dashboard = () => {
     setBitCount(bitCount + 1);
     toast.success("Bit added successfully!");
   };
+
   const handleBitUpdated = (updatedBit: Bit) => {
     setBits(bits.map(bit => bit.id === updatedBit.id ? updatedBit : bit));
     if (updatedBit.visibility === "public") {
@@ -212,17 +244,21 @@ const Dashboard = () => {
     }
     toast.success("Bit updated successfully!");
   };
+
   const handleBitSelected = (bit: Bit) => {
     setSelectedBit(bit);
   };
+
   if (!user && !authLoading) {
     return <Navigate to="/auth" replace />;
   }
+
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center">
         <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>;
   }
+
   return <PageTransition>
       <div className="min-h-screen flex flex-col">
         <Navbar />
@@ -273,4 +309,5 @@ const Dashboard = () => {
       </div>
     </PageTransition>;
 };
+
 export default Dashboard;
