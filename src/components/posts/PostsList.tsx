@@ -1,30 +1,11 @@
 
 import React from "react";
 import { Post } from "@/types/post";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { formatDistanceToNow } from "date-fns";
-import { Edit, Trash2, Sparkles } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { MoreHorizontal, Trash, Pencil, ExternalLink } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Link } from "react-router-dom";
 import ConvertToBitDialog from "./ConvertToBitDialog";
 
 interface PostsListProps {
@@ -33,133 +14,102 @@ interface PostsListProps {
   onDeletePost: (postId: string) => void;
 }
 
-const PostsList = ({ posts, onEditPost, onDeletePost }: PostsListProps) => {
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
+const PostsList: React.FC<PostsListProps> = ({ posts, onEditPost, onDeletePost }) => {
+  const [postToConvert, setPostToConvert] = React.useState<Post | null>(null);
 
-  const handleConvertToBit = (post: Post) => {
-    setSelectedPost(post);
-    setIsConvertDialogOpen(true);
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    };
+    return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
-  if (posts.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <h3 className="text-lg font-medium text-muted-foreground">
-          You haven't created any posts yet.
-        </h3>
-        <p className="text-sm text-muted-foreground mt-1">
-          Create your first post to get started.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {posts.map((post) => (
-        <Card key={post.id} className="group">
-          <CardHeader className="relative pb-2">
-            {post.image_url && (
-              <div className="w-full h-40 mb-2 overflow-hidden rounded-md">
-                <img
-                  src={post.image_url}
-                  alt={post.title}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
-              </div>
-            )}
-            <CardTitle className="line-clamp-2">{post.title}</CardTitle>
-            <CardDescription>
-              {formatDistanceToNow(new Date(post.created_at), {
-                addSuffix: true,
-              })}
-              {post.created_at !== post.updated_at && " (edited)"}
-            </CardDescription>
-            {post.category && (
-              <Badge variant="outline" className="absolute top-3 right-3 bg-background/80">
-                {post.category}
-              </Badge>
-            )}
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div 
-              className="text-sm text-muted-foreground line-clamp-3 min-h-[3em]"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
-            
-            {post.tags && post.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-3">
-                {post.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </CardContent>
-          <CardFooter className="flex justify-between pt-2">
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2 text-muted-foreground"
-                onClick={() => onEditPost(post)}
-              >
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2 text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
+        <Card key={post.id} className="flex flex-col">
+          <CardHeader className="pb-3">
+            <div className="flex justify-between items-start">
+              <Link to={`/post/${post.id}`} className="hover:underline">
+                <CardTitle className="line-clamp-2">{post.title}</CardTitle>
+              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreHorizontal size={16} />
+                    <span className="sr-only">Options</span>
                   </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete
-                      the post.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => onDeletePost(post.id)}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEditPost(post)}>
+                    <Pencil className="mr-2" size={14} />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setPostToConvert(post)}>
+                    <ExternalLink className="mr-2" size={14} />
+                    Convert to Bit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => onDeletePost(post.id)}
+                    className="text-destructive"
+                  >
+                    <Trash className="mr-2" size={14} />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 px-2"
-              onClick={() => handleConvertToBit(post)}
+            <CardDescription className="pt-2">
+              {formatDate(post.created_at)}
+              {post.tags && post.tags.length > 0 && (
+                <span className="ml-2">
+                  • {post.tags.slice(0, 3).join(', ')}
+                  {post.tags.length > 3 && '...'}
+                </span>
+              )}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-grow">
+            <Link to={`/post/${post.id}`} className="block h-full">
+              {post.image_url ? (
+                <div className="relative h-40 mb-3">
+                  <img 
+                    src={post.image_url} 
+                    alt={post.title} 
+                    className="absolute inset-0 w-full h-full object-cover rounded-md"
+                  />
+                </div>
+              ) : null}
+              <div 
+                className="line-clamp-4 text-sm text-muted-foreground"
+                dangerouslySetInnerHTML={{
+                  __html: post.content
+                }}
+              />
+            </Link>
+          </CardContent>
+          <CardFooter className="pt-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="ml-auto"
+              asChild
             >
-              <Sparkles className="h-4 w-4 mr-1" />
-              Convert to Bit
+              <Link to={`/post/${post.id}`}>
+                Read More
+              </Link>
             </Button>
           </CardFooter>
         </Card>
       ))}
       
-      {selectedPost && (
-        <ConvertToBitDialog
-          post={selectedPost}
-          isOpen={isConvertDialogOpen}
-          onClose={() => setIsConvertDialogOpen(false)}
-        />
-      )}
+      <ConvertToBitDialog
+        post={postToConvert!}
+        isOpen={!!postToConvert}
+        onClose={() => setPostToConvert(null)}
+      />
     </div>
   );
 };

@@ -14,6 +14,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Bits from "./pages/Bits";
 import Posts from "./pages/Posts";
+import PostDetail from "./pages/PostDetail";
 import AdminDashboard from "./pages/AdminDashboard";
 import Settings from "./pages/Settings";
 import Contact from "./pages/Contact";
@@ -32,6 +33,7 @@ const AnimatedRoutes = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/bits" element={<Bits />} />
         <Route path="/posts" element={<Posts />} />
+        <Route path="/post/:postId" element={<PostDetail />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/settings" element={<Settings />} />

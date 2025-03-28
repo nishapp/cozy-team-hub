@@ -24,6 +24,12 @@ const ConvertToBitDialog = ({ post, isOpen, onClose }: ConvertToBitDialogProps) 
   const [mode, setMode] = useState<"confirm" | "form">("confirm");
   const navigate = useNavigate();
 
+  // Get the current domain + path to the post for use as the bit link
+  const getPostUrl = () => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/post/${post.id}`;
+  };
+
   const createInitialBitData = () => {
     // Extract first paragraph or portion of content for description
     // For HTML content, strip tags to get plain text
@@ -70,7 +76,7 @@ const ConvertToBitDialog = ({ post, isOpen, onClose }: ConvertToBitDialogProps) 
       visibility: "public",
       wdylt_comment: "",
       image_url: post.image_url || "",
-      link: "",
+      link: getPostUrl(), // Use the post's public URL
     };
   };
 
