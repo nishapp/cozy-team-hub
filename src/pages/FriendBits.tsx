@@ -7,10 +7,12 @@ import { useAuth } from "../context/AuthContext";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
 import BitCard from "@/components/bits/BitCard";
 import BitDetailModal from "@/components/bits/BitDetailModal";
+import DailyLearningSection from "@/components/bits/DailyLearningSection";
 import { Calendar, User, Mail } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { sampleFriends } from "@/data/sampleFriends";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // For demo purposes, let's create some sample bits for friends
 const sampleFriendBits = [
@@ -49,14 +51,43 @@ const sampleFriendBits = [
   }
 ];
 
+// Sample daily learnings data
+const sampleDailyLearnings = [
+  {
+    id: "learn1",
+    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    content: "Today I learned how to implement authentication in React apps using JWT tokens. The hardest part was handling token refresh, but I found a clever solution using interceptors.",
+    tags: ["react", "authentication", "jwt"],
+    relatedBitId: "bit1",
+    title: "Authentication in React"
+  },
+  {
+    id: "learn2",
+    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    content: "CSS Grid is much more powerful than I initially thought. I can create complex layouts with minimal HTML structure.",
+    tags: ["css", "layout", "web-design"],
+    title: "CSS Grid Mastery"
+  },
+  {
+    id: "learn3",
+    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    content: "Learned about the useCallback hook in React and how it helps with memoization to prevent unnecessary re-renders in child components.",
+    tags: ["react", "hooks", "performance"],
+    relatedBitId: "bit3",
+    title: "React Performance Optimization"
+  }
+];
+
 const FriendBits = () => {
   const { friendId } = useParams<{ friendId: string }>();
   const { user, loading: authLoading } = useAuth();
   const [friend, setFriend] = useState<any>(null);
   const [bits, setBits] = useState(sampleFriendBits);
+  const [learnings, setLearnings] = useState(sampleDailyLearnings);
   const [loading, setLoading] = useState(true);
   const [selectedBit, setSelectedBit] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("bits");
 
   useEffect(() => {
     if (friendId) {
@@ -159,29 +190,55 @@ const FriendBits = () => {
             </div>
           </div>
           
-          {/* Friend's Bits */}
-          <div>
-            <h2 className="text-2xl font-bold mb-6">{friend.name}'s Bits</h2>
+          {/* Content Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto">
+              <TabsTrigger value="bits">Bits</TabsTrigger>
+              <TabsTrigger value="learnings">Daily Learnings</TabsTrigger>
+            </TabsList>
             
-            {bits.length === 0 ? (
-              <div className="text-center py-12 bg-muted/30 rounded-lg">
-                <h3 className="text-lg font-medium mb-2">No bits found</h3>
-                <p className="text-muted-foreground">
-                  {friend.name} hasn't shared any bits yet.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {bits.map(bit => (
-                  <BitCard 
-                    key={bit.id} 
-                    bit={{...bit, shared_by: friend.name, author_avatar: friend.avatar_url}}
-                    onClick={() => handleBitClick(bit)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+            {/* Friend's Bits Tab */}
+            <TabsContent value="bits" className="space-y-6">
+              <h2 className="text-2xl font-bold mb-6">{friend.name}'s Bits</h2>
+              
+              {bits.length === 0 ? (
+                <div className="text-center py-12 bg-muted/30 rounded-lg">
+                  <h3 className="text-lg font-medium mb-2">No bits found</h3>
+                  <p className="text-muted-foreground">
+                    {friend.name} hasn't shared any bits yet.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {bits.map(bit => (
+                    <BitCard 
+                      key={bit.id} 
+                      bit={{...bit, shared_by: friend.name, author_avatar: friend.avatar_url}}
+                      onClick={() => handleBitClick(bit)}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+            
+            {/* Daily Learnings Tab */}
+            <TabsContent value="learnings">
+              <DailyLearningSection 
+                learnings={learnings}
+                friendName={friend.name}
+                friendAvatar={friend.avatar_url}
+              />
+              
+              {learnings.length === 0 && (
+                <div className="text-center py-12 bg-muted/30 rounded-lg">
+                  <h3 className="text-lg font-medium mb-2">No daily learnings found</h3>
+                  <p className="text-muted-foreground">
+                    {friend.name} hasn't shared any learnings yet.
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
           
           {/* Bit Detail Modal */}
           {selectedBit && (
