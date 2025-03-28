@@ -1,14 +1,16 @@
 
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { FileText, Home, LayoutDashboard, Settings, Users, UserPlus } from "lucide-react";
+import { FileText, Home, LayoutDashboard, Settings, Users, UserPlus, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PointsBadge from "@/components/gamification/PointsBadge";
 
 interface MainNavigationProps {
   isAdmin?: boolean;
+  userPoints?: number;
 }
 
-export function MainNavigation({ isAdmin }: MainNavigationProps) {
+export function MainNavigation({ isAdmin, userPoints = 0 }: MainNavigationProps) {
   const { user } = useAuth();
 
   const menuItems = [
@@ -77,6 +79,12 @@ export function MainNavigation({ isAdmin }: MainNavigationProps) {
           <span>{item.name}</span>
         </NavLink>
       ))}
+      
+      {user && userPoints > 0 && (
+        <div className="ml-2">
+          <PointsBadge points={userPoints} size="sm" />
+        </div>
+      )}
     </nav>
   );
 }

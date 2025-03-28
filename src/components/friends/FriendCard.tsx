@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { Friend } from "@/types/friend";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
+import PointsBadge from "@/components/gamification/PointsBadge";
 
 interface FriendCardProps {
   friend: Friend;
@@ -37,6 +37,8 @@ const FriendCard = ({
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [messageText, setMessageText] = useState("");
   const navigate = useNavigate();
+
+  const mockPoints = Math.floor(Math.random() * 1500) + 100;
 
   const handleFriendAction = () => {
     if (status.isFriend) {
@@ -107,7 +109,10 @@ const FriendCard = ({
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-semibold text-lg truncate">{friend.name}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-lg truncate">{friend.name}</h3>
+                  <PointsBadge points={mockPoints} size="sm" />
+                </div>
                 <p className="text-muted-foreground text-sm truncate">{friend.email}</p>
               </div>
               {friend.mutual_friends > 0 && (

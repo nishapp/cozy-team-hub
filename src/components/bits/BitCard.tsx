@@ -1,11 +1,10 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
-import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Bookmark, ExternalLink } from "lucide-react";
+import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Bookmark, ExternalLink, Award } from "lucide-react";
 import { toast } from "sonner";
 import EditBitButton from "./EditBitButton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -18,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import PointsBadge from "@/components/gamification/PointsBadge";
 
 interface Bit {
   id: string;
@@ -34,6 +34,7 @@ interface Bit {
   link?: string;
   author_avatar?: string;
   friend_count?: number;
+  points?: number;
 }
 
 interface BitCardProps {
@@ -159,6 +160,24 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmar
         {bit.wdylt_comment && (
           <div className="bg-muted p-2 rounded-lg text-sm italic text-muted-foreground mt-2">
             <span className="font-medium text-primary">@WDYLT:</span> {bit.wdylt_comment}
+          </div>
+        )}
+        
+        {bit.points && (
+          <div className="mt-2 flex justify-end">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="flex items-center gap-1 bg-muted/50 px-2 py-1 rounded-full">
+                    <Award className="h-3 w-3 text-primary" />
+                    <span className="text-xs font-medium">+{bit.points} points</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Points earned for this bit</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         )}
       </CardContent>

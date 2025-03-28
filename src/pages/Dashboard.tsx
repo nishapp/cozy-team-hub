@@ -11,6 +11,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import FeaturedBits from "@/components/bits/FeaturedBits";
 import SharedBitsCarousel from "@/components/bits/SharedBitsCarousel";
+import UserPointsCard from "@/components/gamification/UserPointsCard";
+import BadgesDisplay from "@/components/gamification/BadgesDisplay";
+import StreakDisplay from "@/components/gamification/StreakDisplay";
 
 interface Bit {
   id: string;
@@ -173,6 +176,41 @@ const friendSharedBits = [{
 const categoryImages = ["https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1550439062-609e1531270e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1529245856630-f4853233d2ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1519748771451-a94c596ffd67?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1529245856630-f4853233d2ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"];
 const categoryTitles = ["Fashion", "Home Decor", "Technology", "Travel", "Food & Recipes", "Health & Fitness", "Art & Design", "DIY & Crafts"];
 
+const sampleBadges = [
+  {
+    id: "1",
+    name: "Newcomer",
+    description: "Created your first bit",
+    imageUrl: "/badges/newcomer.png", 
+    pointsReward: 50,
+    earnedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "2",
+    name: "Consistency",
+    description: "Maintained a 3-day streak",
+    imageUrl: "/badges/streak.png",
+    pointsReward: 75,
+    earnedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "3",
+    name: "Buddy Network",
+    description: "Connected with 5 buddies",
+    imageUrl: "/badges/network.png",
+    pointsReward: 100,
+    earnedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+  }
+];
+
+const sampleActivityDates = [
+  new Date(), // today
+  new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // yesterday
+  new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+  new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+  new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
+];
+
 const Dashboard = () => {
   const {
     user,
@@ -185,6 +223,12 @@ const Dashboard = () => {
   const [bitCount, setBitCount] = useState<number>(0);
   const [sharedBits, setSharedBits] = useState<any[]>(friendSharedBits);
   const [selectedBit, setSelectedBit] = useState<Bit | null>(null);
+  const [points, setPoints] = useState(1250);
+  const [level, setLevel] = useState(4);
+  const [currentStreak, setCurrentStreak] = useState(4);
+  const [longestStreak, setLongestStreak] = useState(10);
+  const [badges, setBadges] = useState(sampleBadges);
+  const [activityDates, setActivityDates] = useState(sampleActivityDates);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -212,7 +256,6 @@ const Dashboard = () => {
     };
     fetchUserProfile();
 
-    // Filter public bits
     const filteredPublicBits = sampleBits.filter(bit => bit.visibility === "public");
     setPublicBits(filteredPublicBits);
     setBitCount(sampleBits.length);
@@ -282,6 +325,31 @@ const Dashboard = () => {
               <Button variant="secondary" className="rounded-full px-6 py-1 h-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-sm font-medium" onClick={() => navigate('/bits')}>
                 View board
               </Button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="lg:col-span-2">
+              <UserPointsCard 
+                userName={fullName || user?.email?.split('@')[0] || "User"}
+                userAvatar={user?.user_metadata?.avatar_url}
+                points={points}
+                level={level}
+                currentStreak={currentStreak}
+                longestStreak={longestStreak}
+                isCurrentUser={true}
+              />
+            </div>
+            <div className="bg-muted/10 rounded-xl p-6 flex flex-col justify-center">
+              <StreakDisplay 
+                currentStreak={currentStreak}
+                activityDates={activityDates}
+                className="mb-4"
+              />
+              <BadgesDisplay 
+                badges={badges}
+                title="Recent Badges"
+              />
             </div>
           </div>
           

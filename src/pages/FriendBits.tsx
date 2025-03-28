@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
@@ -14,76 +13,43 @@ import { sampleFriends } from "@/data/sampleFriends";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Glow } from "@/components/ui/glow";
+import UserPointsCard from "@/components/gamification/UserPointsCard";
+import StreakDisplay from "@/components/gamification/StreakDisplay";
+import BadgesDisplay from "@/components/gamification/BadgesDisplay";
 
-const sampleFriendBits = [
+const sampleBadges = [
   {
-    id: "bit1",
-    title: "My First Coding Project",
-    description: "Just finished my first React application. It was challenging but rewarding!",
-    tags: ["coding", "react", "webdev"],
-    category: "coding",
-    visibility: "public",
-    image_url: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=2831&auto=format&fit=crop",
-    created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    shared_by: "Jane Doe",
-    author_avatar: "https://i.pravatar.cc/150?img=23"
+    id: "1",
+    name: "Newcomer",
+    description: "Created your first bit",
+    imageUrl: "/badges/newcomer.png", 
+    pointsReward: 50,
+    earnedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
-    id: "bit2",
-    title: "Morning Run Routine",
-    description: "Started a new morning routine - 5K run before breakfast. Feeling energized!",
-    tags: ["health", "running", "morning"],
-    category: "health",
-    visibility: "public",
-    created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    shared_by: "Jane Doe"
+    id: "2",
+    name: "Consistency",
+    description: "Maintained a 3-day streak",
+    imageUrl: "/badges/streak.png",
+    pointsReward: 75,
+    earnedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
-    id: "bit3",
-    title: "Book Recommendation",
-    description: "Just finished 'Atomic Habits' by James Clear. Highly recommend for anyone looking to build better habits.",
-    tags: ["reading", "books", "productivity"],
-    category: "reading",
-    visibility: "public",
-    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    shared_by: "Jane Doe",
-    wdylt_comment: "Changed my perspective on habit formation."
+    id: "3",
+    name: "Buddy Network",
+    description: "Connected with 5 buddies",
+    imageUrl: "/badges/network.png",
+    pointsReward: 100,
+    earnedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
   }
 ];
 
-const sampleDailyLearnings = [
-  {
-    id: "learn1",
-    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    content: "Today I learned how to implement authentication in React apps using JWT tokens. The hardest part was handling token refresh, but I found a clever solution using interceptors.",
-    tags: ["react", "authentication", "jwt"],
-    relatedBitId: "bit1",
-    title: "Authentication in React"
-  },
-  {
-    id: "learn2",
-    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    content: "CSS Grid is much more powerful than I initially thought. I can create complex layouts with minimal HTML structure.",
-    tags: ["css", "layout", "web-design"],
-    title: "CSS Grid Mastery",
-    externalUrl: "https://css-tricks.com/snippets/css/complete-guide-grid/"
-  },
-  {
-    id: "learn3",
-    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    content: "Learned about the useCallback hook in React and how it helps with memoization to prevent unnecessary re-renders in child components.",
-    tags: ["react", "hooks", "performance"],
-    relatedBitId: "bit3",
-    title: "React Performance Optimization"
-  },
-  {
-    id: "learn4",
-    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    content: "Discovered a great resource for TypeScript best practices. This article explains how to properly type React components and hooks.",
-    tags: ["typescript", "react", "best-practices"],
-    title: "TypeScript and React",
-    externalUrl: "https://react-typescript-cheatsheet.netlify.app/"
-  }
+const sampleActivityDates = [
+  new Date(), // today
+  new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // yesterday
+  new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+  new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+  new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
 ];
 
 const FriendBits = () => {
@@ -96,6 +62,12 @@ const FriendBits = () => {
   const [selectedBit, setSelectedBit] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("bits");
+  const [points, setPoints] = useState(750);
+  const [level, setLevel] = useState(3);
+  const [currentStreak, setCurrentStreak] = useState(4);
+  const [longestStreak, setLongestStreak] = useState(7);
+  const [badges, setBadges] = useState(sampleBadges);
+  const [activityDates, setActivityDates] = useState(sampleActivityDates);
 
   useEffect(() => {
     if (friendId) {
@@ -199,6 +171,30 @@ const FriendBits = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="lg:col-span-2">
+              <UserPointsCard 
+                userName={friend.name}
+                userAvatar={friend.avatar_url}
+                points={points}
+                level={level}
+                currentStreak={currentStreak}
+                longestStreak={longestStreak}
+              />
+            </div>
+            <div className="bg-muted/10 rounded-xl p-6 flex flex-col justify-center">
+              <StreakDisplay 
+                currentStreak={currentStreak}
+                activityDates={activityDates}
+                className="mb-4"
+              />
+              <BadgesDisplay 
+                badges={badges}
+                title="Recent Badges"
+              />
             </div>
           </div>
           
