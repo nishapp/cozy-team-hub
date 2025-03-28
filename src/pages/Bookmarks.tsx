@@ -1,7 +1,5 @@
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Helmet } from "react-helmet";
 import Navbar from "@/components/layout/Navbar";
 import { BookmarksSidebar } from "@/components/bookmarks/BookmarksSidebar";
 import { BookmarksContent } from "@/components/bookmarks/BookmarksContent"; 
@@ -85,9 +83,6 @@ const Bookmarks = () => {
 
   return (
     <PageTransition>
-      <Helmet>
-        <title>Bookmarks | WDYLT</title>
-      </Helmet>
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
         <div className="flex flex-1 overflow-hidden">

@@ -457,16 +457,18 @@ export const BookmarksContent = ({
               <div className="flex items-center flex-1">
                 <div className="h-5 w-5 mr-2 flex-shrink-0">
                   {bookmark.icon ? (
-                    <img
-                      src={bookmark.icon}
-                      alt=""
-                      className="h-full w-full object-contain"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                        (e.target as HTMLImageElement).nextElementSibling!.style.display = 'block';
-                      }}
-                    />
-                    <LinkIcon className="h-full w-full text-blue-500 hidden" />
+                    <>
+                      <img
+                        src={bookmark.icon}
+                        alt=""
+                        className="h-full w-full object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          (e.target as HTMLImageElement).nextElementSibling!.style.display = 'block';
+                        }}
+                      />
+                      <LinkIcon className="h-full w-full text-blue-500 hidden" />
+                    </>
                   ) : (
                     <LinkIcon className="h-full w-full text-blue-500" />
                   )}
