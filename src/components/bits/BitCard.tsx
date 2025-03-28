@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image } from "lucide-react";
+import EditBitButton from "./EditBitButton";
 
 // Define the Bit type
 interface Bit {
@@ -22,9 +23,10 @@ interface Bit {
 
 interface BitCardProps {
   bit: Bit;
+  onBitUpdated?: (bit: Bit) => void;
 }
 
-const BitCard: React.FC<BitCardProps> = ({ bit }) => {
+const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated }) => {
   // Format the date
   const formattedDate = new Date(bit.created_at).toLocaleDateString("en-US", {
     month: "short",
@@ -52,7 +54,9 @@ const BitCard: React.FC<BitCardProps> = ({ bit }) => {
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group rounded-xl border-0 saas-shadow">
+    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group rounded-xl border-0 saas-shadow relative">
+      {onBitUpdated && <EditBitButton bit={bit} onBitUpdated={onBitUpdated} />}
+      
       {bit.image_url ? (
         <AspectRatio ratio={4/3} className="bg-muted">
           <img 

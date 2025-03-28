@@ -5,9 +5,22 @@ import { Navigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
 import { supabase } from "@/lib/supabase";
-import { Card, CardContent } from "@/components/ui/card";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import BitCard from "@/components/bits/BitCard";
+import AddBitButton from "@/components/bits/AddBitButton";
+import { toast } from "sonner";
+
+// Define the Bit type
+interface Bit {
+  id: string;
+  title: string;
+  description: string;
+  tags: string[];
+  category: string;
+  visibility: string;
+  wdylt_comment?: string;
+  image_url?: string;
+  created_at: string;
+}
 
 // Sample data for demonstration purposes
 const sampleBits = [
@@ -71,7 +84,7 @@ const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const [fullName, setFullName] = useState<string>("");
   const [greeting, setGreeting] = useState<string>("Hello");
-  const [bits, setBits] = useState(sampleBits);
+  const [bits, setBits] = useState<Bit[]>(sampleBits);
 
   useEffect(() => {
     // Set greeting based on time of day
@@ -110,6 +123,27 @@ const Dashboard = () => {
     // For now we're using sample data
   }, [user]);
 
+  // Handle adding a new bit
+  const handleBitAdded = (newBit: Bit) => {
+    // Generate a unique ID if none exists
+    const bitWithId = {
+      ...newBit,
+      id: newBit.id || `temp-${Date.now()}`,
+    };
+    
+    // Add the new bit to the beginning of the array
+    setBits([bitWithId, ...bits]);
+    toast.success("Bit added successfully!");
+  };
+
+  // Handle updating an existing bit
+  const handleBitUpdated = (updatedBit: Bit) => {
+    setBits(
+      bits.map(bit => bit.id === updatedBit.id ? updatedBit : bit)
+    );
+    toast.success("Bit updated successfully!");
+  };
+
   // Redirect unauthenticated users to login
   if (!user && !authLoading) {
     return <Navigate to="/auth" replace />;
@@ -141,9 +175,16 @@ const Dashboard = () => {
           {/* Pinterest-style masonry grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-max">
             {bits.map((bit) => (
-              <BitCard key={bit.id} bit={bit} />
+              <BitCard 
+                key={bit.id} 
+                bit={bit} 
+                onBitUpdated={handleBitUpdated} 
+              />
             ))}
           </div>
+          
+          {/* Add Bit Button */}
+          <AddBitButton onBitAdded={handleBitAdded} />
         </main>
       </div>
     </PageTransition>
