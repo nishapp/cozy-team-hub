@@ -1,5 +1,15 @@
 
-import { v4 as uuidv4 } from 'uuid';
+// Use a safer import approach for uuid with proper error handling
+let uuidv4: () => string;
+
+try {
+  // Try to dynamically import uuid
+  uuidv4 = require('uuid').v4;
+} catch (error) {
+  // Fallback function if uuid is not available
+  uuidv4 = () => `id-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+  console.warn('uuid module not available, using fallback ID generation');
+}
 
 // This is a mock implementation that simulates a server response
 // In a real implementation, this would be a server-side function that:
