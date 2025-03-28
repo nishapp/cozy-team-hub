@@ -38,7 +38,7 @@ export function BookmarkSummary({ bookmark }: BookmarkSummaryProps) {
       
       toast({
         title: "Summary Generated",
-        description: "The webpage content has been successfully summarized.",
+        description: "The webpage content has been successfully summarized with Claude AI.",
       });
     } catch (err) {
       console.error('Error generating summary:', err);
@@ -60,22 +60,24 @@ export function BookmarkSummary({ bookmark }: BookmarkSummaryProps) {
         <Button 
           onClick={generateSummary} 
           className="w-full"
+          variant="default"
         >
-          Generate Page Summary
+          Generate Summary with Claude AI
         </Button>
       )}
 
       {loading && (
-        <div className="flex items-center justify-center p-4">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <span className="ml-2">Generating summary...</span>
+        <div className="flex flex-col items-center justify-center p-6 bg-muted/30 rounded-md">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+          <span className="text-sm text-muted-foreground">Analyzing webpage content...</span>
+          <span className="text-xs text-muted-foreground mt-1">This may take a few moments</span>
         </div>
       )}
 
       {error && (
         <div className="bg-destructive/10 p-4 rounded-md">
           <h3 className="font-semibold text-destructive">Error</h3>
-          <p>{error}</p>
+          <p className="text-sm">{error}</p>
           <Button 
             variant="outline" 
             size="sm" 
@@ -90,7 +92,7 @@ export function BookmarkSummary({ bookmark }: BookmarkSummaryProps) {
       {summary && (
         <div className="bg-muted p-4 rounded-md">
           <h3 className="font-semibold mb-2">Summary</h3>
-          <p className="text-sm">{summary}</p>
+          <p className="text-sm whitespace-pre-line">{summary}</p>
           <Button 
             variant="outline" 
             size="sm" 
