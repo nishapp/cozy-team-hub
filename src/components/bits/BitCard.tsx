@@ -5,7 +5,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
-import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Bookmark, ExternalLink } from "lucide-react";
+import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Bookmark, ExternalLink, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import EditBitButton from "./EditBitButton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -156,6 +156,19 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmar
       
       <CardFooter className="p-4 pt-0 gap-1 flex justify-between">
         <div className="flex gap-1">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={(e) => e.stopPropagation()}>
+                  <UserRound size={16} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View profile</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
           <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={(e) => e.stopPropagation()}>
             <Heart size={16} />
           </Button>
