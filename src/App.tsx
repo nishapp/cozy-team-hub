@@ -66,21 +66,19 @@ const AnimatedRoutes = () => {
 // Main App component
 const App = () => {
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner position="bottom-right" />
-            <BrowserRouter>
-              <AuthProvider>
-                <AnimatedRoutes />
-              </AuthProvider>
-            </BrowserRouter>
-          </TooltipProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner position="bottom-right" />
+          <BrowserRouter>
+            <AuthProvider>
+              <AnimatedRoutes />
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 };
 
