@@ -48,9 +48,9 @@ const HeaderAddBitButton: React.FC<HeaderAddBitButtonProps> = ({ onBitAdded }) =
         <Button 
           variant="outline" 
           size="icon"
-          className="h-9 w-9 border-[3px] border-black bg-background hover:bg-primary/10"
+          className="h-9 w-9 border-[3px] border-black dark:border-white bg-background hover:bg-primary/10"
         >
-          <Plus className="h-6 w-6 text-black stroke-[3px]" />
+          <Plus className="h-6 w-6 text-black dark:text-white stroke-[3px]" />
           <span className="sr-only">Add Bit</span>
         </Button>
       </DialogTrigger>
