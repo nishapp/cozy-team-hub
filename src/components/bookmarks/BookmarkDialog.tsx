@@ -31,33 +31,16 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const [title, setTitle] = useState(initialValues?.title || "");
   const [url, setUrl] = useState(initialValues?.url || "");
   const [description, setDescription] = useState(initialValues?.description || "");
-  const [errors, setErrors] = useState<{title?: string; url?: string}>({});
+  const [error, setError] = useState<{title?: string; url?: string}>({});
 
   useEffect(() => {
     if (isOpen) {
       setTitle(initialValues?.title || "");
       setUrl(initialValues?.url || "");
       setDescription(initialValues?.description || "");
-      setErrors({});
+      setError({});
     }
   }, [isOpen, initialValues]);
-
-  const validateUrl = (url: string) => {
-    if (!url) return false;
-    
-    try {
-      // Add protocol if missing
-      const urlToCheck = 
-        url.startsWith('http://') || url.startsWith('https://') 
-          ? url 
-          : `https://${url}`;
-          
-      new URL(urlToCheck);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,17 +48,15 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     const newErrors: {title?: string; url?: string} = {};
     
     if (!title.trim()) {
-      newErrors.title = "Bookmark title is required";
+      newErrors.title = "Title is required";
     }
     
     if (!url.trim()) {
       newErrors.url = "URL is required";
-    } else if (!validateUrl(url)) {
-      newErrors.url = "Please enter a valid URL";
     }
     
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+      setError(newErrors);
       return;
     }
     
@@ -96,8 +77,8 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
             </DialogTitle>
             <DialogDescription>
               {mode === "create" 
-                ? "Save a new link to your bookmark collection."
-                : "Update the details of your bookmark."}
+                ? "Add a new bookmark to your collection."
+                : "Update the bookmark details."}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -107,10 +88,10 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., GitHub"
+                placeholder="e.g., MDN Web Docs"
                 autoFocus
               />
-              {errors.title && <p className="text-destructive text-sm">{errors.title}</p>}
+              {error.title && <p className="text-destructive text-sm">{error.title}</p>}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="url">URL</Label>
@@ -118,9 +99,9 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
                 id="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="e.g., https://github.com"
+                placeholder="e.g., https://developer.mozilla.org"
               />
-              {errors.url && <p className="text-destructive text-sm">{errors.url}</p>}
+              {error.url && <p className="text-destructive text-sm">{error.url}</p>}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Description (Optional)</Label>
@@ -128,7 +109,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="What's this site about?"
+                placeholder="What's this bookmark about?"
                 rows={3}
               />
             </div>
