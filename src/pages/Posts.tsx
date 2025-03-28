@@ -42,15 +42,20 @@ const Posts = () => {
   };
 
   const handleUpdatePost = (updatedPost: Post) => {
-    setPosts(posts.map(post => 
-      post.id === updatedPost.id ? updatedPost : post
-    ));
+    // Create a new array to prevent reference issues
+    const updatedPosts = posts.map(post => 
+      post.id === updatedPost.id ? {...updatedPost} : post
+    );
+    
+    setPosts(updatedPosts);
     toast.success("Post updated successfully!");
     setSelectedPost(null);
   };
 
   const handleDeletePost = (postId: string) => {
-    setPosts(posts.filter(post => post.id !== postId));
+    // Create a new array to prevent reference issues
+    const filteredPosts = posts.filter(post => post.id !== postId);
+    setPosts(filteredPosts);
     toast.success("Post deleted successfully!");
   };
 

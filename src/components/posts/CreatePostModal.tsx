@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -39,6 +40,7 @@ const CreatePostModal = ({
   const { uploadImage } = useImageUpload();
   const { user } = useAuth();
 
+  // Reset state when modal opens/closes or post changes
   useEffect(() => {
     if (post) {
       setTitle(post.title);
@@ -53,7 +55,7 @@ const CreatePostModal = ({
       setCategory("");
       setImageUrl("");
     }
-  }, [post]);
+  }, [post, isOpen]);
 
   const handleSave = () => {
     const tagsArray = tags
@@ -95,6 +97,9 @@ const CreatePostModal = ({
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{post ? "Edit Post" : "Create New Post"}</DialogTitle>
+          <DialogDescription>
+            {post ? "Make changes to your post" : "Create a new post to share your thoughts"}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
