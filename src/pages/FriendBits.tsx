@@ -7,7 +7,7 @@ import ProfileAvatar from "@/components/ui/ProfileAvatar";
 import BitCard from "@/components/bits/BitCard";
 import BitDetailModal from "@/components/bits/BitDetailModal";
 import DailyLearningSection from "@/components/bits/DailyLearningSection";
-import { Calendar, User, Mail, Bookmark } from "lucide-react";
+import { Calendar, User, Mail, Bookmark, Copy, Plus, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { sampleFriends } from "@/data/sampleFriends";
 import { toast } from "sonner";
@@ -18,7 +18,8 @@ import StreakDisplay from "@/components/gamification/StreakDisplay";
 import BadgesDisplay from "@/components/gamification/BadgesDisplay";
 import { BookmarkItem, BookmarkFolder } from "@/types/bookmark";
 import { Card } from "@/components/ui/card";
-import { initialBookmarksData } from "@/data/initialBookmarks";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const sampleFriendBits = [
   {
@@ -221,6 +222,14 @@ const FriendBits = () => {
     toast.success("Bit updated successfully!");
   };
 
+  const handleCopyBookmark = (bookmark: BookmarkItem) => {
+    toast.success(`Bookmark "${bookmark.title}" copied to your collection`);
+  };
+
+  const handleCreateBitFromBookmark = (bookmark: BookmarkItem) => {
+    toast.success(`New bit created from bookmark "${bookmark.title}"`);
+  };
+
   if (!user && !authLoading) {
     return <Navigate to="/auth" replace />;
   }
@@ -393,15 +402,77 @@ const FriendBits = () => {
                                 {bookmark.description || bookmark.url}
                               </p>
                             </div>
-                            <div className="flex items-center">
-                              <a 
-                                href={bookmark.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="p-2 text-muted-foreground hover:text-primary transition-colors"
-                              >
-                                <Bookmark className="h-5 w-5" />
-                              </a>
+                            <div className="flex items-center gap-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-8 w-8 rounded-full"
+                                      onClick={() => handleCopyBookmark(bookmark)}
+                                    >
+                                      <Copy className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Copy to my bookmarks</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-8 w-8 rounded-full"
+                                      onClick={() => handleCreateBitFromBookmark(bookmark)}
+                                    >
+                                      <Plus className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Create bit from bookmark</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <a 
+                                      href={bookmark.url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      className="inline-flex items-center justify-center h-8 w-8 rounded-full text-muted-foreground hover:text-primary transition-colors"
+                                    >
+                                      <ExternalLink className="h-4 w-4" />
+                                    </a>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Visit link</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 rounded-full"
+                                    >
+                                      <Bookmark className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>View bookmark details</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           </div>
                           
