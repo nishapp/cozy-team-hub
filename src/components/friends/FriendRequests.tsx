@@ -47,7 +47,7 @@ const FriendRequests = () => {
             <div className="text-center py-12">
               <h3 className="text-lg font-medium mb-2">No incoming requests</h3>
               <p className="text-muted-foreground">
-                When someone adds you as a friend, you'll see their request here.
+                When someone adds you as a buddy, you'll see their request here.
               </p>
             </div>
           ) : (
@@ -70,7 +70,7 @@ const FriendRequests = () => {
             <div className="text-center py-12">
               <h3 className="text-lg font-medium mb-2">No outgoing requests</h3>
               <p className="text-muted-foreground">
-                Friend requests you've sent will appear here.
+                Buddy requests you've sent will appear here.
               </p>
             </div>
           ) : (

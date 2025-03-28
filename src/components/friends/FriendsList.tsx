@@ -18,7 +18,7 @@ const FriendsList = () => {
       <div className="flex items-center relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input 
-          placeholder="Search friends..."
+          placeholder="Search buddies..."
           className="pl-10 w-full max-w-md"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -27,11 +27,11 @@ const FriendsList = () => {
       
       {filteredFriends.length === 0 ? (
         <div className="text-center py-12">
-          <h3 className="text-lg font-medium mb-2">No friends found</h3>
+          <h3 className="text-lg font-medium mb-2">No buddies found</h3>
           <p className="text-muted-foreground">
             {searchQuery 
               ? "Try adjusting your search query." 
-              : "Add some friends to get started!"}
+              : "Add some buddies to get started!"}
           </p>
         </div>
       ) : (

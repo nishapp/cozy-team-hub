@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
@@ -150,8 +151,8 @@ const FriendBits = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Friend Not Found</h1>
-          <p className="text-muted-foreground">The friend you're looking for doesn't exist or isn't accessible.</p>
+          <h1 className="text-2xl font-bold mb-2">Bit Buddy Not Found</h1>
+          <p className="text-muted-foreground">The buddy you're looking for doesn't exist or isn't accessible.</p>
         </div>
       </div>
     );
@@ -192,7 +193,7 @@ const FriendBits = () => {
                     {friend.mutual_friends > 0 && (
                       <div className="flex items-center bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
                         <User className="w-4 h-4 mr-1.5 text-white" />
-                        <span className="text-sm text-white">{friend.mutual_friends} mutual friends</span>
+                        <span className="text-sm text-white">{friend.mutual_friends} mutual buddies</span>
                       </div>
                     )}
                   </div>

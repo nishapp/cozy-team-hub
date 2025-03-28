@@ -31,7 +31,7 @@ export function MainNavigation({ isAdmin }: MainNavigationProps) {
       requiresAuth: true,
     },
     {
-      name: "Friends",
+      name: "Buddies",
       href: "/friends",
       icon: UserPlus,
       requiresAuth: true,

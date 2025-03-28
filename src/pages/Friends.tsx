@@ -32,16 +32,16 @@ const Friends = () => {
         
         <main className="flex-1 container py-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold">Friends</h1>
+            <h1 className="text-3xl font-bold">Buddies</h1>
             <p className="text-muted-foreground mt-2">
-              Connect with other users, manage friend requests, and discover new connections.
+              Connect with other users, manage buddy requests, and discover new connections.
             </p>
           </div>
           
           <Tabs defaultValue="friends" className="w-full" onValueChange={setActiveTab}>
             <TabsList className="mb-8">
-              <TabsTrigger value="friends">My Friends</TabsTrigger>
-              <TabsTrigger value="requests">Friend Requests</TabsTrigger>
+              <TabsTrigger value="friends">My Buddies</TabsTrigger>
+              <TabsTrigger value="requests">Buddy Requests</TabsTrigger>
               <TabsTrigger value="discover">Discover</TabsTrigger>
             </TabsList>
             

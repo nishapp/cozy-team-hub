@@ -41,13 +41,13 @@ const FriendCard = ({
   const handleFriendAction = () => {
     if (status.isFriend) {
       setStatus({...status, isFriend: false});
-      toast.success("Friend removed");
+      toast.success("Bit Buddy removed");
     } else if (status.isPending) {
       setStatus({...status, isPending: false});
-      toast.success("Friend request cancelled");
+      toast.success("Buddy request cancelled");
     } else {
       setStatus({...status, isPending: true});
-      toast.success("Friend request sent");
+      toast.success("Buddy request sent");
     }
   };
 
@@ -56,7 +56,7 @@ const FriendCard = ({
       onAccept(friend.id);
     } else {
       setStatus({isFriend: true, isPending: false, isRecommendation: false});
-      toast.success(`You are now friends with ${friend.name}`);
+      toast.success(`You are now buddies with ${friend.name}`);
     }
   };
 
@@ -65,7 +65,7 @@ const FriendCard = ({
       onReject(friend.id);
     } else {
       setStatus({...status, isPending: false});
-      toast.success("Friend request rejected");
+      toast.success("Buddy request rejected");
     }
   };
 
@@ -119,7 +119,7 @@ const FriendCard = ({
                     </Button>
                   </HoverCardTrigger>
                   <HoverCardContent className="w-auto p-2">
-                    <p className="text-sm">{friend.mutual_friends} mutual friends</p>
+                    <p className="text-sm">{friend.mutual_friends} mutual buddies</p>
                   </HoverCardContent>
                 </HoverCard>
               )}
@@ -157,7 +157,7 @@ const FriendCard = ({
               {status.isFriend ? (
                 <>
                   <UserMinus className="h-4 w-4 mr-1" />
-                  Unfriend
+                  Remove Buddy
                 </>
               ) : status.isPending ? (
                 <>
@@ -167,7 +167,7 @@ const FriendCard = ({
               ) : (
                 <>
                   <UserPlus className="h-4 w-4 mr-1" />
-                  Add Friend
+                  Add Buddy
                 </>
               )}
             </Button>
