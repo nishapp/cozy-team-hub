@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
@@ -118,6 +119,16 @@ const FriendBits = () => {
     setIsModalOpen(true);
   };
 
+  const handleRelatedBitClick = (bitId: string) => {
+    // Find the bit by ID
+    const bit = bits.find(b => b.id === bitId);
+    if (bit) {
+      handleBitClick(bit);
+    } else {
+      toast.error("Related bit not found");
+    }
+  };
+
   const handleModalClose = () => {
     setIsModalOpen(false);
   };
@@ -235,6 +246,8 @@ const FriendBits = () => {
                 learnings={learnings}
                 friendName={friend.name}
                 friendAvatar={friend.avatar_url}
+                bits={bits}
+                onBitClick={handleRelatedBitClick}
               />
               
               {learnings.length === 0 && (

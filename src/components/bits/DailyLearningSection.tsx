@@ -20,12 +20,16 @@ interface DailyLearningProps {
   }[];
   friendName: string;
   friendAvatar?: string;
+  bits?: any[];
+  onBitClick?: (bitId: string) => void;
 }
 
 const DailyLearningSection: React.FC<DailyLearningProps> = ({ 
   learnings, 
   friendName,
-  friendAvatar
+  friendAvatar,
+  bits,
+  onBitClick
 }) => {
   const navigate = useNavigate();
   
@@ -46,9 +50,12 @@ const DailyLearningSection: React.FC<DailyLearningProps> = ({
   
   const handleLearningClick = (learning: typeof learnings[0]) => {
     if (learning.relatedBitId) {
-      // Navigate to bit detail or open bit modal
-      console.log("Navigate to bit:", learning.relatedBitId);
-      // For demonstration purposes, we're just logging. In a real app, this would navigate or open a modal.
+      // Call the onBitClick handler if provided
+      if (onBitClick) {
+        onBitClick(learning.relatedBitId);
+      } else {
+        console.log("Navigate to bit:", learning.relatedBitId);
+      }
     } else if (learning.externalUrl) {
       // Open external URL in a new tab
       window.open(learning.externalUrl, "_blank", "noopener,noreferrer");
