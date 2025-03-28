@@ -1,9 +1,9 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { useAuth } from "@/context/AuthContext";
-import { Loader2, Bold, Italic, List, ListOrdered, Quote, Code, Underline, Image, Link } from "lucide-react";
+import EditorToolbar from "./EditorToolbar";
+import EditorContent from "./EditorContent";
 
 interface RichTextEditorProps {
   value: string;
@@ -87,135 +87,17 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div className="border rounded-md">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 p-2 bg-muted/30 border-b">
-        <div className="flex gap-1">
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handleCommand('bold')}
-          >
-            <Bold size={18} />
-          </Button>
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handleCommand('italic')}
-          >
-            <Italic size={18} />
-          </Button>
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handleCommand('underline')}
-          >
-            <Underline size={18} />
-          </Button>
-        </div>
-
-        <div className="flex gap-1">
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handleCommand('insertUnorderedList')}
-          >
-            <List size={18} />
-          </Button>
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handleCommand('insertOrderedList')}
-          >
-            <ListOrdered size={18} />
-          </Button>
-        </div>
-
-        <div className="flex gap-1">
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handleCommand('formatBlock', '<blockquote>')}
-          >
-            <Quote size={18} />
-          </Button>
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handleCommand('formatBlock', '<pre>')}
-          >
-            <Code size={18} />
-          </Button>
-        </div>
-
-        <div className="flex gap-1">
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => {
-              const url = prompt('Enter URL:');
-              if (url) handleCommand('createLink', url);
-            }}
-          >
-            <Link size={18} />
-          </Button>
-          
-          <div className="relative">
-            <Button 
-              type="button" 
-              variant="ghost" 
-              size="icon" 
-              disabled={uploading}
-            >
-              {uploading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Image size={18} />
-              )}
-              <input
-                type="file"
-                className="absolute inset-0 opacity-0 cursor-pointer"
-                accept="image/*"
-                onChange={handleImageUpload}
-                disabled={uploading}
-              />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Editor Area */}
-      <div
-        ref={editorRef}
-        className="p-4 min-h-[200px] outline-none"
-        contentEditable
-        onInput={updateValue}
-        onBlur={updateValue}
-        data-placeholder={placeholder}
-        style={{ 
-          position: 'relative',
-        }}
+      <EditorToolbar 
+        onCommand={handleCommand}
+        handleImageUpload={handleImageUpload}
+        uploading={uploading}
       />
-      {/* Add placeholder with CSS */}
-      {!value && (
-        <div 
-          className="absolute pointer-events-none text-muted-foreground p-4"
-          style={{ 
-            top: 0, 
-            marginTop: '4.5rem', // Adjust this value to properly position the placeholder
-            zIndex: 1 
-          }}
-        >
-          {placeholder}
-        </div>
-      )}
+      <EditorContent
+        editorRef={editorRef}
+        updateValue={updateValue}
+        placeholder={placeholder}
+        value={value}
+      />
     </div>
   );
 };
