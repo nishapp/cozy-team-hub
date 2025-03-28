@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Send, X } from "lucide-react";
+import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Send, X, Plus } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { toast } from "sonner";
 
 interface Comment {
   id: string;
@@ -65,13 +67,16 @@ interface BitDetailModalProps {
   bit: Bit;
   isOpen: boolean;
   onClose: () => void;
+  onBitUpdated?: (bit: Bit) => void;
 }
 
-const BitDetailModal: React.FC<BitDetailModalProps> = ({ bit, isOpen, onClose }) => {
+const BitDetailModal: React.FC<BitDetailModalProps> = ({ bit, isOpen, onClose, onBitUpdated }) => {
   const [comments, setComments] = useState<Comment[]>(sampleComments);
   const [newComment, setNewComment] = useState("");
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [wdiltComment, setWdiltComment] = useState(bit.wdylt_comment || "");
+  const [isWdiltOpen, setIsWdiltOpen] = useState(false);
 
   // Format the date
   const formattedDate = new Date(bit.created_at).toLocaleDateString("en-US", {
@@ -100,6 +105,26 @@ const BitDetailModal: React.FC<BitDetailModalProps> = ({ bit, isOpen, onClose })
     if (e.key === "Enter") {
       handleAddComment();
     }
+  };
+  
+  const handleWdiltSubmit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!wdiltComment.trim()) {
+      setIsWdiltOpen(false);
+      return;
+    }
+    
+    if (onBitUpdated) {
+      const updatedBit = {
+        ...bit,
+        wdylt_comment: wdiltComment.trim()
+      };
+      onBitUpdated(updatedBit);
+    }
+    
+    toast.success("WDILT comment added!");
+    setIsWdiltOpen(false);
   };
 
   // Generate a gradient based on the bit's category
@@ -220,6 +245,60 @@ const BitDetailModal: React.FC<BitDetailModalProps> = ({ bit, isOpen, onClose })
                   <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
                     <MessageCircle size={16} />
                   </Button>
+                  
+                  <Popover open={isWdiltOpen} onOpenChange={setIsWdiltOpen}>
+                    <PopoverTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="rounded-full h-8 w-8 flex items-center justify-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsWdiltOpen(true);
+                        }}
+                      >
+                        <Plus size={16} />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                      className="w-72" 
+                      onClick={(e) => e.stopPropagation()}
+                      side="top"
+                    >
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Add @WDYLT Comment</h4>
+                        <p className="text-xs text-muted-foreground">
+                          Share what you learned today about this bit
+                        </p>
+                        <div className="space-y-2">
+                          <Input 
+                            placeholder="Today I learned..." 
+                            value={wdiltComment}
+                            onChange={(e) => setWdiltComment(e.target.value)}
+                            className="w-full"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsWdiltOpen(false);
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              size="sm"
+                              onClick={handleWdiltSubmit}
+                            >
+                              Add Comment
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="flex gap-1">
                   <Button 

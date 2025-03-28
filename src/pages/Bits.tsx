@@ -89,7 +89,7 @@ const sampleBits = [
     category: "hobbies",
     visibility: "public",
     wdylt_comment: "Growing my own food is so rewarding!",
-    image_url: "https://images.unsplash.com/photo-1466692476655-ab0c26c69cbf?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    image_url: "https://images.unsplash.com/photo-1466692478-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
     created_at: new Date().toISOString(),
     link: "https://www.gardeningknowhow.com/vegetable/"
   },
@@ -501,6 +501,7 @@ const Bits = () => {
               bit={{...selectedBit, shared_by: selectedBit.shared_by || "You"}} 
               isOpen={!!selectedBit} 
               onClose={() => setSelectedBit(null)} 
+              onBitUpdated={handleBitUpdated}
             />
           )}
         </main>
