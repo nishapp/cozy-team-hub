@@ -6,9 +6,11 @@ import PageTransition from "../components/ui/PageTransition";
 import { useAuth } from "../context/AuthContext";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
 import BitCard from "@/components/bits/BitCard";
+import BitDetailModal from "@/components/bits/BitDetailModal";
 import { Calendar, User, Mail } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { sampleFriends } from "@/data/sampleFriends";
+import { toast } from "sonner";
 
 // For demo purposes, let's create some sample bits for friends
 const sampleFriendBits = [
@@ -53,6 +55,8 @@ const FriendBits = () => {
   const [friend, setFriend] = useState<any>(null);
   const [bits, setBits] = useState(sampleFriendBits);
   const [loading, setLoading] = useState(true);
+  const [selectedBit, setSelectedBit] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (friendId) {
@@ -65,6 +69,28 @@ const FriendBits = () => {
       setLoading(false);
     }
   }, [friendId]);
+
+  const handleBitClick = (bit: any) => {
+    setSelectedBit({
+      ...bit,
+      shared_by: friend?.name || bit.shared_by,
+      author_avatar: friend?.avatar_url || bit.author_avatar
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleBitUpdated = (updatedBit: any) => {
+    // Update the bit in the bits array
+    const updatedBits = bits.map(bit => 
+      bit.id === updatedBit.id ? { ...bit, ...updatedBit } : bit
+    );
+    setBits(updatedBits);
+    toast.success("Bit updated successfully!");
+  };
 
   if (!user && !authLoading) {
     return <Navigate to="/auth" replace />;
@@ -150,11 +176,22 @@ const FriendBits = () => {
                   <BitCard 
                     key={bit.id} 
                     bit={{...bit, shared_by: friend.name, author_avatar: friend.avatar_url}}
+                    onClick={() => handleBitClick(bit)}
                   />
                 ))}
               </div>
             )}
           </div>
+          
+          {/* Bit Detail Modal */}
+          {selectedBit && (
+            <BitDetailModal
+              bit={selectedBit}
+              isOpen={isModalOpen}
+              onClose={handleModalClose}
+              onBitUpdated={handleBitUpdated}
+            />
+          )}
         </main>
       </div>
     </PageTransition>
