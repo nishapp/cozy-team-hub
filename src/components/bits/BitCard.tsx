@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -216,7 +217,7 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmar
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="rounded-full h-8 w-8"
+                className="rounded-full h-8 w-8 flex items-center justify-center"
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsWdiltOpen(true);
