@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
@@ -8,7 +7,7 @@ import ProfileAvatar from "@/components/ui/ProfileAvatar";
 import BitCard from "@/components/bits/BitCard";
 import BitDetailModal from "@/components/bits/BitDetailModal";
 import DailyLearningSection from "@/components/bits/DailyLearningSection";
-import { Calendar, User, Mail } from "lucide-react";
+import { Calendar, User, Mail, Bookmark } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { sampleFriends } from "@/data/sampleFriends";
 import { toast } from "sonner";
@@ -17,8 +16,10 @@ import { Glow } from "@/components/ui/glow";
 import UserPointsCard from "@/components/gamification/UserPointsCard";
 import StreakDisplay from "@/components/gamification/StreakDisplay";
 import BadgesDisplay from "@/components/gamification/BadgesDisplay";
+import { BookmarkItem, BookmarkFolder } from "@/types/bookmark";
+import { Card } from "@/components/ui/card";
+import { initialBookmarksData } from "@/data/initialBookmarks";
 
-// Sample friend bits for demo
 const sampleFriendBits = [
   {
     id: "bit-1",
@@ -62,7 +63,6 @@ const sampleFriendBits = [
   }
 ];
 
-// Sample daily learnings for demo
 const sampleDailyLearnings = [
   {
     id: "learning-1",
@@ -102,7 +102,7 @@ const sampleBadges = [
     id: "1",
     name: "Newcomer",
     description: "Created your first bit",
-    imageUrl: null, // Using null now to show our fallback icons
+    imageUrl: null,
     pointsReward: 50,
     earnedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -110,7 +110,7 @@ const sampleBadges = [
     id: "2",
     name: "Consistency",
     description: "Maintained a 3-day streak",
-    imageUrl: null, // Using null to show our fallback icons
+    imageUrl: null,
     pointsReward: 75,
     earnedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -118,18 +118,51 @@ const sampleBadges = [
     id: "3",
     name: "Buddy Network",
     description: "Connected with 5 buddies",
-    imageUrl: null, // Using null to show our fallback icons
+    imageUrl: null,
     pointsReward: 100,
     earnedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
   }
 ];
 
 const sampleActivityDates = [
-  new Date(), // today
-  new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // yesterday
-  new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-  new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-  new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
+  new Date(),
+  new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+  new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+  new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+  new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+];
+
+const sampleSharedBookmarks: BookmarkItem[] = [
+  {
+    id: "shared-bookmark-1",
+    title: "React Performance Optimization",
+    url: "https://reactjs.org/docs/optimizing-performance.html",
+    description: "Official guide on optimizing performance in React applications",
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    isPrivate: false,
+    tags: ["react", "performance", "frontend"]
+  },
+  {
+    id: "shared-bookmark-2",
+    title: "JavaScript Event Loop Explained",
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/EventLoop",
+    description: "Deep dive into how the JavaScript event loop works",
+    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    isPrivate: false,
+    tags: ["javascript", "event-loop", "asynchronous"]
+  },
+  {
+    id: "shared-bookmark-3",
+    title: "CSS Grid Layout Guide",
+    url: "https://css-tricks.com/snippets/css/complete-guide-grid/",
+    description: "A comprehensive guide to CSS Grid Layout",
+    createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    isPrivate: false,
+    tags: ["css", "grid", "layout"]
+  }
 ];
 
 const FriendBits = () => {
@@ -148,6 +181,7 @@ const FriendBits = () => {
   const [longestStreak, setLongestStreak] = useState(7);
   const [badges, setBadges] = useState(sampleBadges);
   const [activityDates, setActivityDates] = useState(sampleActivityDates);
+  const [sharedBookmarks, setSharedBookmarks] = useState(sampleSharedBookmarks);
 
   useEffect(() => {
     if (friendId) {
@@ -279,9 +313,10 @@ const FriendBits = () => {
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto bg-muted/60 backdrop-blur-sm">
+            <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto bg-muted/60 backdrop-blur-sm">
               <TabsTrigger value="bits">Bits</TabsTrigger>
               <TabsTrigger value="learnings">Daily Learnings</TabsTrigger>
+              <TabsTrigger value="bookmarks">Bookmarks</TabsTrigger>
             </TabsList>
             
             <TabsContent value="bits" className="space-y-6 animate-fade-in">
@@ -324,6 +359,74 @@ const FriendBits = () => {
                   </p>
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="bookmarks" className="animate-fade-in">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">{friend.name}'s Shared Bookmarks</h2>
+                </div>
+                
+                {sharedBookmarks.length === 0 ? (
+                  <div className="text-center py-12 bg-muted/30 rounded-lg">
+                    <h3 className="text-lg font-medium mb-2">No bookmarks found</h3>
+                    <p className="text-muted-foreground">
+                      {friend.name} hasn't shared any bookmarks yet.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {sharedBookmarks.map(bookmark => (
+                      <Card key={bookmark.id} className="p-4 hover:bg-muted/50 transition-colors">
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <a 
+                                href={bookmark.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-lg font-medium hover:text-primary transition-colors"
+                              >
+                                {bookmark.title}
+                              </a>
+                              <p className="text-sm text-muted-foreground truncate max-w-xl">
+                                {bookmark.description || bookmark.url}
+                              </p>
+                            </div>
+                            <div className="flex items-center">
+                              <a 
+                                href={bookmark.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                              >
+                                <Bookmark className="h-5 w-5" />
+                              </a>
+                            </div>
+                          </div>
+                          
+                          {bookmark.tags && bookmark.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {bookmark.tags.map(tag => (
+                                <span 
+                                  key={tag} 
+                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/10 text-primary"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          
+                          <div className="text-xs text-muted-foreground">
+                            Shared {formatDistanceToNow(new Date(bookmark.createdAt), { addSuffix: true })}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             </TabsContent>
           </Tabs>
           
