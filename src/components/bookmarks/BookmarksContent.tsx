@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useState } from "react";
 import { BookmarkFolder, BookmarkItem } from "@/types/bookmark";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   Dialog,
@@ -81,7 +81,7 @@ const BookmarksContent: React.FC<BookmarksContentProps> = ({
   rootBookmarks,
 }) => {
   const { toast } = useToast();
-  const { closeSidebar } = useSidebar();
+  const sidebar = useSidebar();
 
   // State for dialogs
   const [isCreateFolderDialogOpen, setIsCreateFolderDialogOpen] =
@@ -94,24 +94,32 @@ const BookmarksContent: React.FC<BookmarksContentProps> = ({
   // State for managing the selected bookmark or folder for deletion/edit
   const [selectedBookmarkId, setSelectedBookmarkId] =
     React.useState<string | null>(null);
+  const [folderToDeleteId, setFolderToDeleteId] = 
+    React.useState<string | null>(null);
   const [selectedFolderForEdit, setSelectedFolderForEdit] =
     React.useState<BookmarkFolder | null>(null);
 
   // Handlers for opening dialogs
   const handleOpenCreateFolderDialog = () => {
     setIsCreateFolderDialogOpen(true);
-    closeSidebar();
+    if (sidebar?.closeSidebar) {
+      sidebar.closeSidebar();
+    }
   };
 
   const handleOpenCreateBookmarkDialog = () => {
     setIsCreateBookmarkDialogOpen(true);
-    closeSidebar();
+    if (sidebar?.closeSidebar) {
+      sidebar.closeSidebar();
+    }
   };
 
   const handleOpenEditFolderDialog = (folder: BookmarkFolder) => {
     setSelectedFolderForEdit(folder);
     setIsEditFolderDialogOpen(true);
-    closeSidebar();
+    if (sidebar?.closeSidebar) {
+      sidebar.closeSidebar();
+    }
   };
 
   // Handlers for closing dialogs
@@ -159,11 +167,11 @@ const BookmarksContent: React.FC<BookmarksContentProps> = ({
 
   // Handler for deleting a folder
   const handleDeleteFolder = (folderId: string) => {
-    setSelectedFolderId(folderId);
+    setFolderToDeleteId(folderId);
   };
 
   const confirmDeleteFolder = () => {
-    if (!selectedFolderId) return;
+    if (!folderToDeleteId) return;
 
     // Function to recursively find all child folder IDs
     const getAllChildFolderIds = (folderId: string): string[] => {
@@ -177,25 +185,25 @@ const BookmarksContent: React.FC<BookmarksContentProps> = ({
     };
 
     // Get all child folder IDs
-    const childFolderIds = getAllChildFolderIds(selectedFolderId);
+    const childFolderIds = getAllChildFolderIds(folderToDeleteId);
 
     // Filter out the selected folder and all its children
     const updatedFolders = allFolders.filter(
-      (folder) => folder.id !== selectedFolderId && !childFolderIds.includes(folder.id)
+      (folder) => folder.id !== folderToDeleteId && !childFolderIds.includes(folder.id)
     );
 
     // Also, remove any bookmarks that are within the deleted folders
     const updatedBookmarksData = {
-      folders: updatedFolders.map((folder) => ({
-        ...folder,
-        bookmarks: folder.bookmarks, // Keep bookmarks, as they are not being deleted
-      })),
+      folders: updatedFolders,
       rootBookmarks: rootBookmarks, // Keep root bookmarks, as they are not being deleted
     };
 
     updateBookmarksData(updatedBookmarksData);
-    onSelectFolder(currentFolder?.parentId || null);
-    setSelectedFolderId(null);
+    // If we're currently in the folder being deleted, navigate to parent
+    if (selectedFolderId === folderToDeleteId) {
+      onSelectFolder(currentFolder?.parentId || null);
+    }
+    setFolderToDeleteId(null);
 
     toast({
       title: "Folder deleted.",
@@ -383,7 +391,7 @@ const BookmarksContent: React.FC<BookmarksContentProps> = ({
             handleBreadcrumbClick(currentFolder?.parentId || null)
           }
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="w-4 h-4 mr-2" aria-label="Back" />
           Back
         </Button>
         {breadcrumbs.map((crumb, index) => (
@@ -411,11 +419,11 @@ const BookmarksContent: React.FC<BookmarksContentProps> = ({
             size="sm"
             onClick={handleOpenCreateFolderDialog}
           >
-            <FolderPlus className="w-4 h-4 mr-2" />
+            <FolderPlus className="w-4 h-4 mr-2" aria-label="New Folder" />
             New Folder
           </Button>
           <Button size="sm" onClick={handleOpenCreateBookmarkDialog}>
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4 mr-2" aria-label="New Bookmark" />
             New Bookmark
           </Button>
         </div>
@@ -444,7 +452,7 @@ const BookmarksContent: React.FC<BookmarksContentProps> = ({
                     variant="ghost"
                     className="absolute top-2 right-2 h-8 w-8 p-0 data-[state=open]:bg-muted"
                   >
-                    <MoreVertical className="h-4 w-4" />
+                    <MoreVertical className="h-4 w-4" aria-label="Open menu" />
                     <span className="sr-only">Open menu</span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -494,7 +502,7 @@ const BookmarksContent: React.FC<BookmarksContentProps> = ({
                     variant="ghost"
                     className="absolute top-2 right-2 h-8 w-8 p-0 data-[state=open]:bg-muted"
                   >
-                    <MoreVertical className="h-4 w-4" />
+                    <MoreVertical className="h-4 w-4" aria-label="Open menu" />
                     <span className="sr-only">Open menu</span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -754,7 +762,10 @@ const BookmarksContent: React.FC<BookmarksContentProps> = ({
       </Dialog>
 
       {/* Delete Bookmark Confirmation Dialog */}
-      <AlertDialog open={selectedBookmarkId !== null} onOpenChange={setSelectedBookmarkId}>
+      <AlertDialog 
+        open={selectedBookmarkId !== null} 
+        onOpenChange={(open) => !open && setSelectedBookmarkId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -775,7 +786,10 @@ const BookmarksContent: React.FC<BookmarksContentProps> = ({
       </AlertDialog>
 
       {/* Delete Folder Confirmation Dialog */}
-      <AlertDialog open={selectedFolderId !== null} onOpenChange={setSelectedFolderId}>
+      <AlertDialog 
+        open={folderToDeleteId !== null} 
+        onOpenChange={(open) => !open && setFolderToDeleteId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -785,7 +799,7 @@ const BookmarksContent: React.FC<BookmarksContentProps> = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setSelectedFolderId(null)}>
+            <AlertDialogCancel onClick={() => setFolderToDeleteId(null)}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteFolder}>
