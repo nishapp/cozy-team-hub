@@ -9,7 +9,8 @@ import {
   Search,
   ChevronRight,
   LayoutGrid,
-  LayoutList
+  LayoutList,
+  FileCode
 } from "lucide-react";
 import { BookmarkFolder, BookmarkItem } from "@/types/bookmark";
 import { FolderDialog } from "./FolderDialog";
@@ -34,6 +35,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import BitForm from "@/components/bits/BitForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface BookmarksContentProps {
   folders: BookmarkFolder[];
@@ -71,6 +80,8 @@ export const BookmarksContent = ({
   const [folderToEdit, setFolderToEdit] = useState<BookmarkFolder | null>(null);
   const [bookmarkToEdit, setBookmarkToEdit] = useState<BookmarkItem | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list"); // Default to list view
+  const [isCreateBitOpen, setIsCreateBitOpen] = useState(false);
+  const [selectedBookmark, setSelectedBookmark] = useState<BookmarkItem | null>(null);
   
   const filteredFolders = folders.filter(folder => 
     folder.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -301,6 +312,30 @@ export const BookmarksContent = ({
     return url;
   };
 
+  const handleCreateBit = (bookmark: BookmarkItem) => {
+    setSelectedBookmark(bookmark);
+    setIsCreateBitOpen(true);
+  };
+
+  const handleBitSubmit = (bitData: any) => {
+    toast.success("Bit created successfully from bookmark!");
+    setIsCreateBitOpen(false);
+    setSelectedBookmark(null);
+  };
+
+  const getInitialBitData = () => {
+    if (!selectedBookmark) return {};
+    
+    return {
+      title: selectedBookmark.title,
+      description: selectedBookmark.description || "",
+      link: selectedBookmark.url,
+      tags: [],
+      category: "bookmarks",
+      visibility: "public",
+    };
+  };
+
   return (
     <div className="flex-1 overflow-auto p-6">
       <div className="mb-6">
@@ -390,7 +425,7 @@ export const BookmarksContent = ({
       </div>
       
       {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-max">
           {filteredFolders.length > 0 && filteredFolders.map((folder) => (
             <Card key={folder.id} className="group hover:shadow-md transition-shadow">
               <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
@@ -494,6 +529,16 @@ export const BookmarksContent = ({
                       <span className="sr-only">Open link</span>
                     </a>
                   </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handleCreateBit(bookmark)}
+                    title="Create Bit from Bookmark"
+                  >
+                    <FileCode className="h-4 w-4" />
+                    <span className="sr-only">Create Bit</span>
+                  </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -509,6 +554,12 @@ export const BookmarksContent = ({
                       >
                         <Pencil className="h-4 w-4 mr-2" />
                         Edit Bookmark
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleCreateBit(bookmark)}
+                      >
+                        <FileCode className="h-4 w-4 mr-2" />
+                        Create Bit
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -625,7 +676,7 @@ export const BookmarksContent = ({
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm">Title</th>
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden md:table-cell">URL</th>
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden lg:table-cell">Description</th>
-                      <th className="text-right p-3 font-medium text-muted-foreground text-sm w-28">Actions</th>
+                      <th className="text-right p-3 font-medium text-muted-foreground text-sm w-36">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -684,6 +735,16 @@ export const BookmarksContent = ({
                                 <ExternalLink className="h-4 w-4" />
                                 <span className="sr-only">Open</span>
                               </a>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleCreateBit(bookmark)}
+                              title="Create Bit from Bookmark"
+                            >
+                              <FileCode className="h-4 w-4" />
+                              <span className="sr-only">Create Bit</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -831,6 +892,23 @@ export const BookmarksContent = ({
           "Are you sure you want to delete this bookmark? This action cannot be undone."
         }
       />
+
+      <Dialog open={isCreateBitOpen} onOpenChange={setIsCreateBitOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Bit from Bookmark</DialogTitle>
+            <DialogDescription>
+              Use this bookmark to create a new bit. You can customize the details below.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <BitForm 
+            onSubmit={handleBitSubmit} 
+            onCancel={() => setIsCreateBitOpen(false)} 
+            initialData={getInitialBitData()}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
