@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
@@ -13,8 +12,8 @@ import { formatDistanceToNow } from "date-fns";
 import { sampleFriends } from "@/data/sampleFriends";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Glow } from "@/components/ui/glow";
 
-// For demo purposes, let's create some sample bits for friends
 const sampleFriendBits = [
   {
     id: "bit1",
@@ -51,7 +50,6 @@ const sampleFriendBits = [
   }
 ];
 
-// Sample daily learnings data
 const sampleDailyLearnings = [
   {
     id: "learn1",
@@ -100,12 +98,8 @@ const FriendBits = () => {
 
   useEffect(() => {
     if (friendId) {
-      // In a real application, we would fetch the friend from the API
       const foundFriend = sampleFriends.find(f => f.id === friendId);
       setFriend(foundFriend);
-      
-      // In a real application, we would fetch the bits from the API
-      // For now, we'll just use our sample data
       setLoading(false);
     }
   }, [friendId]);
@@ -120,7 +114,6 @@ const FriendBits = () => {
   };
 
   const handleRelatedBitClick = (bitId: string) => {
-    // Find the bit by ID
     const bit = bits.find(b => b.id === bitId);
     if (bit) {
       handleBitClick(bit);
@@ -134,7 +127,6 @@ const FriendBits = () => {
   };
 
   const handleBitUpdated = (updatedBit: any) => {
-    // Update the bit in the bits array
     const updatedBits = bits.map(bit => 
       bit.id === updatedBit.id ? { ...bit, ...updatedBit } : bit
     );
@@ -171,53 +163,60 @@ const FriendBits = () => {
         <Navbar />
         
         <main className="flex-1 container py-8">
-          {/* Friend Profile Header */}
-          <div className="bg-card rounded-xl p-6 mb-8 shadow-sm">
-            <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-              <ProfileAvatar 
-                src={friend.avatar_url} 
-                fallbackText={friend.name}
-                size="xl"
-                className="border-4 border-background"
-              />
-              
-              <div className="flex-1 space-y-4 text-center md:text-left">
-                <div>
-                  <h1 className="text-3xl font-bold">{friend.name}</h1>
-                  <div className="flex items-center justify-center md:justify-start mt-2 text-muted-foreground">
-                    <Mail className="w-4 h-4 mr-1" />
-                    <span>{friend.email}</span>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-1 text-muted-foreground" />
-                    <span className="text-sm">
-                      Joined {formatDistanceToNow(new Date(friend.joined_date), { addSuffix: true })}
-                    </span>
-                  </div>
-                  
-                  {friend.mutual_friends > 0 && (
-                    <div className="flex items-center">
-                      <User className="w-4 h-4 mr-1 text-muted-foreground" />
-                      <span className="text-sm">{friend.mutual_friends} mutual friends</span>
+          <div className="relative overflow-hidden rounded-xl mb-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-purple-500 to-pink-500 opacity-90" />
+            <Glow className="opacity-70" />
+            <div className="relative z-10 p-8">
+              <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+                <ProfileAvatar 
+                  src={friend.avatar_url} 
+                  fallbackText={friend.name}
+                  size="xl"
+                  className="border-4 border-white/30 shadow-lg"
+                />
+                <div className="flex-1 space-y-4 text-center md:text-left">
+                  <div>
+                    <h1 className="text-4xl font-bold text-white drop-shadow-md">{friend.name}</h1>
+                    <div className="flex items-center justify-center md:justify-start mt-2 text-white/80">
+                      <Mail className="w-4 h-4 mr-1" />
+                      <span>{friend.email}</span>
                     </div>
-                  )}
+                  </div>
+                  <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+                    <div className="flex items-center bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                      <Calendar className="w-4 h-4 mr-1.5 text-white" />
+                      <span className="text-sm text-white">
+                        Joined {formatDistanceToNow(new Date(friend.joined_date), { addSuffix: true })}
+                      </span>
+                    </div>
+                    {friend.mutual_friends > 0 && (
+                      <div className="flex items-center bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                        <User className="w-4 h-4 mr-1.5 text-white" />
+                        <span className="text-sm text-white">{friend.mutual_friends} mutual friends</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
+            <div className="absolute bottom-0 left-0 right-0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 80" className="w-full h-auto">
+                <path 
+                  fill="#ffffff" 
+                  fillOpacity="1" 
+                  d="M0,64L80,58.7C160,53,320,43,480,48C640,53,800,75,960,74.7C1120,75,1280,53,1360,42.7L1440,32L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z"
+                ></path>
+              </svg>
+            </div>
           </div>
           
-          {/* Content Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto">
+            <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto bg-muted/60 backdrop-blur-sm">
               <TabsTrigger value="bits">Bits</TabsTrigger>
               <TabsTrigger value="learnings">Daily Learnings</TabsTrigger>
             </TabsList>
             
-            {/* Friend's Bits Tab */}
-            <TabsContent value="bits" className="space-y-6">
+            <TabsContent value="bits" className="space-y-6 animate-fade-in">
               <h2 className="text-2xl font-bold mb-6">{friend.name}'s Bits</h2>
               
               {bits.length === 0 ? (
@@ -240,8 +239,7 @@ const FriendBits = () => {
               )}
             </TabsContent>
             
-            {/* Daily Learnings Tab */}
-            <TabsContent value="learnings">
+            <TabsContent value="learnings" className="animate-fade-in">
               <DailyLearningSection 
                 learnings={learnings}
                 friendName={friend.name}
@@ -261,7 +259,6 @@ const FriendBits = () => {
             </TabsContent>
           </Tabs>
           
-          {/* Bit Detail Modal */}
           {selectedBit && (
             <BitDetailModal
               bit={selectedBit}
