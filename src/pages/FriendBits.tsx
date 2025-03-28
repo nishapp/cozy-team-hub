@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
 import BitCard from "@/components/bits/BitCard";
 import BitDetailModal from "@/components/bits/BitDetailModal";
+import BookmarkDetailModal from "@/components/bookmarks/BookmarkDetailModal";
 import DailyLearningSection from "@/components/bits/DailyLearningSection";
 import { Calendar, User, Mail, Bookmark, Copy, Plus, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -183,6 +184,8 @@ const FriendBits = () => {
   const [badges, setBadges] = useState(sampleBadges);
   const [activityDates, setActivityDates] = useState(sampleActivityDates);
   const [sharedBookmarks, setSharedBookmarks] = useState(sampleSharedBookmarks);
+  const [selectedBookmark, setSelectedBookmark] = useState<BookmarkItem | null>(null);
+  const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
 
   useEffect(() => {
     if (friendId) {
@@ -228,6 +231,15 @@ const FriendBits = () => {
 
   const handleCreateBitFromBookmark = (bookmark: BookmarkItem) => {
     toast.success(`New bit created from bookmark "${bookmark.title}"`);
+  };
+
+  const handleBookmarkClick = (bookmark: BookmarkItem) => {
+    setSelectedBookmark(bookmark);
+    setIsBookmarkModalOpen(true);
+  };
+
+  const handleBookmarkModalClose = () => {
+    setIsBookmarkModalOpen(false);
   };
 
   if (!user && !authLoading) {
@@ -464,6 +476,7 @@ const FriendBits = () => {
                                       variant="ghost"
                                       size="icon"
                                       className="h-8 w-8 rounded-full"
+                                      onClick={() => handleBookmarkClick(bookmark)}
                                     >
                                       <Bookmark className="h-4 w-4" />
                                     </Button>
@@ -507,6 +520,18 @@ const FriendBits = () => {
               isOpen={isModalOpen}
               onClose={handleModalClose}
               onBitUpdated={handleBitUpdated}
+            />
+          )}
+
+          {selectedBookmark && (
+            <BookmarkDetailModal
+              bookmark={selectedBookmark}
+              friendName={friend.name}
+              friendAvatar={friend.avatar_url}
+              isOpen={isBookmarkModalOpen}
+              onClose={handleBookmarkModalClose}
+              onCopyBookmark={handleCopyBookmark}
+              onCreateBitFromBookmark={handleCreateBitFromBookmark}
             />
           )}
         </main>
