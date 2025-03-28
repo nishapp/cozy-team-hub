@@ -35,7 +35,7 @@
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 222.2 84% 4.9%;
     --sidebar-primary: 217.2 91.2% 59.8%;
     --sidebar-primary-foreground: 222.2 47.4% 11.2%;
@@ -89,7 +89,7 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-white dark:bg-black text-foreground antialiased;
   }
 }
 
@@ -115,7 +115,7 @@
   }
   
   .saas-shadow {
-    @apply shadow-[0_2px_8px_0_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.3)];
+    @apply shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)];
   }
   
   .input-focus-ring {
@@ -124,7 +124,7 @@
   
   /* Pinterest-style masonry grid */
   .masonry-grid {
-    @apply columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4;
+    @apply columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4;
   }
   
   .masonry-item {
@@ -133,15 +133,20 @@
   
   /* Pinterest-style card */
   .bit-card {
-    @apply rounded-xl overflow-hidden border-0 bg-white dark:bg-gray-800 transition-all duration-300 hover:shadow-xl;
+    @apply rounded-2xl overflow-hidden border-0 bg-white dark:bg-gray-800 transition-all duration-300 hover:shadow-xl;
   }
   
   .bit-card-img {
-    @apply rounded-t-xl object-cover w-full transition-transform duration-300 hover:scale-105;
+    @apply rounded-2xl object-cover w-full transition-transform duration-300 hover:scale-105;
   }
   
   .bit-card-content {
     @apply p-4;
+  }
+  
+  /* Pinterest-like extremely rounded elements utility */
+  .pinterest-rounded {
+    @apply rounded-3xl;
   }
   
   /* Rounded elements utility */
@@ -149,4 +154,3 @@
     @apply rounded-full;
   }
 }
-
