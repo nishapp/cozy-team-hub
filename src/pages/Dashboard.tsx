@@ -2,12 +2,12 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
+import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
 import { supabase } from "@/lib/supabase";
+import { Card, CardContent } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import BitCard from "@/components/bits/BitCard";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import LeftSidebar from "@/components/layout/LeftSidebar";
-import SearchBar from "@/components/layout/SearchBar";
 
 // Sample data for demonstration purposes
 const sampleBits = [
@@ -65,34 +65,25 @@ const sampleBits = [
     image_url: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
     created_at: new Date().toISOString(),
   },
-  {
-    id: "6",
-    title: "Summer Fashion Trends",
-    description: "Exploring the hottest fashion trends for this summer season. Bright colors and flowy fabrics are in!",
-    tags: ["fashion", "trends", "summer"],
-    category: "lifestyle",
-    visibility: "public",
-    image_url: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "7",
-    title: "Mountain Hiking Tips",
-    description: "Essential tips for safe and enjoyable mountain hiking experiences. Always be prepared!",
-    tags: ["hiking", "outdoors", "mountains"],
-    category: "adventure",
-    visibility: "public",
-    image_url: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    created_at: new Date().toISOString(),
-  }
 ];
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const [fullName, setFullName] = useState<string>("");
+  const [greeting, setGreeting] = useState<string>("Hello");
   const [bits, setBits] = useState(sampleBits);
 
   useEffect(() => {
+    // Set greeting based on time of day
+    const hours = new Date().getHours();
+    if (hours >= 5 && hours < 12) {
+      setGreeting("Good Morning");
+    } else if (hours >= 12 && hours < 18) {
+      setGreeting("Good Afternoon");
+    } else {
+      setGreeting("Good Evening");
+    }
+
     // Fetch user's profile data to get full name
     const fetchUserProfile = async () => {
       if (!user) return;
@@ -134,28 +125,27 @@ const Dashboard = () => {
 
   return (
     <PageTransition>
-      <SidebarProvider>
-        <div className="flex min-h-screen bg-white dark:bg-black">
-          <LeftSidebar />
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        
+        <main className="flex-1 container py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold">
+              {greeting}, {fullName}
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Here are your latest bits. What did you learn today?
+            </p>
+          </div>
           
-          <SidebarInset>
-            <main className="flex-1 p-4 md:py-6 md:px-8">
-              <div className="flex justify-center items-center sticky top-0 z-10 bg-white dark:bg-black py-4">
-                <SearchBar />
-              </div>
-              
-              {/* Pinterest-style masonry grid */}
-              <div className="masonry-grid mt-4 px-0 md:px-4 mx-auto">
-                {bits.map((bit) => (
-                  <div key={bit.id} className="masonry-item">
-                    <BitCard bit={bit} />
-                  </div>
-                ))}
-              </div>
-            </main>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
+          {/* Pinterest-style masonry grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-max">
+            {bits.map((bit) => (
+              <BitCard key={bit.id} bit={bit} />
+            ))}
+          </div>
+        </main>
+      </div>
     </PageTransition>
   );
 };
