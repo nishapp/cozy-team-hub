@@ -7,4 +7,5 @@ export interface Friend {
   joined_date: string;
   mutual_friends: number;
   is_inbound_request: boolean;
+  points?: number;
 }

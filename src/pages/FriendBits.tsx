@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
@@ -16,6 +17,85 @@ import { Glow } from "@/components/ui/glow";
 import UserPointsCard from "@/components/gamification/UserPointsCard";
 import StreakDisplay from "@/components/gamification/StreakDisplay";
 import BadgesDisplay from "@/components/gamification/BadgesDisplay";
+
+// Sample friend bits for demo
+const sampleFriendBits = [
+  {
+    id: "bit-1",
+    title: "JavaScript Promises Explained",
+    description: "A deep dive into JavaScript promises and async/await. Learn how promises work behind the scenes and how to use them effectively in your code.",
+    tags: ["javascript", "async", "promises"],
+    category: "coding",
+    visibility: "public",
+    image_url: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=500&h=350&fit=crop",
+    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    wdylt_comment: "Always remember that .catch() only catches errors in previous promises, not in the .then() that follows it."
+  },
+  {
+    id: "bit-2",
+    title: "React Hooks Best Practices",
+    description: "Tips and tricks for using React hooks effectively. Learn about dependency arrays, custom hooks, and common pitfalls to avoid.",
+    tags: ["react", "hooks", "javascript", "frontend"],
+    category: "coding",
+    visibility: "public",
+    created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: "bit-3",
+    title: "CSS Grid Layout Tutorial",
+    description: "A comprehensive guide to CSS Grid Layout. Learn how to create complex layouts with just a few lines of CSS.",
+    tags: ["css", "grid", "layout", "web-design"],
+    category: "coding",
+    visibility: "public",
+    image_url: "https://images.unsplash.com/photo-1517134191118-9d595e4c8c2b?w=500&h=350&fit=crop",
+    created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: "bit-4",
+    title: "Productivity Techniques for Developers",
+    description: "Learn how to stay productive as a developer. Techniques include Pomodoro, time-blocking, and effective note-taking.",
+    tags: ["productivity", "techniques", "workflow"],
+    category: "health",
+    visibility: "public",
+    created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    wdylt_comment: "The technique that worked best for me was time-blocking combined with the 2-minute rule."
+  }
+];
+
+// Sample daily learnings for demo
+const sampleDailyLearnings = [
+  {
+    id: "learning-1",
+    date: new Date().toISOString(),
+    content: "Learned about React Context API and how to use it for global state management.",
+    tags: ["react", "context-api", "state-management"],
+    title: "React Context API",
+    relatedBitId: "bit-2"
+  },
+  {
+    id: "learning-2",
+    date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    content: "Discovered a great technique for debugging complex JavaScript promises using async/await and try/catch blocks.",
+    tags: ["javascript", "debugging", "promises"],
+    title: "Debugging Promises",
+    relatedBitId: "bit-1"
+  },
+  {
+    id: "learning-3",
+    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    content: "Learned about CSS custom properties (variables) and how they can be changed dynamically with JavaScript.",
+    tags: ["css", "variables", "javascript"],
+    title: "CSS Custom Properties",
+    externalUrl: "https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties"
+  },
+  {
+    id: "learning-4",
+    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    content: "Learned how to structure large React applications using feature-based organization instead of type-based.",
+    tags: ["react", "architecture", "organization"],
+    title: "React Project Structure"
+  }
+];
 
 const sampleBadges = [
   {

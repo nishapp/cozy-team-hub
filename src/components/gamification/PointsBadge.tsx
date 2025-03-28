@@ -6,9 +6,15 @@ interface PointsBadgeProps {
   points: number;
   size?: "sm" | "md" | "lg";
   className?: string;
+  animate?: boolean;
 }
 
-const PointsBadge = ({ points, size = "md", className }: PointsBadgeProps) => {
+const PointsBadge = ({ 
+  points, 
+  size = "md", 
+  className,
+  animate = false
+}: PointsBadgeProps) => {
   const sizeClasses = {
     sm: "text-xs px-1.5 py-0.5",
     md: "text-sm px-2 py-1",
@@ -26,6 +32,7 @@ const PointsBadge = ({ points, size = "md", className }: PointsBadgeProps) => {
       className={cn(
         "flex items-center space-x-1 rounded-full font-medium",
         "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
+        animate && "animate-pulse",
         sizeClasses[size],
         className
       )}
