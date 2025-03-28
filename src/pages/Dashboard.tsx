@@ -9,6 +9,7 @@ import HeaderAddBitButton from "@/components/bits/HeaderAddBitButton";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import FeaturedBits from "@/components/bits/FeaturedBits";
+import SharedBitsCarousel from "@/components/bits/SharedBitsCarousel";
 
 interface Bit {
   id: string;
@@ -249,23 +250,7 @@ const Dashboard = () => {
             ))}
           </div>
 
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4">Shared by friends</h2>
-            <p className="text-muted-foreground mb-4">Discover bits that your friends have shared with you</p>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
-            {sharedBits.map((bit) => (
-              <div key={bit.id} className="relative">
-                <BitCard 
-                  bit={bit}
-                />
-                <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-                  {bit.shared_by}
-                </div>
-              </div>
-            ))}
-          </div>
+          <SharedBitsCarousel sharedBits={sharedBits} />
         </main>
       </div>
     </PageTransition>
