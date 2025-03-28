@@ -50,10 +50,13 @@ const ConvertToBitDialog = ({ post, isOpen, onClose }: ConvertToBitDialogProps) 
         .map(([word]) => word);
     };
     
+    // The problem is here - we're returning a string for tags
+    // but BitForm expects an array. Let's fix this by returning an array directly
+    // instead of joining it into a string
     return {
       title: post.title,
       description: description,
-      tags: extractTags().join(", "),
+      tags: extractTags(), // Return as array, not as string
       category: "",
       visibility: "public",
       wdylt_comment: "",

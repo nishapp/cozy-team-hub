@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -53,17 +52,34 @@ const BitForm: React.FC<BitFormProps> = ({
   const { uploadImage } = useImageUpload();
   const { user } = useAuth();
 
+  const processInitialData = () => {
+    if (!initialData) return {};
+    
+    const processed = { ...initialData };
+    
+    if (processed.tags) {
+      if (Array.isArray(processed.tags)) {
+        processed.tags = processed.tags.join(", ");
+      } else {
+        processed.tags = "";
+      }
+    }
+    
+    return processed;
+  };
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: initialData?.title || "",
-      description: initialData?.description || "",
-      tags: initialData?.tags ? initialData.tags.join(", ") : "",
-      category: initialData?.category || "",
-      visibility: initialData?.visibility || "public",
-      wdylt_comment: initialData?.wdylt_comment || "",
-      image_url: initialData?.image_url || "",
-      link: initialData?.link || "",
+      title: "",
+      description: "",
+      tags: "",
+      category: "",
+      visibility: "public",
+      wdylt_comment: "",
+      image_url: "",
+      link: "",
+      ...processInitialData()
     },
   });
 
