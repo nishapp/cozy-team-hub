@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import BitCard from "./BitCard";
 import { useInterval } from "@/hooks/useInterval";
 import { Card } from "@/components/ui/card";
+import BitDetailModal from "./BitDetailModal";
 
 interface SharedBit {
   id: string;
@@ -26,6 +27,7 @@ const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) =
   const [displayedBits, setDisplayedBits] = useState<SharedBit[]>([]);
   const [fadingCardIndex, setFadingCardIndex] = useState<number | null>(null);
   const [fadingIn, setFadingIn] = useState(false);
+  const [selectedBit, setSelectedBit] = useState<SharedBit | null>(null);
   
   // Number of cards to display at once based on screen size
   const getDisplayCount = () => {
@@ -101,6 +103,11 @@ const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) =
   const handleAdvance = () => {
     rotateCards();
   };
+
+  // Handle card click
+  const handleCardClick = (bit: SharedBit) => {
+    setSelectedBit(bit);
+  };
   
   return (
     <div className="mb-12">
@@ -129,6 +136,7 @@ const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) =
                   ? 'opacity-0' 
                   : 'opacity-100'
             }`}
+            onClick={() => handleCardClick(bit)}
           >
             <BitCard bit={bit} />
             <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
@@ -137,6 +145,15 @@ const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) =
           </div>
         ))}
       </div>
+
+      {/* Bit Detail Modal */}
+      {selectedBit && (
+        <BitDetailModal 
+          bit={selectedBit} 
+          isOpen={!!selectedBit} 
+          onClose={() => setSelectedBit(null)} 
+        />
+      )}
     </div>
   );
 };

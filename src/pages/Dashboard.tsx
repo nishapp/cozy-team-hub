@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -5,6 +6,7 @@ import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
 import { supabase } from "@/lib/supabase";
 import BitCard from "@/components/bits/BitCard";
+import BitDetailModal from "@/components/bits/BitDetailModal";
 import HeaderAddBitButton from "@/components/bits/HeaderAddBitButton";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -182,6 +184,7 @@ const Dashboard = () => {
   const [bits, setBits] = useState<Bit[]>(sampleBits);
   const [bitCount, setBitCount] = useState<number>(0);
   const [sharedBits, setSharedBits] = useState<any[]>(friendSharedBits);
+  const [selectedBit, setSelectedBit] = useState<Bit | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -234,6 +237,10 @@ const Dashboard = () => {
       bits.map(bit => bit.id === updatedBit.id ? updatedBit : bit)
     );
     toast.success("Bit updated successfully!");
+  };
+
+  const handleBitSelected = (bit: Bit) => {
+    setSelectedBit(bit);
   };
 
   if (!user && !authLoading) {
@@ -290,12 +297,22 @@ const Dashboard = () => {
               <BitCard 
                 key={bit.id} 
                 bit={bit} 
-                onBitUpdated={handleBitUpdated} 
+                onBitUpdated={handleBitUpdated}
+                onClick={() => handleBitSelected(bit)}
               />
             ))}
           </div>
 
           <SharedBitsCarousel sharedBits={sharedBits} />
+
+          {/* Bit Detail Modal */}
+          {selectedBit && (
+            <BitDetailModal 
+              bit={selectedBit} 
+              isOpen={!!selectedBit} 
+              onClose={() => setSelectedBit(null)} 
+            />
+          )}
         </main>
       </div>
     </PageTransition>

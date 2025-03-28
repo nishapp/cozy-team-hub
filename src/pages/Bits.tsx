@@ -6,6 +6,7 @@ import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
 import { supabase } from "@/lib/supabase";
 import BitCard from "@/components/bits/BitCard";
+import BitDetailModal from "@/components/bits/BitDetailModal";
 import HeaderAddBitButton from "@/components/bits/HeaderAddBitButton";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -87,6 +88,7 @@ const Bits = () => {
   const [fullName, setFullName] = useState<string>("");
   const [bits, setBits] = useState<Bit[]>(sampleBits);
   const [bitCount, setBitCount] = useState<number>(0);
+  const [selectedBit, setSelectedBit] = useState<Bit | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -139,6 +141,11 @@ const Bits = () => {
     toast.success("Bit updated successfully!");
   };
 
+  // Handle bit selection for modal
+  const handleBitSelected = (bit: Bit) => {
+    setSelectedBit(bit);
+  };
+
   // Redirect unauthenticated users to login
   if (!user && !authLoading) {
     return <Navigate to="/auth" replace />;
@@ -186,10 +193,20 @@ const Bits = () => {
               <BitCard 
                 key={bit.id} 
                 bit={bit} 
-                onBitUpdated={handleBitUpdated} 
+                onBitUpdated={handleBitUpdated}
+                onClick={() => handleBitSelected(bit)} 
               />
             ))}
           </div>
+          
+          {/* Bit Detail Modal */}
+          {selectedBit && (
+            <BitDetailModal 
+              bit={selectedBit} 
+              isOpen={!!selectedBit} 
+              onClose={() => setSelectedBit(null)} 
+            />
+          )}
         </main>
       </div>
     </PageTransition>

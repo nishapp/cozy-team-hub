@@ -24,9 +24,10 @@ interface Bit {
 interface BitCardProps {
   bit: Bit;
   onBitUpdated?: (bit: Bit) => void;
+  onClick?: () => void;
 }
 
-const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated }) => {
+const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick }) => {
   // Format the date
   const formattedDate = new Date(bit.created_at).toLocaleDateString("en-US", {
     month: "short",
@@ -54,7 +55,10 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated }) => {
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group rounded-xl border-0 saas-shadow relative">
+    <Card 
+      className="overflow-hidden hover:shadow-lg transition-all duration-300 group rounded-xl border-0 saas-shadow relative cursor-pointer"
+      onClick={onClick}
+    >
       {onBitUpdated && <EditBitButton bit={bit} onBitUpdated={onBitUpdated} />}
       
       {bit.image_url ? (
@@ -123,18 +127,18 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated }) => {
       
       <CardFooter className="p-4 pt-0 gap-1 flex justify-between">
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={(e) => e.stopPropagation()}>
             <Heart size={16} />
           </Button>
-          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={(e) => e.stopPropagation()}>
             <MessageCircle size={16} />
           </Button>
         </div>
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={(e) => e.stopPropagation()}>
             <BookmarkPlus size={16} />
           </Button>
-          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={(e) => e.stopPropagation()}>
             <Share2 size={16} />
           </Button>
         </div>
