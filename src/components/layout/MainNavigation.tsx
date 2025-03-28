@@ -1,7 +1,7 @@
 
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { FileText, Home, LayoutDashboard, Settings, Users } from "lucide-react";
+import { FileText, Home, LayoutDashboard, Settings, Users, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MainNavigationProps {
@@ -28,6 +28,12 @@ export function MainNavigation({ isAdmin }: MainNavigationProps) {
       name: "Posts",
       href: "/posts",
       icon: FileText,
+      requiresAuth: true,
+    },
+    {
+      name: "Friends",
+      href: "/friends",
+      icon: UserPlus,
       requiresAuth: true,
     },
     {
