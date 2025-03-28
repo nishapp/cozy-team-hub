@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -20,15 +20,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { BookmarkFolder } from "@/types/bookmark";
+import { Switch } from "@/components/ui/switch";
+import { Lock, LockOpen } from "lucide-react";
 
 interface FolderDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: { name: string; description?: string; parentId?: string | null }) => void;
-  initialValues?: { name: string; description?: string; parentId?: string | null };
-  mode?: "create" | "edit";
+  onConfirm: (data: { 
+    name: string; 
+    description?: string; 
+    parentId?: string | null;
+    isPrivate?: boolean;
+  }) => void;
+  initialValues?: { 
+    name: string; 
+    description?: string; 
+    parentId?: string | null;
+    isPrivate?: boolean;
+  };
   parentFolders: BookmarkFolder[];
-  currentParentId: string | null;
+  currentParentId?: string | null;
+  mode?: "create" | "edit";
 }
 
 export const FolderDialog: React.FC<FolderDialogProps> = ({
@@ -36,29 +48,37 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
   onClose,
   onConfirm,
   initialValues,
-  mode = "create",
   parentFolders,
-  currentParentId,
+  currentParentId = null,
+  mode = "create",
 }) => {
   const [name, setName] = useState(initialValues?.name || "");
   const [description, setDescription] = useState(initialValues?.description || "");
   const [parentId, setParentId] = useState<string | null>(initialValues?.parentId !== undefined ? initialValues.parentId : currentParentId);
-  const [error, setError] = useState("");
+  const [isPrivate, setIsPrivate] = useState(initialValues?.isPrivate || false);
+  const [error, setError] = useState<{name?: string}>({});
 
   useEffect(() => {
     if (isOpen) {
       setName(initialValues?.name || "");
       setDescription(initialValues?.description || "");
       setParentId(initialValues?.parentId !== undefined ? initialValues.parentId : currentParentId);
-      setError("");
+      setIsPrivate(initialValues?.isPrivate || false);
+      setError({});
     }
   }, [isOpen, initialValues, currentParentId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    const newErrors: {name?: string} = {};
+    
     if (!name.trim()) {
-      setError("Folder name is required");
+      newErrors.name = "Name is required";
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setError(newErrors);
       return;
     }
     
@@ -66,53 +86,30 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
       name: name.trim(), 
       description: description.trim() || undefined,
       parentId,
+      isPrivate,
     });
   };
 
-  // Build a map of folder hierarchy to prevent circular references
-  const getFolderHierarchy = (folderId: string | null): Set<string> => {
-    const result = new Set<string>();
-    if (folderId) {
-      result.add(folderId);
-      const folder = parentFolders.find(f => f.id === folderId);
-      if (folder?.parentId) {
-        const parentHierarchy = getFolderHierarchy(folder.parentId);
-        parentHierarchy.forEach(id => result.add(id));
-      }
-    }
-    return result;
-  };
-
-  const invalidParentIds = mode === "edit" && initialValues?.parentId 
-    ? getFolderHierarchy(initialValues.parentId) 
-    : new Set<string>();
-
-  // Get flattened folder list for select element, including hierarchy info
-  const getFolderOptions = () => {
-    const result: { id: string | null; name: string; level: number }[] = [
-      { id: null, name: "None (Root Level)", level: 0 }
-    ];
-
-    const addFoldersRecursive = (parentId: string | null, level: number) => {
-      const folders = parentFolders
-        .filter(f => f.parentId === parentId)
-        .filter(f => mode !== "edit" || !invalidParentIds.has(f.id));
-      
-      folders.forEach(folder => {
-        result.push({
-          id: folder.id,
-          name: folder.name,
-          level,
-        });
-        addFoldersRecursive(folder.id, level + 1);
+  // Create a flat list for the folder selector
+  const getFolderList = (folders: BookmarkFolder[], level = 0, result: { id: string; name: string; level: number }[] = []) => {
+    folders.forEach(folder => {
+      result.push({
+        id: folder.id,
+        name: folder.name,
+        level,
       });
-    };
-
-    addFoldersRecursive(null, 0);
+      
+      // Get child folders
+      const childFolders = parentFolders.filter(f => f.parentId === folder.id);
+      if (childFolders.length > 0) {
+        getFolderList(childFolders, level + 1, result);
+      }
+    });
     return result;
   };
 
-  const folderOptions = getFolderOptions();
+  const rootFolders = parentFolders.filter(folder => !folder.parentId);
+  const folderList = getFolderList(rootFolders);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -124,13 +121,13 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
             </DialogTitle>
             <DialogDescription>
               {mode === "create" 
-                ? "Add a new folder to organize your bookmarks."
-                : "Update folder details and organization."}
+                ? "Create a new folder to organize your bookmarks."
+                : "Update the folder details."}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Folder Name</Label>
+              <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
                 value={name}
@@ -138,7 +135,7 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
                 placeholder="e.g., Work Resources"
                 autoFocus
               />
-              {error && <p className="text-destructive text-sm">{error}</p>}
+              {error.name && <p className="text-destructive text-sm">{error.name}</p>}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Description (Optional)</Label>
@@ -151,27 +148,38 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="parent">Parent Folder</Label>
+              <Label>Parent Folder (Optional)</Label>
               <Select
-                value={parentId || "null"}
-                onValueChange={(value) => setParentId(value === "null" ? null : value)}
+                value={parentId || ""}
+                onValueChange={(value) => setParentId(value === "" ? null : value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select parent folder" />
+                  <SelectValue placeholder="Select a parent folder (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  {folderOptions.map((option) => (
-                    <SelectItem 
-                      key={option.id || "root"} 
-                      value={option.id || "null"}
-                      disabled={mode === "edit" && invalidParentIds.has(option.id || "")}
-                    >
-                      {option.level > 0 && "—".repeat(option.level) + " "}
-                      {option.name}
+                  <SelectItem value="">No parent (Root level)</SelectItem>
+                  {folderList.map((folder) => (
+                    <SelectItem key={folder.id} value={folder.id}>
+                      {Array(folder.level).fill("—").join("")} {folder.level > 0 ? " " : ""}{folder.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="privacy-mode"
+                checked={isPrivate}
+                onCheckedChange={setIsPrivate}
+              />
+              <Label htmlFor="privacy-mode" className="flex items-center cursor-pointer">
+                {isPrivate ? (
+                  <Lock className="h-4 w-4 mr-2 text-amber-500" />
+                ) : (
+                  <LockOpen className="h-4 w-4 mr-2 text-green-500" />
+                )}
+                {isPrivate ? "Private (Only you can see this)" : "Public (Visible to buddies)"}
+              </Label>
             </div>
           </div>
           <DialogFooter>

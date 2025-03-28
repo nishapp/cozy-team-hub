@@ -12,12 +12,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Lock, LockOpen } from "lucide-react";
 
 interface BookmarkDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: { title: string; url: string; description?: string }) => void;
-  initialValues?: { title: string; url: string; description?: string };
+  onConfirm: (data: { title: string; url: string; description?: string; isPrivate?: boolean }) => void;
+  initialValues?: { title: string; url: string; description?: string; isPrivate?: boolean };
   mode?: "create" | "edit";
 }
 
@@ -31,6 +33,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const [title, setTitle] = useState(initialValues?.title || "");
   const [url, setUrl] = useState(initialValues?.url || "");
   const [description, setDescription] = useState(initialValues?.description || "");
+  const [isPrivate, setIsPrivate] = useState(initialValues?.isPrivate || false);
   const [error, setError] = useState<{title?: string; url?: string}>({});
 
   useEffect(() => {
@@ -38,6 +41,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       setTitle(initialValues?.title || "");
       setUrl(initialValues?.url || "");
       setDescription(initialValues?.description || "");
+      setIsPrivate(initialValues?.isPrivate || false);
       setError({});
     }
   }, [isOpen, initialValues]);
@@ -64,6 +68,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       title: title.trim(), 
       url: url.trim(),
       description: description.trim() || undefined,
+      isPrivate,
     });
   };
 
@@ -112,6 +117,21 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
                 placeholder="What's this bookmark about?"
                 rows={3}
               />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="privacy-mode"
+                checked={isPrivate}
+                onCheckedChange={setIsPrivate}
+              />
+              <Label htmlFor="privacy-mode" className="flex items-center cursor-pointer">
+                {isPrivate ? (
+                  <Lock className="h-4 w-4 mr-2 text-amber-500" />
+                ) : (
+                  <LockOpen className="h-4 w-4 mr-2 text-green-500" />
+                )}
+                {isPrivate ? "Private (Only you can see this)" : "Public (Visible to buddies)"}
+              </Label>
             </div>
           </div>
           <DialogFooter>

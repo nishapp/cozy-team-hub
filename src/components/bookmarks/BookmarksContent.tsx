@@ -10,7 +10,9 @@ import {
   ChevronRight,
   LayoutGrid,
   LayoutList,
-  FileCode
+  FileCode,
+  Lock,
+  LockOpen
 } from "lucide-react";
 import { BookmarkFolder, BookmarkItem } from "@/types/bookmark";
 import { FolderDialog } from "./FolderDialog";
@@ -79,7 +81,7 @@ export const BookmarksContent = ({
   const [isDeleteBookmarkOpen, setIsDeleteBookmarkOpen] = useState(false);
   const [folderToEdit, setFolderToEdit] = useState<BookmarkFolder | null>(null);
   const [bookmarkToEdit, setBookmarkToEdit] = useState<BookmarkItem | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("list"); // Default to list view
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [isCreateBitOpen, setIsCreateBitOpen] = useState(false);
   const [selectedBookmark, setSelectedBookmark] = useState<BookmarkItem | null>(null);
   
@@ -93,15 +95,21 @@ export const BookmarksContent = ({
     bookmark.url.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCreateFolder = (folder: { name: string; description?: string; parentId?: string | null }) => {
+  const handleCreateFolder = (folder: { 
+    name: string; 
+    description?: string; 
+    parentId?: string | null;
+    isPrivate?: boolean;
+  }) => {
     const newFolder: BookmarkFolder = {
       id: `folder-${Date.now()}`,
       name: folder.name,
       description: folder.description,
-      parentId: selectedFolderId,
+      parentId: folder.parentId !== undefined ? folder.parentId : selectedFolderId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       bookmarks: [],
+      isPrivate: folder.isPrivate || false,
     };
 
     updateBookmarksData({
@@ -117,6 +125,7 @@ export const BookmarksContent = ({
     title: string; 
     url: string; 
     description?: string;
+    isPrivate?: boolean;
   }) => {
     const newBookmark: BookmarkItem = {
       id: `bookmark-${Date.now()}`,
@@ -125,6 +134,7 @@ export const BookmarksContent = ({
       description: bookmark.description,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      isPrivate: bookmark.isPrivate || false,
     };
 
     if (selectedFolderId) {
@@ -154,7 +164,12 @@ export const BookmarksContent = ({
     toast.success("Bookmark added successfully");
   };
 
-  const handleEditFolder = (folder: { name: string; description?: string; parentId?: string | null }) => {
+  const handleEditFolder = (folder: { 
+    name: string; 
+    description?: string; 
+    parentId?: string | null;
+    isPrivate?: boolean;
+  }) => {
     if (!folderToEdit) return;
 
     const updatedFolders = allFolders.map(f => {
@@ -164,6 +179,7 @@ export const BookmarksContent = ({
           name: folder.name,
           description: folder.description,
           parentId: folder.parentId,
+          isPrivate: folder.isPrivate,
           updatedAt: new Date().toISOString(),
         };
       }
@@ -184,6 +200,7 @@ export const BookmarksContent = ({
     title: string; 
     url: string; 
     description?: string;
+    isPrivate?: boolean;
   }) => {
     if (!bookmarkToEdit) return;
 
@@ -197,6 +214,7 @@ export const BookmarksContent = ({
                 title: bookmark.title,
                 url: validateUrl(bookmark.url),
                 description: bookmark.description,
+                isPrivate: bookmark.isPrivate,
                 updatedAt: new Date().toISOString(),
               };
             }
@@ -224,6 +242,7 @@ export const BookmarksContent = ({
             title: bookmark.title,
             url: validateUrl(bookmark.url),
             description: bookmark.description,
+            isPrivate: bookmark.isPrivate,
             updatedAt: new Date().toISOString(),
           };
         }
@@ -435,6 +454,9 @@ export const BookmarksContent = ({
                 >
                   <FolderIcon className="h-5 w-5 mr-2 text-amber-500" />
                   <CardTitle className="text-base">{folder.name}</CardTitle>
+                  {folder.isPrivate && (
+                    <Lock className="h-4 w-4 ml-2 text-amber-500" title="Private folder" />
+                  )}
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -512,6 +534,9 @@ export const BookmarksContent = ({
                   <CardTitle className="text-base truncate">
                     {bookmark.title}
                   </CardTitle>
+                  {bookmark.isPrivate && (
+                    <Lock className="h-4 w-4 ml-2 text-amber-500" title="Private bookmark" />
+                  )}
                 </div>
                 <div className="flex space-x-1">
                   <Button
@@ -593,7 +618,6 @@ export const BookmarksContent = ({
         </div>
       ) : (
         <div className="space-y-2">
-          {/* Folder rows */}
           {filteredFolders.length > 0 && (
             <div className="mb-4">
               <h2 className="text-lg font-medium mb-2">Folders</h2>
@@ -604,6 +628,7 @@ export const BookmarksContent = ({
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm">Name</th>
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden md:table-cell">Description</th>
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden lg:table-cell">Items</th>
+                      <th className="text-center p-3 font-medium text-muted-foreground text-sm w-20">Privacy</th>
                       <th className="text-right p-3 font-medium text-muted-foreground text-sm w-24">Actions</th>
                     </tr>
                   </thead>
@@ -628,6 +653,13 @@ export const BookmarksContent = ({
                         </td>
                         <td className="p-3 text-muted-foreground text-sm hidden lg:table-cell">
                           {folder.bookmarks.length} bookmark{folder.bookmarks.length !== 1 && 's'}
+                        </td>
+                        <td className="p-3 text-center">
+                          {folder.isPrivate ? (
+                            <Lock className="h-4 w-4 mx-auto text-amber-500" title="Private" />
+                          ) : (
+                            <LockOpen className="h-4 w-4 mx-auto text-green-500" title="Public" />
+                          )}
                         </td>
                         <td className="p-3 text-right">
                           <div className="flex justify-end space-x-1">
@@ -665,7 +697,6 @@ export const BookmarksContent = ({
             </div>
           )}
           
-          {/* Bookmark rows */}
           {filteredBookmarks.length > 0 && (
             <div>
               <h2 className="text-lg font-medium mb-2">Bookmarks</h2>
@@ -676,6 +707,7 @@ export const BookmarksContent = ({
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm">Title</th>
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden md:table-cell">URL</th>
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden lg:table-cell">Description</th>
+                      <th className="text-center p-3 font-medium text-muted-foreground text-sm w-20">Privacy</th>
                       <th className="text-right p-3 font-medium text-muted-foreground text-sm w-36">Actions</th>
                     </tr>
                   </thead>
@@ -717,6 +749,13 @@ export const BookmarksContent = ({
                             <span className="truncate block max-w-md">{bookmark.description}</span>
                           ) : (
                             <span className="italic">No description</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-center">
+                          {bookmark.isPrivate ? (
+                            <Lock className="h-4 w-4 mx-auto text-amber-500" title="Private" />
+                          ) : (
+                            <LockOpen className="h-4 w-4 mx-auto text-green-500" title="Public" />
                           )}
                         </td>
                         <td className="p-3 text-right">
@@ -838,6 +877,7 @@ export const BookmarksContent = ({
           name: folderToEdit.name,
           description: folderToEdit.description,
           parentId: folderToEdit.parentId,
+          isPrivate: folderToEdit.isPrivate,
         } : undefined}
         mode="edit"
       />
@@ -859,6 +899,7 @@ export const BookmarksContent = ({
           title: bookmarkToEdit.title,
           url: bookmarkToEdit.url,
           description: bookmarkToEdit.description,
+          isPrivate: bookmarkToEdit.isPrivate,
         } : undefined}
         mode="edit"
       />
