@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -46,6 +47,7 @@ interface BitCardProps {
 
 const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmarkToggle }) => {
   const [isBookmarked, setIsBookmarked] = useState(bit.isBookmarked || false);
+  const [imageError, setImageError] = useState(false);
   
   const formattedDate = new Date(bit.created_at).toLocaleDateString("en-US", {
     month: "short",
@@ -64,6 +66,14 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmar
       "health": "from-green-400 to-emerald-500",
       "hobbies": "from-yellow-300 to-amber-500",
       "reading": "from-orange-400 to-pink-500",
+      "gardening": "from-green-300 to-emerald-400",
+      "design": "from-purple-300 to-indigo-400",
+      "food": "from-yellow-400 to-orange-500",
+      "photography": "from-blue-300 to-sky-500",
+      "plants": "from-emerald-300 to-green-500",
+      "art": "from-pink-300 to-rose-500",
+      "home": "from-amber-300 to-yellow-500",
+      "work": "from-slate-300 to-gray-500",
       "default": "from-purple-400 to-pink-500"
     };
     
@@ -93,6 +103,10 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmar
     toast.success("Opening link in new tab");
   };
 
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   return (
     <Card 
       className="overflow-hidden hover:shadow-lg transition-all duration-300 group rounded-xl border-0 saas-shadow relative cursor-pointer"
@@ -100,12 +114,13 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmar
     >
       {onBitUpdated && <EditBitButton bit={bit} onBitUpdated={onBitUpdated} />}
       
-      {bit.image_url ? (
+      {bit.image_url && !imageError ? (
         <AspectRatio ratio={4/3} className="bg-muted">
           <img 
             src={bit.image_url} 
             alt={bit.title} 
             className="object-cover w-full h-full rounded-t-xl transition-transform duration-300 group-hover:scale-105"
+            onError={handleImageError}
           />
         </AspectRatio>
       ) : (

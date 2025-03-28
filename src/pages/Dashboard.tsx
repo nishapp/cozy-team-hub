@@ -31,45 +31,47 @@ interface Bit {
   friend_count?: number;
 }
 
-const sampleBits = [{
-  id: "1",
-  title: "Learning TypeScript",
-  description: "Notes on advanced TypeScript features and patterns. TypeScript is a strongly typed programming language that builds on JavaScript, giving you better tooling at any scale.",
-  tags: ["programming", "typescript", "web development"],
-  category: "coding",
-  visibility: "public",
-  wdylt_comment: "Excited to master TypeScript!",
-  image_url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-  created_at: new Date().toISOString(),
-  link: "https://www.typescriptlang.org/docs/",
-  author_avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop",
-  friend_count: 3
-}, {
-  id: "2",
-  title: "React Hooks Deep Dive",
-  description: "Understanding useEffect, useMemo, and useCallback in depth.",
-  tags: ["react", "javascript", "hooks"],
-  category: "coding",
-  visibility: "public",
-  wdylt_comment: "Hooks have changed the way I write React!",
-  created_at: new Date().toISOString(),
-  link: "https://reactjs.org/docs/hooks-intro.html",
-  author_avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop",
-  friend_count: 5
-}, {
-  id: "3",
-  title: "Mindfulness Meditation",
-  description: "Practicing mindfulness daily has improved my focus and reduced stress significantly.",
-  tags: ["wellness", "mindfulness", "health"],
-  category: "health",
-  visibility: "public",
-  wdylt_comment: "Feeling centered and calm.",
-  image_url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-  created_at: new Date().toISOString(),
-  link: "https://www.mindful.org/meditation/mindfulness-getting-started/",
-  author_avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop",
-  friend_count: 1
-}];
+const sampleBits = [
+  {
+    id: "1",
+    title: "Learning TypeScript",
+    description: "Notes on advanced TypeScript features and patterns. TypeScript is a strongly typed programming language that builds on JavaScript, giving you better tooling at any scale.",
+    tags: ["programming", "typescript", "web development"],
+    category: "coding",
+    visibility: "public",
+    wdylt_comment: "Excited to master TypeScript!",
+    image_url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    created_at: new Date().toISOString(),
+    link: "https://www.typescriptlang.org/docs/",
+    author_avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop",
+    friend_count: 3
+  }, {
+    id: "2",
+    title: "React Hooks Deep Dive",
+    description: "Understanding useEffect, useMemo, and useCallback in depth.",
+    tags: ["react", "javascript", "hooks"],
+    category: "coding",
+    visibility: "public",
+    wdylt_comment: "Hooks have changed the way I write React!",
+    created_at: new Date().toISOString(),
+    link: "https://reactjs.org/docs/hooks-intro.html",
+    author_avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop",
+    friend_count: 5
+  }, {
+    id: "3",
+    title: "Mindfulness Meditation",
+    description: "Practicing mindfulness daily has improved my focus and reduced stress significantly.",
+    tags: ["wellness", "mindfulness", "health"],
+    category: "health",
+    visibility: "public",
+    wdylt_comment: "Feeling centered and calm.",
+    image_url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    created_at: new Date().toISOString(),
+    link: "https://www.mindful.org/meditation/mindfulness-getting-started/",
+    author_avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&h=150&fit=crop",
+    friend_count: 1
+  }
+];
 
 const friendSharedBits = [{
   id: "f1",
@@ -105,7 +107,7 @@ const friendSharedBits = [{
   category: "gardening",
   visibility: "public",
   wdylt_comment: "My balcony has never looked better!",
-  image_url: "https://images.unsplash.com/photo-1585320806297-1c62238fa333?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+  image_url: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
   shared_by: "Martha Stewart",
   author_avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop",
@@ -117,7 +119,7 @@ const friendSharedBits = [{
   tags: ["design", "web", "minimal"],
   category: "design",
   visibility: "public",
-  image_url: "https://images.unsplash.com/photo-1494797262163-44adaa06623a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+  image_url: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   created_at: new Date().toISOString(),
   shared_by: "John Doe",
   author_avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&h=150&fit=crop",

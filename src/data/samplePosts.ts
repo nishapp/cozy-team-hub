@@ -11,7 +11,7 @@ export const samplePosts: Post[] = [
     updated_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
     tags: ["typescript", "javascript", "programming"],
     category: "coding",
-    image_url: "https://miro.medium.com/v2/resize:fit:1400/1*mn6bOs7s6Qbao15PMNRyOA.png"
+    image_url: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
   },
   {
     id: "2",
@@ -20,6 +20,7 @@ export const samplePosts: Post[] = [
     created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     tags: ["react", "hooks", "javascript"],
-    category: "coding"
+    category: "coding",
+    image_url: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
   }
 ];
