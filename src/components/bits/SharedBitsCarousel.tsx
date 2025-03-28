@@ -25,6 +25,7 @@ const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) =
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayedBits, setDisplayedBits] = useState<SharedBit[]>([]);
   const [fadingCardIndex, setFadingCardIndex] = useState<number | null>(null);
+  const [fadingIn, setFadingIn] = useState(false);
   
   // Number of cards to display at once based on screen size
   const getDisplayCount = () => {
@@ -68,10 +69,16 @@ const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) =
     // After fade out animation completes, update the cards
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % sharedBits.length);
+      setFadingIn(true); // Start fade-in animation
       
-      // Reset fading state after a short delay to allow DOM to update
+      // Reset fading state after the DOM updates with new cards
       setTimeout(() => {
         setFadingCardIndex(null);
+        
+        // After a brief delay to ensure DOM update, start fade-in
+        setTimeout(() => {
+          setFadingIn(false);
+        }, 50);
       }, 100);
     }, 700); // Duration of fade-out animation
   };
@@ -115,7 +122,13 @@ const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) =
         {displayedBits.map((bit, index) => (
           <div 
             key={bit.id} 
-            className={`relative transition-opacity duration-700 ease-in-out ${fadingCardIndex === index ? 'opacity-0' : 'opacity-100'}`}
+            className={`relative transition-opacity duration-700 ease-in-out ${
+              fadingCardIndex === index 
+                ? 'opacity-0' 
+                : fadingIn && index === 0 
+                  ? 'opacity-0' 
+                  : 'opacity-100'
+            }`}
           >
             <BitCard bit={bit} />
             <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
