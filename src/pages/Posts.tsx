@@ -21,13 +21,9 @@ const Posts = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Load posts with a small delay to prevent any potential race conditions
-    const timer = setTimeout(() => {
-      setPosts(samplePosts);
-      setLoading(false);
-    }, 100);
-    
-    return () => clearTimeout(timer);
+    // Simplified loading of posts - eliminate the timeout which could be causing issues
+    setPosts(samplePosts);
+    setLoading(false);
   }, []);
 
   const handleCreatePost = (newPost: Post) => {
@@ -42,7 +38,6 @@ const Posts = () => {
   };
 
   const handleUpdatePost = (updatedPost: Post) => {
-    // Create a new array to prevent reference issues
     const updatedPosts = posts.map(post => 
       post.id === updatedPost.id ? {...updatedPost} : post
     );
@@ -53,7 +48,6 @@ const Posts = () => {
   };
 
   const handleDeletePost = (postId: string) => {
-    // Create a new array to prevent reference issues
     const filteredPosts = posts.filter(post => post.id !== postId);
     setPosts(filteredPosts);
     toast.success("Post deleted successfully!");

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { memo } from "react";
 import { Post } from "@/types/post";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,8 @@ interface PostsListProps {
   onDeletePost: (postId: string) => void;
 }
 
-const PostsList: React.FC<PostsListProps> = ({ posts, onEditPost, onDeletePost }) => {
+// Using React.memo to prevent unnecessary re-renders
+const PostsList: React.FC<PostsListProps> = memo(({ posts, onEditPost, onDeletePost }) => {
   const [postToConvert, setPostToConvert] = React.useState<Post | null>(null);
 
   const formatDate = (dateString: string) => {
@@ -114,6 +115,8 @@ const PostsList: React.FC<PostsListProps> = ({ posts, onEditPost, onDeletePost }
       )}
     </div>
   );
-};
+});
+
+PostsList.displayName = "PostsList";
 
 export default PostsList;
