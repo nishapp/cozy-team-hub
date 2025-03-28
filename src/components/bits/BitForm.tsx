@@ -25,6 +25,7 @@ import {
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -49,6 +50,7 @@ const BitForm: React.FC<BitFormProps> = ({
 }) => {
   const [uploading, setUploading] = useState(false);
   const { uploadImage } = useImageUpload();
+  const { user } = useAuth();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -64,10 +66,17 @@ const BitForm: React.FC<BitFormProps> = ({
   });
 
   const handleImageUpload = async (file: File) => {
+    if (!user) {
+      console.error("User is not authenticated");
+      return;
+    }
+
     setUploading(true);
     try {
-      const imageUrl = await uploadImage(file);
-      form.setValue("image_url", imageUrl);
+      const imageUrl = await uploadImage(file, user.id);
+      if (imageUrl) {
+        form.setValue("image_url", imageUrl);
+      }
     } catch (error) {
       console.error("Image upload error:", error);
     } finally {
