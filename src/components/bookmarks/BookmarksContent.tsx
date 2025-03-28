@@ -604,7 +604,7 @@ export function BookmarksContent({
       </div>
       
       {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-max">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-max">
           {filteredFolders.length > 0 && filteredFolders.map((folder) => (
             <Card key={folder.id} className="group hover:shadow-md transition-shadow">
               <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
@@ -672,10 +672,10 @@ export function BookmarksContent({
           {filteredBookmarks.map((bookmark) => (
             <Card 
               key={bookmark.id} 
-              className="group hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
+              className="group hover:shadow-md transition-shadow cursor-pointer overflow-hidden flex flex-col h-[320px]"
               onClick={() => handleBookmarkClick(bookmark)}
             >
-              {bookmark.imageUrl && (
+              {bookmark.imageUrl ? (
                 <div className="w-full h-40 relative overflow-hidden">
                   <img 
                     src={bookmark.imageUrl} 
@@ -686,15 +686,18 @@ export function BookmarksContent({
                       target.style.display = "none";
                       const parent = target.parentElement as HTMLElement;
                       if (parent) {
-                        parent.style.height = "0px";
+                        parent.classList.add("bg-gradient-to-br", "from-blue-500/30", "to-purple-500/30", "h-40");
                       }
                     }}
                   />
                 </div>
+              ) : (
+                <div className="w-full h-40 bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center">
+                  <LinkIcon className="h-12 w-12 text-blue-500/50" />
+                </div>
               )}
               
-              <CardHeader className={cn("pb-2 flex flex-row items-start justify-between space-y-0", 
-                bookmark.imageUrl ? "pt-3" : "")}>
+              <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0 pt-3">
                 <div className="flex items-center flex-1">
                   <div className="h-5 w-5 mr-2 flex-shrink-0">
                     {bookmark.icon ? (
@@ -718,20 +721,42 @@ export function BookmarksContent({
                       <LinkIcon className="h-full w-full text-blue-500" />
                     )}
                   </div>
-                  <CardTitle className="text-base truncate max-w-[150px] sm:max-w-[200px] md:max-w-[150px] lg:max-w-[220px]">
+                  <CardTitle className="text-lg truncate max-w-[150px] sm:max-w-[200px] md:max-w-[200px]">
                     {bookmark.title}
                   </CardTitle>
                 </div>
-                <div className="flex space-x-1" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center space-x-1" onClick={(e) => e.stopPropagation()}>
                   {bookmark.isPrivate ? (
                     <EyeOff className="h-4 w-4 text-muted-foreground" aria-label="Private" />
                   ) : (
                     <Eye className="h-4 w-4 text-muted-foreground" aria-label="Public" />
                   )}
+                </div>
+              </CardHeader>
+              
+              <CardContent className="flex-grow">
+                <CardDescription className="line-clamp-3 text-sm h-18">
+                  {bookmark.description || (
+                    <span className="text-muted-foreground italic">
+                      No description
+                    </span>
+                  )}
+                </CardDescription>
+                <p className="text-xs text-muted-foreground mt-2 truncate">
+                  {bookmark.url}
+                </p>
+              </CardContent>
+              
+              <CardFooter className="flex justify-between items-center pt-2 border-t">
+                <span className="text-xs text-muted-foreground">
+                  {new Date(bookmark.createdAt).toLocaleDateString()}
+                </span>
+                
+                <div className="flex space-x-1" onClick={(e) => e.stopPropagation()}>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-8 w-8 hover:bg-muted"
                     asChild
                   >
                     <a
@@ -746,7 +771,7 @@ export function BookmarksContent({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-8 w-8 hover:bg-muted"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleCreateBit(bookmark);
@@ -759,7 +784,7 @@ export function BookmarksContent({
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8"
+                    className="h-8 w-8 hover:bg-muted"
                     onClick={(e) => {
                       e.stopPropagation();
                       setBookmarkToEdit(bookmark);
@@ -772,7 +797,7 @@ export function BookmarksContent({
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    className="h-8 w-8 text-destructive hover:bg-red-100 dark:hover:bg-red-900/20"
                     onClick={(e) => {
                       e.stopPropagation();
                       setBookmarkToEdit(bookmark);
@@ -783,19 +808,7 @@ export function BookmarksContent({
                     <span className="sr-only">Delete</span>
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="line-clamp-2">
-                  {bookmark.description || (
-                    <span className="text-muted-foreground italic">
-                      No description
-                    </span>
-                  )}
-                </CardDescription>
-                <p className="text-xs text-muted-foreground mt-2 truncate">
-                  {bookmark.url}
-                </p>
-              </CardContent>
+              </CardFooter>
             </Card>
           ))}
         </div>

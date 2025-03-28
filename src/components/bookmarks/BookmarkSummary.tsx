@@ -102,11 +102,9 @@ export function BookmarkSummary({ bookmark, onSaveDescription }: BookmarkSummary
             </Button>
           </div>
           
-          <ScrollArea className="max-h-[200px] overflow-auto">
-            <div className="p-3 bg-secondary/50 rounded-md text-sm">
-              {summary}
-            </div>
-          </ScrollArea>
+          <div className="p-3 bg-secondary/50 rounded-md text-sm max-h-[200px] overflow-auto">
+            {summary}
+          </div>
           
           <div className="space-y-2">
             <h3 className="text-sm font-medium">Save as Description</h3>
@@ -114,7 +112,7 @@ export function BookmarkSummary({ bookmark, onSaveDescription }: BookmarkSummary
               value={descriptionDraft}
               onChange={(e) => setDescriptionDraft(e.target.value)}
               placeholder="Edit if needed before saving as description..."
-              className="min-h-[100px]"
+              className="min-h-[100px] max-h-[150px]"
             />
             
             <div className="flex justify-end">

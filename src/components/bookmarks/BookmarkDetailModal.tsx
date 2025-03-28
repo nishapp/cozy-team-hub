@@ -41,7 +41,7 @@ const BookmarkDetailModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col overflow-hidden">
         {bookmark.imageUrl && (
           <div className="mb-4 -mt-6 -mx-6 overflow-hidden rounded-t-lg">
             <AspectRatio ratio={16/9}>
@@ -52,6 +52,10 @@ const BookmarkDetailModal = ({
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = "none";
+                  const parent = target.parentElement as HTMLElement;
+                  if (parent) {
+                    parent.classList.add("bg-gradient-to-br", "from-blue-500/30", "to-purple-500/30");
+                  }
                 }}
               />
             </AspectRatio>
@@ -72,7 +76,7 @@ const BookmarkDetailModal = ({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4">
+        <ScrollArea className="flex-1 pr-4 mt-2 overflow-y-auto">
           {bookmark.description && (
             <div className="mt-2">
               <h3 className="font-semibold">Description</h3>
@@ -95,23 +99,23 @@ const BookmarkDetailModal = ({
           />
         </ScrollArea>
 
-        <DialogFooter className="flex gap-2 justify-end mt-6">
+        <DialogFooter className="flex gap-2 justify-end mt-6 pt-4 border-t">
           {onCopy && (
             <Button variant="outline" onClick={() => onCopy(bookmark)}>
               Copy Bookmark
             </Button>
           )}
           {onEdit && (
-            <Button onClick={() => onEdit(bookmark)}>
+            <Button variant="outline" onClick={() => onEdit(bookmark)}>
               Edit
             </Button>
           )}
-          {onSaveDescription && (
+          {onSaveDescription && bookmark.summary && (
             <Button 
               onClick={() => onSaveDescription(bookmark.id, bookmark.summary || '')}
               variant="default"
             >
-              Save
+              Save as Description
             </Button>
           )}
         </DialogFooter>
