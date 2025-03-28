@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { BookmarksSidebar } from "@/components/bookmarks/BookmarksSidebar";
@@ -8,6 +7,7 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { BookmarkFolder, BookmarkItem } from "@/types/bookmark";
 import { initialBookmarksData } from "@/data/initialBookmarks";
 import PageTransition from "@/components/ui/PageTransition";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const Bookmarks = () => {
   // Get bookmarks data from local storage or use initial data
@@ -85,25 +85,27 @@ const Bookmarks = () => {
     <PageTransition>
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
-        <div className="flex flex-1 overflow-hidden">
-          <BookmarksSidebar
-            folders={bookmarksData.folders}
-            selectedFolderId={selectedFolderId}
-            onSelectFolder={handleFolderSelect}
-            updateBookmarksData={updateBookmarksData}
-          />
-          <BookmarksContent
-            folders={currentContents.folders}
-            bookmarks={currentContents.bookmarks}
-            breadcrumbs={currentContents.breadcrumbs}
-            currentFolder={currentContents.currentFolder}
-            selectedFolderId={selectedFolderId}
-            onSelectFolder={handleFolderSelect}
-            updateBookmarksData={updateBookmarksData}
-            allFolders={bookmarksData.folders}
-            rootBookmarks={bookmarksData.rootBookmarks}
-          />
-        </div>
+        <SidebarProvider>
+          <div className="flex flex-1 overflow-hidden w-full">
+            <BookmarksSidebar
+              folders={bookmarksData.folders}
+              selectedFolderId={selectedFolderId}
+              onSelectFolder={handleFolderSelect}
+              updateBookmarksData={updateBookmarksData}
+            />
+            <BookmarksContent
+              folders={currentContents.folders}
+              bookmarks={currentContents.bookmarks}
+              breadcrumbs={currentContents.breadcrumbs}
+              currentFolder={currentContents.currentFolder}
+              selectedFolderId={selectedFolderId}
+              onSelectFolder={handleFolderSelect}
+              updateBookmarksData={updateBookmarksData}
+              allFolders={bookmarksData.folders}
+              rootBookmarks={bookmarksData.rootBookmarks}
+            />
+          </div>
+        </SidebarProvider>
         <Toaster position="bottom-right" />
       </div>
     </PageTransition>
