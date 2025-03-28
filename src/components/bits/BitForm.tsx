@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -76,7 +75,6 @@ const BitForm: React.FC<BitFormProps> = ({ onSubmit, initialData, onCancel }) =>
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Preview the image
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
@@ -88,7 +86,6 @@ const BitForm: React.FC<BitFormProps> = ({ onSubmit, initialData, onCancel }) =>
   const removeImage = () => {
     setImagePreview(null);
     setImageFile(null);
-    // Reset the file input
     const fileInput = document.getElementById("image-upload") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
   };
@@ -101,15 +98,12 @@ const BitForm: React.FC<BitFormProps> = ({ onSubmit, initialData, onCancel }) =>
 
     let imageUrl = initialData?.image_url;
 
-    // Handle image upload
     if (imageFile) {
       try {
-        // If there's an existing image and we're uploading a new one, delete the old one
         if (initialData?.image_url && initialData.image_url !== imagePreview) {
           await deleteImage(initialData.image_url);
         }
         
-        // Upload the new image
         imageUrl = await uploadImage(imageFile, user.id);
         
         if (!imageUrl) {
@@ -122,12 +116,10 @@ const BitForm: React.FC<BitFormProps> = ({ onSubmit, initialData, onCancel }) =>
         return;
       }
     } else if (imagePreview === null && initialData?.image_url) {
-      // If image was removed, delete it from storage
       await deleteImage(initialData.image_url);
       imageUrl = undefined;
     }
 
-    // Prepare the bit data
     const bitData: Bit = {
       ...initialData,
       title: values.title,
