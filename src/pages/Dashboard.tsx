@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -7,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import BitCard from "@/components/bits/BitCard";
 import HeaderAddBitButton from "@/components/bits/HeaderAddBitButton";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 // Define the Bit type
 interface Bit {
@@ -84,6 +86,7 @@ const Dashboard = () => {
   const [fullName, setFullName] = useState<string>("");
   const [greeting, setGreeting] = useState<string>("Hello");
   const [bits, setBits] = useState<Bit[]>(sampleBits);
+  const [bitCount, setBitCount] = useState<number>(0);
 
   useEffect(() => {
     // Set greeting based on time of day
@@ -120,6 +123,7 @@ const Dashboard = () => {
     
     // Here you would fetch actual bits from Supabase once implemented
     // For now we're using sample data
+    setBitCount(sampleBits.length);
   }, [user]);
 
   // Handle adding a new bit
@@ -132,6 +136,7 @@ const Dashboard = () => {
     
     // Add the new bit to the beginning of the array
     setBits([bitWithId, ...bits]);
+    setBitCount(bitCount + 1);
     toast.success("Bit added successfully!");
   };
 
@@ -162,16 +167,27 @@ const Dashboard = () => {
         <Navbar />
         
         <main className="flex-1 container py-8">
-          <div className="mb-8 flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold">
-                {greeting}, {fullName}
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Here are your latest bits. What did you learn today?
+          {/* Pinterest-inspired board header */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-baseline gap-4">
+                <h1 className="text-3xl font-bold">My Bits</h1>
+                <span className="text-muted-foreground">{bitCount} Pins</span>
+              </div>
+              <HeaderAddBitButton onBitAdded={handleBitAdded} />
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="secondary" 
+                className="rounded-full px-6 py-1 h-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-sm font-medium"
+              >
+                View board
+              </Button>
+              <p className="text-muted-foreground">
+                {greeting}, {fullName}. Here are your bits ready to be shared.
               </p>
             </div>
-            <HeaderAddBitButton onBitAdded={handleBitAdded} />
           </div>
           
           {/* Pinterest-style masonry grid */}
