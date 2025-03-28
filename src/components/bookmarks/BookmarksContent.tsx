@@ -625,7 +625,7 @@ export function BookmarksContent({
                       <LinkIcon className="h-full w-full text-blue-500" />
                     )}
                   </div>
-                  <CardTitle className="text-base truncate">
+                  <CardTitle className="text-base truncate max-w-[150px] sm:max-w-[200px] md:max-w-[150px] lg:max-w-[220px]">
                     {bookmark.title}
                   </CardTitle>
                 </div>
@@ -859,7 +859,9 @@ export function BookmarksContent({
                                 <LinkIcon className="h-full w-full text-blue-500" />
                               )}
                             </div>
-                            <span className="font-medium truncate">{bookmark.title}</span>
+                            <span className="font-medium truncate max-w-[200px] md:max-w-[250px] lg:max-w-[350px] inline-block">
+                              {bookmark.title}
+                            </span>
                           </div>
                         </td>
                         <td className="p-3 text-muted-foreground text-sm hidden md:table-cell">

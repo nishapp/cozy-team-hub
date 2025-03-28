@@ -112,7 +112,7 @@ export const BookmarksSidebar = ({
               <span className="w-6" />
             )}
             <FolderIcon className="h-4 w-4 mr-2 flex-shrink-0" />
-            <span className="truncate">{folder.name}</span>
+            <span className="truncate max-w-[150px]">{folder.name}</span>
             {folder.bookmarks.length > 0 && (
               <span className="ml-2 text-xs text-muted-foreground">
                 {folder.bookmarks.length}
