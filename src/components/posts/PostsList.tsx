@@ -105,11 +105,13 @@ const PostsList: React.FC<PostsListProps> = ({ posts, onEditPost, onDeletePost }
         </Card>
       ))}
       
-      <ConvertToBitDialog
-        post={postToConvert!}
-        isOpen={!!postToConvert}
-        onClose={() => setPostToConvert(null)}
-      />
+      {postToConvert && (
+        <ConvertToBitDialog
+          post={postToConvert}
+          isOpen={!!postToConvert}
+          onClose={() => setPostToConvert(null)}
+        />
+      )}
     </div>
   );
 };

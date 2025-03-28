@@ -91,6 +91,10 @@ const ConvertToBitDialog = ({ post, isOpen, onClose }: ConvertToBitDialogProps) 
     navigate('/bits');
   };
 
+  if (!post) {
+    return null;
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`sm:max-w-[${mode === "form" ? '700' : '500'}px] max-h-[90vh] overflow-y-auto`}>
