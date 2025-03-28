@@ -5,7 +5,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
-import { Clock, MessageCircle, Heart, Share2, BookmarkPlus } from "lucide-react";
+import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image } from "lucide-react";
 
 // Define the Bit type
 interface Bit {
@@ -38,9 +38,22 @@ const BitCard: React.FC<BitCardProps> = ({ bit }) => {
     return text.slice(0, maxLength) + "...";
   };
 
+  // Generate a gradient based on the bit's category
+  const getGradientColor = (category: string) => {
+    const gradients = {
+      "coding": "from-blue-400 to-indigo-500",
+      "health": "from-green-400 to-emerald-500",
+      "hobbies": "from-yellow-300 to-amber-500",
+      "reading": "from-orange-400 to-pink-500",
+      "default": "from-purple-400 to-pink-500"
+    };
+    
+    return gradients[category as keyof typeof gradients] || gradients.default;
+  };
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group rounded-xl border-0 saas-shadow">
-      {bit.image_url && (
+      {bit.image_url ? (
         <AspectRatio ratio={4/3} className="bg-muted">
           <img 
             src={bit.image_url} 
@@ -48,9 +61,16 @@ const BitCard: React.FC<BitCardProps> = ({ bit }) => {
             className="object-cover w-full h-full rounded-t-xl transition-transform duration-300 group-hover:scale-105"
           />
         </AspectRatio>
+      ) : (
+        <AspectRatio ratio={4/3} className={`bg-gradient-to-br ${getGradientColor(bit.category)} rounded-t-xl flex items-center justify-center text-white/80`}>
+          <div className="flex flex-col items-center justify-center p-4 text-center">
+            <Image className="w-10 h-10 mb-2 opacity-70" />
+            <p className="text-sm font-medium">{bit.category}</p>
+          </div>
+        </AspectRatio>
       )}
       
-      <CardContent className={`p-4 ${!bit.image_url ? 'pt-4' : ''}`}>
+      <CardContent className="p-4">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-semibold text-lg line-clamp-2">{bit.title}</h3>
           
