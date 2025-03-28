@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -93,11 +94,16 @@ const FriendCard = ({
     <Card className="overflow-hidden hover:shadow-md transition-all duration-300">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
-          <ProfileAvatar 
-            src={friend.avatar_url} 
-            fallbackText={friend.name}
-            size="lg"
-          />
+          <div 
+            onClick={handleViewBits} 
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+          >
+            <ProfileAvatar 
+              src={friend.avatar_url} 
+              fallbackText={friend.name}
+              size="lg"
+            />
+          </div>
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-start">
               <div>
