@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -11,7 +10,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import FeaturedBits from "@/components/bits/FeaturedBits";
 
-// Define the Bit type
 interface Bit {
   id: string;
   title: string;
@@ -24,7 +22,6 @@ interface Bit {
   created_at: string;
 }
 
-// Sample data for demonstration purposes
 const sampleBits = [
   {
     id: "1",
@@ -60,8 +57,7 @@ const sampleBits = [
   },
 ];
 
-// Featured images for the top row (representative images like in Pinterest)
-const featuredImages = [
+const categoryImages = [
   "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   "https://images.unsplash.com/photo-1550439062-609e1531270e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   "https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
@@ -70,6 +66,17 @@ const featuredImages = [
   "https://images.unsplash.com/photo-1519748771451-a94c596ffd67?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   "https://images.unsplash.com/photo-1529245856630-f4853233d2ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+];
+
+const categoryTitles = [
+  "Fashion",
+  "Home Decor",
+  "Technology",
+  "Travel",
+  "Food & Recipes",
+  "Health & Fitness",
+  "Art & Design",
+  "DIY & Crafts"
 ];
 
 const Dashboard = () => {
@@ -81,7 +88,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set greeting based on time of day
     const hours = new Date().getHours();
     if (hours >= 5 && hours < 12) {
       setGreeting("Good Morning");
@@ -91,7 +97,6 @@ const Dashboard = () => {
       setGreeting("Good Evening");
     }
 
-    // Fetch user's profile data to get full name
     const fetchUserProfile = async () => {
       if (!user) return;
 
@@ -113,26 +118,20 @@ const Dashboard = () => {
 
     fetchUserProfile();
     
-    // Here you would fetch actual bits from Supabase once implemented
-    // For now we're using sample data
     setBitCount(sampleBits.length);
   }, [user]);
 
-  // Handle adding a new bit
   const handleBitAdded = (newBit: Bit) => {
-    // Generate a unique ID if none exists
     const bitWithId = {
       ...newBit,
       id: newBit.id || `temp-${Date.now()}`,
     };
     
-    // Add the new bit to the beginning of the array
     setBits([bitWithId, ...bits]);
     setBitCount(bitCount + 1);
     toast.success("Bit added successfully!");
   };
 
-  // Handle updating an existing bit
   const handleBitUpdated = (updatedBit: Bit) => {
     setBits(
       bits.map(bit => bit.id === updatedBit.id ? updatedBit : bit)
@@ -140,7 +139,6 @@ const Dashboard = () => {
     toast.success("Bit updated successfully!");
   };
 
-  // Redirect unauthenticated users to login
   if (!user && !authLoading) {
     return <Navigate to="/auth" replace />;
   }
@@ -159,7 +157,6 @@ const Dashboard = () => {
         <Navbar />
         
         <main className="flex-1 container py-8">
-          {/* Pinterest-inspired board header */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <div className="flex flex-col">
@@ -185,15 +182,12 @@ const Dashboard = () => {
             </div>
           </div>
           
-          {/* Featured bits row (Pinterest style) */}
-          <FeaturedBits images={featuredImages} />
+          <FeaturedBits images={categoryImages} titles={categoryTitles} />
           
-          {/* "More ideas for this board" section */}
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-4">More ideas for this board</h2>
           </div>
           
-          {/* Pinterest-style masonry grid with limited number of bits */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
             {bits.map((bit) => (
               <BitCard 
