@@ -8,10 +8,10 @@ import { toast } from "sonner";
 
 interface BookmarkSummaryProps {
   bookmark: BookmarkItem;
-  onSaveSummary?: (bookmarkId: string, summary: string) => void;
+  onSaveDescription?: (bookmarkId: string, description: string) => void;
 }
 
-export function BookmarkSummary({ bookmark, onSaveSummary }: BookmarkSummaryProps) {
+export function BookmarkSummary({ bookmark, onSaveDescription }: BookmarkSummaryProps) {
   const [summary, setSummary] = useState<string | null>(bookmark.summary || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,13 +57,13 @@ export function BookmarkSummary({ bookmark, onSaveSummary }: BookmarkSummaryProp
     }
   };
 
-  const saveSummary = async () => {
-    if (!summary || !onSaveSummary) return;
+  const saveToDescription = async () => {
+    if (!summary || !onSaveDescription) return;
     
     setSaving(true);
     try {
-      await onSaveSummary(bookmark.id, summary);
-      toast.success("Summary saved to bookmark");
+      await onSaveDescription(bookmark.id, summary);
+      toast.success("Summary saved to bookmark description");
     } catch (err) {
       toast.error("Failed to save summary");
       console.error("Failed to save summary:", err);
@@ -111,11 +111,11 @@ export function BookmarkSummary({ bookmark, onSaveSummary }: BookmarkSummaryProp
         <div className="bg-muted p-4 rounded-md">
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-semibold">Summary</h3>
-            {onSaveSummary && !bookmark.summary && (
+            {onSaveDescription && !bookmark.description && (
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={saveSummary}
+                onClick={saveToDescription}
                 disabled={saving}
               >
                 {saving ? (
@@ -126,7 +126,7 @@ export function BookmarkSummary({ bookmark, onSaveSummary }: BookmarkSummaryProp
                 ) : (
                   <>
                     <Save className="h-3 w-3 mr-1" />
-                    Save
+                    Save as Description
                   </>
                 )}
               </Button>

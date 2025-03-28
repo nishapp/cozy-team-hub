@@ -362,7 +362,7 @@ export function BookmarksContent({
     };
   };
 
-  const handleSaveSummary = (bookmarkId: string, summary: string) => {
+  const handleSaveDescription = (bookmarkId: string, description: string) => {
     let updatedBookmark: BookmarkItem | null = null;
     let updatedFolders: BookmarkFolder[] = [...allFolders];
     let updatedRootBookmarks: BookmarkItem[] = [...rootBookmarks];
@@ -374,7 +374,7 @@ export function BookmarksContent({
         if (bookmarkIndex !== -1) {
           updatedBookmark = {
             ...updatedFolders[folderIndex].bookmarks[bookmarkIndex],
-            summary,
+            description,
             updatedAt: new Date().toISOString()
           };
           
@@ -393,7 +393,7 @@ export function BookmarksContent({
       if (bookmarkIndex !== -1) {
         updatedBookmark = {
           ...updatedRootBookmarks[bookmarkIndex],
-          summary,
+          description,
           updatedAt: new Date().toISOString()
         };
         
@@ -411,7 +411,7 @@ export function BookmarksContent({
         if (bookmarkIndex !== -1) {
           updatedBookmark = {
             ...updatedFolders[i].bookmarks[bookmarkIndex],
-            summary,
+            description,
             updatedAt: new Date().toISOString()
           };
           
@@ -1070,10 +1070,17 @@ export function BookmarksContent({
 
       <BookmarkDetailModal
         bookmark={selectedBookmark}
-        isOpen={!!selectedBookmark}
-        onClose={() => setSelectedBookmark(null)}
-        onEdit={handleEditBookmark}
-        onSaveSummary={handleSaveSummary}
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedBookmark(null);
+        }}
+        onEdit={(bookmark) => {
+          setBookmarkToEdit(bookmark);
+          setIsEditBookmarkOpen(true);
+          setIsDetailModalOpen(false);
+        }}
+        onSaveDescription={handleSaveDescription}
       />
     </div>
   );

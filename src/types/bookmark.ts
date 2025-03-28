@@ -9,7 +9,7 @@ export interface BookmarkItem {
   icon?: string;
   tags?: string[];
   isPrivate: boolean;
-  summary?: string; // New field for storing summaries
+  summary?: string; // Keep for backward compatibility
 }
 
 export interface BookmarkFolder {
