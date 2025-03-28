@@ -10,7 +10,6 @@ import ConvertToBitDialog from "@/components/posts/ConvertToBitDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Import sample data for demo purposes
-// In a real app, this would be fetched from an API or database
 import { samplePosts } from "@/data/samplePosts";
 
 const PostDetail = () => {
@@ -22,13 +21,14 @@ const PostDetail = () => {
 
   useEffect(() => {
     // Find the post with the matching ID
-    const foundPost = samplePosts.find(p => p.id === postId);
+    setLoading(true);
     
-    // Simulate a loading delay for demo purposes
+    // Add a small timeout to prevent any race conditions
     const timer = setTimeout(() => {
+      const foundPost = samplePosts.find(p => p.id === postId);
       setPost(foundPost || null);
       setLoading(false);
-    }, 500);
+    }, 100);
     
     return () => clearTimeout(timer);
   }, [postId]);

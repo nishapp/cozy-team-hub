@@ -14,15 +14,21 @@ import { samplePosts } from "@/data/samplePosts";
 
 const Posts = () => {
   const { user, loading: authLoading } = useAuth();
-  const [posts, setPosts] = useState<Post[]>(samplePosts);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // In a real app, we would fetch posts from the database here
-    // For now, we'll use the sample posts
-  }, [user]);
+    // Load posts with a small delay to prevent any potential race conditions
+    const timer = setTimeout(() => {
+      setPosts(samplePosts);
+      setLoading(false);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleCreatePost = (newPost: Post) => {
     const postWithId = {
@@ -52,7 +58,7 @@ const Posts = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -91,11 +97,24 @@ const Posts = () => {
             </div>
           </div>
           
-          <PostsList 
-            posts={posts} 
-            onEditPost={setSelectedPost} 
-            onDeletePost={handleDeletePost} 
-          />
+          {posts.length > 0 ? (
+            <PostsList 
+              posts={posts} 
+              onEditPost={setSelectedPost} 
+              onDeletePost={handleDeletePost} 
+            />
+          ) : (
+            <div className="text-center py-12 border border-dashed rounded-lg">
+              <h3 className="text-lg font-medium mb-2">No posts yet</h3>
+              <p className="text-muted-foreground mb-4">
+                Create your first post to get started.
+              </p>
+              <Button onClick={() => setIsCreateModalOpen(true)} className="gap-1">
+                <Plus size={16} />
+                Create Post
+              </Button>
+            </div>
+          )}
           
           <CreatePostModal 
             isOpen={isCreateModalOpen || !!selectedPost} 
