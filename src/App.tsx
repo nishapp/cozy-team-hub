@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
 // Pages
 import Index from "./pages/Index";
@@ -47,8 +48,15 @@ const AnimatedRoutes = () => {
 };
 
 const App = () => {
-  // Create a QueryClient instance inside the component
-  const queryClient = new QueryClient();
+  // Use useState to ensure the QueryClient is only created once
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false,
+        retry: false,
+      },
+    },
+  }));
   
   return (
     <QueryClientProvider client={queryClient}>
