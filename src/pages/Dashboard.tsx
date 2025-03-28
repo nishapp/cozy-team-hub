@@ -11,7 +11,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import FeaturedBits from "@/components/bits/FeaturedBits";
 import SharedBitsCarousel from "@/components/bits/SharedBitsCarousel";
-
 interface Bit {
   id: string;
   title: string;
@@ -25,7 +24,6 @@ interface Bit {
   shared_by?: string;
   link?: string;
 }
-
 const sampleBits = [{
   id: "1",
   title: "Learning TypeScript",
@@ -59,7 +57,6 @@ const sampleBits = [{
   created_at: new Date().toISOString(),
   link: "https://www.mindful.org/meditation/mindfulness-getting-started/"
 }];
-
 const friendSharedBits = [{
   id: "f1",
   title: "Travel Photography Tips",
@@ -145,10 +142,8 @@ const friendSharedBits = [{
   created_at: new Date().toISOString(),
   shared_by: "Sarah Connor"
 }];
-
 const categoryImages = ["https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1550439062-609e1531270e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1529245856630-f4853233d2ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1519748771451-a94c596ffd67?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", "https://images.unsplash.com/photo-1529245856630-f4853233d2ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"];
 const categoryTitles = ["Fashion", "Home Decor", "Technology", "Travel", "Food & Recipes", "Health & Fitness", "Art & Design", "DIY & Crafts"];
-
 const Dashboard = () => {
   const {
     user,
@@ -162,7 +157,6 @@ const Dashboard = () => {
   const [sharedBits, setSharedBits] = useState<any[]>(friendSharedBits);
   const [selectedBit, setSelectedBit] = useState<Bit | null>(null);
   const navigate = useNavigate();
-
   useEffect(() => {
     const hours = new Date().getHours();
     if (hours >= 5 && hours < 12) {
@@ -172,7 +166,6 @@ const Dashboard = () => {
     } else {
       setGreeting("Good Evening");
     }
-
     const fetchUserProfile = async () => {
       if (!user) return;
       const {
@@ -194,25 +187,20 @@ const Dashboard = () => {
     setPublicBits(filteredPublicBits);
     setBitCount(sampleBits.length);
   }, [user]);
-
   const handleBitAdded = (newBit: Bit) => {
     const bitWithId = {
       ...newBit,
       id: newBit.id || `temp-${Date.now()}`
     };
     setBits([bitWithId, ...bits]);
-    
     if (bitWithId.visibility === "public") {
       setPublicBits([bitWithId, ...publicBits]);
     }
-    
     setBitCount(bitCount + 1);
     toast.success("Bit added successfully!");
   };
-
   const handleBitUpdated = (updatedBit: Bit) => {
     setBits(bits.map(bit => bit.id === updatedBit.id ? updatedBit : bit));
-    
     if (updatedBit.visibility === "public") {
       if (publicBits.some(bit => bit.id === updatedBit.id)) {
         setPublicBits(publicBits.map(bit => bit.id === updatedBit.id ? updatedBit : bit));
@@ -222,24 +210,19 @@ const Dashboard = () => {
     } else {
       setPublicBits(publicBits.filter(bit => bit.id !== updatedBit.id));
     }
-    
     toast.success("Bit updated successfully!");
   };
-
   const handleBitSelected = (bit: Bit) => {
     setSelectedBit(bit);
   };
-
   if (!user && !authLoading) {
     return <Navigate to="/auth" replace />;
   }
-
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center">
         <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>;
   }
-
   return <PageTransition>
       <div className="min-h-screen flex flex-col">
         <Navbar />
@@ -249,7 +232,7 @@ const Dashboard = () => {
             <div className="flex justify-between items-center mb-4">
               <div className="flex flex-col">
                 <div className="flex items-baseline gap-4">
-                  <h1 className="text-4xl font-bold">My Inspiration Board</h1>
+                  <h1 className="text-4xl font-bold">My Reading Board</h1>
                   <span className="text-muted-foreground">{bitCount} Pins</span>
                 </div>
                 <p className="text-muted-foreground mt-1">
@@ -274,13 +257,9 @@ const Dashboard = () => {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max mb-12">
-            {publicBits.length > 0 ? 
-              publicBits.map(bit => <BitCard key={bit.id} bit={bit} onBitUpdated={handleBitUpdated} onClick={() => handleBitSelected(bit)} />)
-              : 
-              <div className="col-span-full text-center py-8">
+            {publicBits.length > 0 ? publicBits.map(bit => <BitCard key={bit.id} bit={bit} onBitUpdated={handleBitUpdated} onClick={() => handleBitSelected(bit)} />) : <div className="col-span-full text-center py-8">
                 <p className="text-muted-foreground">No public bits found. Make some of your bits public to share them!</p>
-              </div>
-            }
+              </div>}
           </div>
 
           <SharedBitsCarousel sharedBits={sharedBits} />
@@ -294,5 +273,4 @@ const Dashboard = () => {
       </div>
     </PageTransition>;
 };
-
 export default Dashboard;
