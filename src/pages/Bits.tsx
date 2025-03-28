@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -31,7 +30,6 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
-// Update the Bit interface to include shared_by
 interface Bit {
   id: string;
   title: string;
@@ -47,7 +45,6 @@ interface Bit {
   link?: string;
 }
 
-// Sample data for demonstration purposes
 const sampleBits = [
   {
     id: "1",
@@ -120,19 +117,16 @@ const Bits = () => {
   const [activeTab, setActiveTab] = useState<string>("all");
   const navigate = useNavigate();
   
-  // Search and filter states
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [tagFilters, setTagFilters] = useState<string[]>([]);
   const [filteredBits, setFilteredBits] = useState<Bit[]>(bits);
   const [filteredBookmarkedBits, setFilteredBookmarkedBits] = useState<Bit[]>(bookmarkedBits);
   
-  // Get unique categories and tags from bits
   const categories = [...new Set(bits.map(bit => bit.category))];
   const allTags = [...new Set(bits.flatMap(bit => bit.tags))];
 
   useEffect(() => {
-    // Fetch user's profile data to get full name
     const fetchUserProfile = async () => {
       if (!user) return;
 
@@ -154,11 +148,8 @@ const Bits = () => {
 
     fetchUserProfile();
     
-    // Here you would fetch actual bits from Supabase once implemented
-    // For now we're using sample data
     setBitCount(sampleBits.length);
     
-    // Load bookmarked bits from localStorage
     const loadBookmarks = () => {
       try {
         const savedBookmarks = localStorage.getItem('bookmarkedBits');
@@ -181,28 +172,23 @@ const Bits = () => {
     loadBookmarks();
   }, [user]);
 
-  // Apply filters whenever bits or filter criteria change
   useEffect(() => {
     applyFilters();
   }, [bits, bookmarkedBits, searchTerm, categoryFilter, tagFilters]);
 
-  // Function to filter bits based on current filters
   const applyFilters = () => {
     const filterBits = (bitsToFilter: Bit[]) => {
       return bitsToFilter.filter(bit => {
-        // Filter by search term (title, description, or tags)
         const matchesSearch = 
           searchTerm === "" || 
           bit.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           bit.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
           bit.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
         
-        // Filter by category
         const matchesCategory = 
-          categoryFilter === "" || 
+          categoryFilter === "all" || 
           bit.category.toLowerCase() === categoryFilter.toLowerCase();
         
-        // Filter by tags
         const matchesTags = 
           tagFilters.length === 0 || 
           tagFilters.every(tag => bit.tags.includes(tag));
@@ -215,47 +201,39 @@ const Bits = () => {
     setFilteredBookmarkedBits(filterBits(bookmarkedBits));
   };
 
-  // Reset all filters
   const resetFilters = () => {
     setSearchTerm("");
-    setCategoryFilter("");
+    setCategoryFilter("all");
     setTagFilters([]);
   };
 
-  // Add tag to filter
   const addTagFilter = (tag: string) => {
     if (!tagFilters.includes(tag)) {
       setTagFilters([...tagFilters, tag]);
     }
   };
 
-  // Remove tag from filter
   const removeTagFilter = (tag: string) => {
     setTagFilters(tagFilters.filter(t => t !== tag));
   };
 
-  // Handle adding a new bit
   const handleBitAdded = (newBit: Bit) => {
-    // Generate a unique ID if none exists
     const bitWithId = {
       ...newBit,
       id: newBit.id || `temp-${Date.now()}`,
     };
     
-    // Add the new bit to the beginning of the array
     setBits([bitWithId, ...bits]);
     setBitCount(prevCount => prevCount + 1);
     toast.success("Bit added successfully!");
   };
 
-  // Handle updating an existing bit
   const handleBitUpdated = (updatedBit: Bit) => {
     const updatedBits = bits.map(bit => 
       bit.id === updatedBit.id ? { ...updatedBit, isBookmarked: bit.isBookmarked } : bit
     );
     setBits(updatedBits);
     
-    // Also update in bookmarked bits if necessary
     if (bookmarkedBits.some(bit => bit.id === updatedBit.id)) {
       setBookmarkedBits(bookmarkedBits.map(bit => 
         bit.id === updatedBit.id ? { ...updatedBit, isBookmarked: true } : bit
@@ -265,27 +243,22 @@ const Bits = () => {
     toast.success("Bit updated successfully!");
   };
 
-  // Handle bit selection for modal
   const handleBitSelected = (bit: Bit) => {
     setSelectedBit(bit);
   };
   
-  // Handle bookmark toggling
   const handleBookmarkToggle = (bit: Bit, isBookmarked: boolean) => {
-    // Update the bit in the main bits array
     const updatedBits = bits.map(b => 
       b.id === bit.id ? { ...b, isBookmarked } : b
     );
     setBits(updatedBits);
     
-    // Update bookmarked bits array
     if (isBookmarked) {
       setBookmarkedBits([...bookmarkedBits, { ...bit, isBookmarked: true }]);
     } else {
       setBookmarkedBits(bookmarkedBits.filter(b => b.id !== bit.id));
     }
     
-    // Save to localStorage
     try {
       const bookmarkIds = updatedBits
         .filter(b => b.isBookmarked)
@@ -296,7 +269,6 @@ const Bits = () => {
     }
   };
 
-  // Redirect unauthenticated users to login
   if (!user && !authLoading) {
     return <Navigate to="/auth" replace />;
   }
@@ -338,7 +310,6 @@ const Bits = () => {
               </div>
             </div>
             
-            {/* Search and Filter UI */}
             <div className="mb-4">
               <div className="flex flex-col sm:flex-row gap-2 mb-2">
                 <div className="relative flex-grow">
@@ -368,7 +339,7 @@ const Bits = () => {
                       <SelectValue placeholder="Filter by category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Categories</SelectItem>
+                      <SelectItem value="all">All Categories</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category} value={category.toLowerCase()}>
                           {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -428,7 +399,7 @@ const Bits = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                   
-                  {(searchTerm || categoryFilter || tagFilters.length > 0) && (
+                  {(searchTerm || categoryFilter !== "all" || tagFilters.length > 0) && (
                     <Button variant="ghost" onClick={resetFilters}>
                       Clear All
                     </Button>
@@ -436,38 +407,35 @@ const Bits = () => {
                 </div>
               </div>
               
-              {/* Active filter badges */}
-              {(categoryFilter || tagFilters.length > 0) && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {categoryFilter && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      <span>Category: {categoryFilter}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-4 p-0 ml-1"
-                        onClick={() => setCategoryFilter("")}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </Badge>
-                  )}
-                  
-                  {tagFilters.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                      <span>Tag: {tag}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-4 p-0 ml-1"
-                        onClick={() => removeTagFilter(tag)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
+              <div className="flex flex-wrap gap-2 mt-2">
+                {categoryFilter !== "all" && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <span>Category: {categoryFilter}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 p-0 ml-1"
+                      onClick={() => setCategoryFilter("all")}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                )}
+                
+                {tagFilters.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                    <span>Tag: {tag}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 p-0 ml-1"
+                      onClick={() => removeTagFilter(tag)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
             </div>
           </div>
           
@@ -480,7 +448,6 @@ const Bits = () => {
             </TabsList>
             
             <TabsContent value="all" className="mt-6">
-              {/* Pinterest-style masonry grid for all bits */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
                 {filteredBits.map((bit) => (
                   <BitCard 
@@ -505,7 +472,6 @@ const Bits = () => {
             </TabsContent>
             
             <TabsContent value="bookmarked" className="mt-6">
-              {/* Pinterest-style masonry grid for bookmarked bits */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
                 {filteredBookmarkedBits.map((bit) => (
                   <BitCard 
@@ -530,7 +496,6 @@ const Bits = () => {
             </TabsContent>
           </Tabs>
           
-          {/* Bit Detail Modal */}
           {selectedBit && (
             <BitDetailModal 
               bit={{...selectedBit, shared_by: selectedBit.shared_by || "You"}} 
