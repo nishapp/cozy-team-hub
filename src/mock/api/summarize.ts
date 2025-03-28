@@ -32,6 +32,16 @@ const getMockSummary = (url: string): string => {
   return `This webpage appears to be about ${url.split('/')[2]}. The content includes various sections with information related to the site's main topic. Key points are presented throughout the page, with supporting details and possibly media content. The page is structured to provide a comprehensive overview of its subject matter.`;
 };
 
+// Generate a simple ID if uuid is not available
+const generateId = () => {
+  try {
+    return uuidv4();
+  } catch (error) {
+    // Fallback to a simple timestamp-based ID if uuid is not available
+    return `id-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+  }
+};
+
 // Mock API endpoint handler
 export const handleSummarizeRequest = async (url: string) => {
   // Validate URL
@@ -52,7 +62,7 @@ export const handleSummarizeRequest = async (url: string) => {
   
   // Return a mock summary
   return {
-    id: uuidv4(),
+    id: generateId(),
     url,
     summary: getMockSummary(url),
     timestamp: new Date().toISOString(),
