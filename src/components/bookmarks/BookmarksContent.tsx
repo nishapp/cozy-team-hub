@@ -663,51 +663,32 @@ export function BookmarksContent({
                     <FileCode className="h-4 w-4" />
                     <span className="sr-only">Create Bit</span>
                   </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setBookmarkToEdit(bookmark);
-                          setIsEditBookmarkOpen(true);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Edit Bookmark
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCreateBit(bookmark);
-                        }}
-                      >
-                        <FileCode className="h-4 w-4 mr-2" />
-                        Create Bit
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setBookmarkToEdit(bookmark);
-                          setIsDeleteBookmarkOpen(true);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Bookmark
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setBookmarkToEdit(bookmark);
+                      setIsEditBookmarkOpen(true);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    <span className="sr-only">Edit</span>
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setBookmarkToEdit(bookmark);
+                      setIsDeleteBookmarkOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Delete</span>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
