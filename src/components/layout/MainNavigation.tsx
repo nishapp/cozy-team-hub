@@ -4,9 +4,12 @@ import { useAuth } from "@/context/AuthContext";
 import { FileText, Home, LayoutDashboard, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function MainNavigation() {
-  const { user, profile } = useAuth();
-  const isAdmin = profile?.role === "admin";
+interface MainNavigationProps {
+  isAdmin?: boolean;
+}
+
+export function MainNavigation({ isAdmin }: MainNavigationProps) {
+  const { user } = useAuth();
 
   const menuItems = [
     {

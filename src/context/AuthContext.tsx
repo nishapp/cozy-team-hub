@@ -8,6 +8,11 @@ import { toast } from "sonner";
 interface AuthContextType {
   session: Session | null;
   user: User | null;
+  profile: {
+    full_name?: string;
+    avatar_url?: string;
+    role?: 'admin' | 'user';
+  } | null;
   loading: boolean;
   signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -21,6 +26,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<{
+    full_name?: string;
+    avatar_url?: string;
+    role?: 'admin' | 'user';
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -45,6 +55,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Fetch profile data when user changes
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (!user) {
+        setProfile(null);
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url, role')
+          .eq('id', user.id)
+          .single();
+          
+        if (error) throw error;
+        setProfile(data);
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+        setProfile(null);
+      }
+    };
+    
+    fetchProfileData();
+  }, [user]);
 
   async function signUp(email: string, password: string, metadata?: Record<string, any>) {
     try {
@@ -135,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Clear state
       setUser(null);
       setSession(null);
+      setProfile(null);
       
       toast.success("Signed out successfully");
       navigate("/auth", { replace: true });
@@ -177,6 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = {
     session,
     user,
+    profile,
     loading,
     signUp,
     signIn,
