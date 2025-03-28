@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { sampleFriends } from "@/data/sampleFriends";
 import { initialBookmarksData } from "@/data/initialBookmarks";
@@ -23,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 const getPublicBookmarks = () => {
   const friendBookmarks: {
@@ -44,7 +45,7 @@ const getPublicBookmarks = () => {
               friendBookmarks.push({
                 friendId: friend.id,
                 friendName: friend.name,
-                friendAvatar: friend.profilePicture,
+                friendAvatar: friend.image, // Change from profilePicture to image
                 bookmark,
                 folderName: folder.name
               });
@@ -60,7 +61,7 @@ const getPublicBookmarks = () => {
           friendBookmarks.push({
             friendId: friend.id,
             friendName: friend.name,
-            friendAvatar: friend.profilePicture,
+            friendAvatar: friend.image, // Change from profilePicture to image
             bookmark
           });
         }
@@ -146,7 +147,7 @@ const FriendBookmarks = () => {
               <SelectContent>
                 <SelectItem value="all">All Buddies</SelectItem>
                 {uniqueFriends.map(friend => (
-                  <SelectItem key={friend.id} value={friend.id}>
+                  <SelectItem key={friend.id} value={friend.id || "unknown"}>
                     {friend.name}
                   </SelectItem>
                 ))}
@@ -190,31 +191,41 @@ const FriendBookmarks = () => {
                     </CardTitle>
                   </div>
                   <div className="flex space-x-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      asChild
-                    >
-                      <a
-                        href={item.bookmark.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        <span className="sr-only">Open link</span>
-                      </a>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleCreateBit(item.bookmark)}
-                      title="Create Bit from Bookmark"
-                    >
-                      <FileCode className="h-4 w-4" />
-                      <span className="sr-only">Create Bit</span>
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          asChild
+                        >
+                          <a
+                            href={item.bookmark.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                            <span className="sr-only">Open link</span>
+                          </a>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Open link in new tab</TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleCreateBit(item.bookmark)}
+                        >
+                          <FileCode className="h-4 w-4" />
+                          <span className="sr-only">Create Bit</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Create Bit from Bookmark</TooltipContent>
+                    </Tooltip>
                   </div>
                 </CardHeader>
                 <CardContent>
