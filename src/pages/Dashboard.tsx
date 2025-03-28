@@ -11,9 +11,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import FeaturedBits from "@/components/bits/FeaturedBits";
 import SharedBitsCarousel from "@/components/bits/SharedBitsCarousel";
-import UserPointsCard from "@/components/gamification/UserPointsCard";
-import BadgesDisplay from "@/components/gamification/BadgesDisplay";
-import StreakDisplay from "@/components/gamification/StreakDisplay";
+import GamificationTopBar from "@/components/gamification/GamificationTopBar";
 
 interface Bit {
   id: string;
@@ -309,6 +307,14 @@ const Dashboard = () => {
         <Navbar />
         
         <main className="flex-1 container py-8">
+          <GamificationTopBar 
+            points={points}
+            level={level}
+            currentStreak={currentStreak}
+            badges={badges}
+            activityDates={activityDates}
+          />
+          
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <div className="flex flex-col">
@@ -327,31 +333,6 @@ const Dashboard = () => {
               <Button variant="secondary" className="rounded-full px-6 py-1 h-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-sm font-medium" onClick={() => navigate('/bits')}>
                 View board
               </Button>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div className="lg:col-span-2">
-              <UserPointsCard 
-                userName={fullName || user?.email?.split('@')[0] || "User"}
-                userAvatar={user?.user_metadata?.avatar_url}
-                points={points}
-                level={level}
-                currentStreak={currentStreak}
-                longestStreak={longestStreak}
-                isCurrentUser={true}
-              />
-            </div>
-            <div className="bg-muted/10 rounded-xl p-6 flex flex-col justify-center">
-              <StreakDisplay 
-                currentStreak={currentStreak}
-                activityDates={activityDates}
-                className="mb-4"
-              />
-              <BadgesDisplay 
-                badges={badges}
-                title="Recent Badges"
-              />
             </div>
           </div>
           

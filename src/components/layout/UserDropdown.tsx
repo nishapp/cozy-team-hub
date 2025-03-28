@@ -1,78 +1,72 @@
 
-import { Link } from "react-router-dom";
-import { Menu, Mail, Settings, Shield, Building2, LogOut } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import ProfileAvatar from "@/components/ui/ProfileAvatar";
+import React from "react";
+import { User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { User } from "@supabase/supabase-js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 
-interface UserDropdownProps {
-  user: User | null;
-  profileData: {
-    full_name?: string;
-    avatar_url?: string;
-    role?: 'admin' | 'user';
-  } | null;
-  signOut: () => void;
-}
+const UserDropdown = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
-const UserDropdown = ({ user, profileData, signOut }: UserDropdownProps) => {
-  const isAdmin = profileData?.role === 'admin';
+  const handleLogout = async () => {
+    await signOut();
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full p-0">
-          <ProfileAvatar src={profileData?.avatar_url} fallbackText={profileData?.full_name} size="sm" />
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={user?.user_metadata?.avatar_url} alt="User avatar" />
+            <AvatarFallback>
+              <User className="h-4 w-4" />
+            </AvatarFallback>
+          </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <div className="flex items-center justify-start gap-2 p-2">
-          <ProfileAvatar src={profileData?.avatar_url} fallbackText={profileData?.full_name} size="sm" />
-          <div className="flex flex-col space-y-0.5 leading-none">
-            {profileData?.full_name && <p className="font-medium text-sm">{profileData.full_name}</p>}
-            <p className="text-xs text-muted-foreground">{user?.email}</p>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">
+              {user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User"}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user?.email}
+            </p>
           </div>
-        </div>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link to="/dashboard" className="cursor-pointer w-full flex items-center">
-            <Menu size={16} className="mr-2" />
-            <span>Dashboard</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/contact" className="cursor-pointer w-full flex items-center">
-            <Mail size={16} className="mr-2" />
-            <span>Contact</span>
-          </Link>
-        </DropdownMenuItem>
-        {isAdmin && (
-          <>
-            <DropdownMenuItem asChild>
-              <Link to="/admin" className="cursor-pointer w-full flex items-center">
-                <Shield size={16} className="mr-2" />
-                <span>Admin Dashboard</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/company-settings" className="cursor-pointer w-full flex items-center">
-                <Building2 size={16} className="mr-2" />
-                <span>Company Settings</span>
-              </Link>
-            </DropdownMenuItem>
-          </>
-        )}
-        <DropdownMenuItem asChild>
-          <Link to="/settings" className="cursor-pointer w-full flex items-center">
-            <Settings size={16} className="mr-2" />
-            <span>Settings</span>
-          </Link>
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => navigate("/profile")}>
+            Profile
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/settings")}>
+            Settings
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/bits")}>
+            Bits
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/posts")}>
+            Posts
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/friends")}>
+            Friends
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()} className="text-red-600 cursor-pointer">
-          <LogOut size={16} className="mr-2" />
-          <span>Log out</span>
+        <DropdownMenuItem onClick={handleLogout}>
+          Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

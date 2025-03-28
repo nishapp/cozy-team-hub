@@ -17,7 +17,8 @@ import Bits from "./pages/Bits";
 import Posts from "./pages/Posts";
 import PostDetail from "./pages/PostDetail";
 import Friends from "./pages/Friends";
-import FriendBits from "./pages/FriendBits"; // New import
+import FriendBits from "./pages/FriendBits";
+import Profile from "./pages/Profile"; // New import
 import AdminDashboard from "./pages/AdminDashboard";
 import Settings from "./pages/Settings";
 import Contact from "./pages/Contact";
@@ -48,7 +49,8 @@ const AnimatedRoutes = () => {
         <Route path="/posts" element={<Posts />} />
         <Route path="/post/:postId" element={<PostDetail />} />
         <Route path="/friends" element={<Friends />} />
-        <Route path="/friends/:friendId/bits" element={<FriendBits />} /> {/* New route */}
+        <Route path="/friends/:friendId/bits" element={<FriendBits />} />
+        <Route path="/profile" element={<Profile />} /> {/* New route */}
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/settings" element={<Settings />} />
