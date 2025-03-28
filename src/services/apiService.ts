@@ -5,7 +5,11 @@ import { handleSummarizeRequest } from "@/mock/api/summarize";
 const originalFetch = window.fetch;
 
 window.fetch = async function(input: RequestInfo | URL, init?: RequestInit) {
-  const url = typeof input === 'string' ? input : input.url;
+  const url = typeof input === 'string' 
+    ? input 
+    : input instanceof Request 
+      ? input.url 
+      : input.toString();
   
   // Handle our mock API endpoints
   if (url === '/api/summarize' && init?.method === 'POST') {

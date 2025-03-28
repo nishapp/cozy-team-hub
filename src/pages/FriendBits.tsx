@@ -530,8 +530,7 @@ const FriendBits = () => {
               friendAvatar={friend.avatar_url}
               isOpen={isBookmarkModalOpen}
               onClose={handleBookmarkModalClose}
-              onCopyBookmark={handleCopyBookmark}
-              onCreateBitFromBookmark={handleCreateBitFromBookmark}
+              onCopy={handleCopyBookmark}
             />
           )}
         </main>

@@ -16,8 +16,10 @@ interface BookmarkDetailModalProps {
   bookmark: BookmarkItem | null;
   isOpen: boolean;
   onClose: () => void;
-  onEdit: (bookmark: BookmarkItem) => void;
+  onEdit?: (bookmark: BookmarkItem) => void;
   onCopy?: (bookmark: BookmarkItem) => void;
+  friendName?: string;
+  friendAvatar?: string;
 }
 
 const BookmarkDetailModal = ({
@@ -26,6 +28,8 @@ const BookmarkDetailModal = ({
   onClose,
   onEdit,
   onCopy,
+  friendName,
+  friendAvatar,
 }: BookmarkDetailModalProps) => {
   if (!bookmark) return null;
 
@@ -70,9 +74,11 @@ const BookmarkDetailModal = ({
               Copy Bookmark
             </Button>
           )}
-          <Button onClick={() => onEdit(bookmark)}>
-            Edit
-          </Button>
+          {onEdit && (
+            <Button onClick={() => onEdit(bookmark)}>
+              Edit
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
