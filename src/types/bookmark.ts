@@ -10,6 +10,7 @@ export interface BookmarkItem {
   tags?: string[];
   isPrivate: boolean;
   summary?: string; // Keep for backward compatibility
+  imageUrl?: string; // Hero image URL from the webpage
 }
 
 export interface BookmarkFolder {

@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Image } from "lucide-react";
 
 interface BookmarkDialogProps {
   isOpen: boolean;
@@ -22,12 +22,14 @@ interface BookmarkDialogProps {
     title: string; 
     url: string; 
     description?: string;
+    imageUrl?: string;
     isPrivate: boolean;
   }) => void;
   initialValues?: { 
     title: string; 
     url: string; 
     description?: string;
+    imageUrl?: string;
     isPrivate?: boolean;
   };
   mode?: "create" | "edit";
@@ -43,6 +45,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const [title, setTitle] = useState(initialValues?.title || "");
   const [url, setUrl] = useState(initialValues?.url || "");
   const [description, setDescription] = useState(initialValues?.description || "");
+  const [imageUrl, setImageUrl] = useState(initialValues?.imageUrl || "");
   const [isPrivate, setIsPrivate] = useState(initialValues?.isPrivate || false);
   const [error, setError] = useState<{title?: string; url?: string}>({});
 
@@ -51,6 +54,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       setTitle(initialValues?.title || "");
       setUrl(initialValues?.url || "");
       setDescription(initialValues?.description || "");
+      setImageUrl(initialValues?.imageUrl || "");
       setIsPrivate(initialValues?.isPrivate || false);
       setError({});
     }
@@ -78,6 +82,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       title: title.trim(), 
       url: url.trim(),
       description: description.trim() || undefined,
+      imageUrl: imageUrl.trim() || undefined,
       isPrivate,
     });
   };
@@ -126,6 +131,18 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="What's this bookmark about?"
                 rows={3}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="imageUrl" className="flex items-center gap-2">
+                <Image className="h-4 w-4" />
+                Hero Image URL (Optional)
+              </Label>
+              <Input
+                id="imageUrl"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="e.g., https://example.com/image.jpg"
               />
             </div>
             <div className="flex items-center justify-between">

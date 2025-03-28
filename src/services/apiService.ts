@@ -27,7 +27,11 @@ window.fetch = async function(input: RequestInfo | URL, init?: RequestInit) {
           throw new Error(error.message || 'Error calling the summarize function');
         }
         
-        return new Response(JSON.stringify(data), {
+        return new Response(JSON.stringify({
+          ...data,
+          // Pass along the hero image URL if it exists
+          heroImage: data.heroImage || null
+        }), {
           status: 200,
           headers: {
             'Content-Type': 'application/json',
@@ -40,7 +44,11 @@ window.fetch = async function(input: RequestInfo | URL, init?: RequestInit) {
         console.warn("Falling back to mock implementation...");
         const result = await handleSummarizeRequest(body.url);
         
-        return new Response(JSON.stringify(result), {
+        // The mock implementation might not provide a hero image
+        return new Response(JSON.stringify({
+          ...result,
+          heroImage: null // Mock doesn't have hero image capability yet
+        }), {
           status: 200,
           headers: {
             'Content-Type': 'application/json',

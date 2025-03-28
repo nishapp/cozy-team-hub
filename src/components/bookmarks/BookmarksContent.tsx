@@ -441,6 +441,80 @@ export function BookmarksContent({
     }
   };
 
+  const handleSaveBookmarkWithHeroImage = (bookmarkId: string, description: string, heroImage?: string) => {
+    let updatedBookmark: BookmarkItem | null = null;
+    let updatedFolders: BookmarkFolder[] = [...allFolders];
+    let updatedRootBookmarks: BookmarkItem[] = [...rootBookmarks];
+    
+    const updateBookmarkData = (bookmark: BookmarkItem) => ({
+      ...bookmark,
+      description,
+      imageUrl: heroImage || bookmark.imageUrl,
+      updatedAt: new Date().toISOString()
+    });
+    
+    if (selectedFolderId) {
+      const folderIndex = updatedFolders.findIndex(f => f.id === selectedFolderId);
+      if (folderIndex !== -1) {
+        const bookmarkIndex = updatedFolders[folderIndex].bookmarks.findIndex(b => b.id === bookmarkId);
+        if (bookmarkIndex !== -1) {
+          updatedBookmark = updateBookmarkData(updatedFolders[folderIndex].bookmarks[bookmarkIndex]);
+          
+          updatedFolders[folderIndex] = {
+            ...updatedFolders[folderIndex],
+            bookmarks: [
+              ...updatedFolders[folderIndex].bookmarks.slice(0, bookmarkIndex),
+              updatedBookmark,
+              ...updatedFolders[folderIndex].bookmarks.slice(bookmarkIndex + 1)
+            ]
+          };
+        }
+      }
+    } else {
+      const bookmarkIndex = updatedRootBookmarks.findIndex(b => b.id === bookmarkId);
+      if (bookmarkIndex !== -1) {
+        updatedBookmark = updateBookmarkData(updatedRootBookmarks[bookmarkIndex]);
+        
+        updatedRootBookmarks = [
+          ...updatedRootBookmarks.slice(0, bookmarkIndex),
+          updatedBookmark,
+          ...updatedRootBookmarks.slice(bookmarkIndex + 1)
+        ];
+      }
+    }
+    
+    if (!updatedBookmark) {
+      outerLoop: for (let i = 0; i < updatedFolders.length; i++) {
+        const bookmarkIndex = updatedFolders[i].bookmarks.findIndex(b => b.id === bookmarkId);
+        if (bookmarkIndex !== -1) {
+          updatedBookmark = updateBookmarkData(updatedFolders[i].bookmarks[bookmarkIndex]);
+          
+          updatedFolders[i] = {
+            ...updatedFolders[i],
+            bookmarks: [
+              ...updatedFolders[i].bookmarks.slice(0, bookmarkIndex),
+              updatedBookmark,
+              ...updatedFolders[i].bookmarks.slice(bookmarkIndex + 1)
+            ]
+          };
+          
+          break outerLoop;
+        }
+      }
+    }
+    
+    if (updatedBookmark) {
+      updateBookmarksData({
+        folders: updatedFolders,
+        rootBookmarks: updatedRootBookmarks
+      });
+      
+      if (selectedBookmark && selectedBookmark.id === bookmarkId) {
+        setSelectedBookmark(updatedBookmark);
+      }
+    }
+  };
+
   return (
     <div className="flex-1 p-6 overflow-auto">
       <div className="mb-6">
@@ -598,10 +672,29 @@ export function BookmarksContent({
           {filteredBookmarks.map((bookmark) => (
             <Card 
               key={bookmark.id} 
-              className="group hover:shadow-md transition-shadow cursor-pointer"
+              className="group hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
               onClick={() => handleBookmarkClick(bookmark)}
             >
-              <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
+              {bookmark.imageUrl && (
+                <div className="w-full h-40 relative overflow-hidden">
+                  <img 
+                    src={bookmark.imageUrl} 
+                    alt={bookmark.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = "none";
+                      const parent = target.parentElement as HTMLElement;
+                      if (parent) {
+                        parent.style.height = "0px";
+                      }
+                    }}
+                  />
+                </div>
+              )}
+              
+              <CardHeader className={cn("pb-2 flex flex-row items-start justify-between space-y-0", 
+                bookmark.imageUrl ? "pt-3" : "")}>
                 <div className="flex items-center flex-1">
                   <div className="h-5 w-5 mr-2 flex-shrink-0">
                     {bookmark.icon ? (

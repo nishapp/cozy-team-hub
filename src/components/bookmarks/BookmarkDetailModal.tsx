@@ -10,7 +10,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { BookmarkItem } from "@/types/bookmark";
 import { BookmarkSummary } from "./BookmarkSummary";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Image as ImageIcon } from "lucide-react";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { cn } from "@/lib/utils";
 
 interface BookmarkDetailModalProps {
   bookmark: BookmarkItem | null;
@@ -38,7 +40,23 @@ const BookmarkDetailModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
+        {bookmark.imageUrl && (
+          <div className="mb-4 -mt-6 -mx-6 overflow-hidden rounded-t-lg">
+            <AspectRatio ratio={16/9}>
+              <img
+                src={bookmark.imageUrl}
+                alt={bookmark.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = "none";
+                }}
+              />
+            </AspectRatio>
+          </div>
+        )}
+        
+        <DialogHeader className={cn(bookmark.imageUrl && "-mt-2")}>
           <DialogTitle className="text-xl font-bold">{bookmark.title}</DialogTitle>
           <DialogDescription>
             <a
