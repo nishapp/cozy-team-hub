@@ -57,12 +57,62 @@ const sampleBits = [
   },
 ];
 
+const friendSharedBits = [
+  {
+    id: "f1",
+    title: "Travel Photography Tips",
+    description: "Expert tips for capturing stunning travel photos with any camera. Learn composition, lighting and editing techniques.",
+    tags: ["photography", "travel", "tips"],
+    category: "photography",
+    visibility: "public",
+    wdylt_comment: "These tips changed my travel photography game!",
+    image_url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    created_at: new Date().toISOString(),
+    shared_by: "Emma Watson"
+  },
+  {
+    id: "f2",
+    title: "Homemade Pasta Recipe",
+    description: "Simple and delicious homemade pasta recipe. Learn to make pasta from scratch with just a few ingredients.",
+    tags: ["cooking", "recipe", "italian"],
+    category: "food",
+    visibility: "public",
+    wdylt_comment: "Never buying store pasta again!",
+    image_url: "https://images.unsplash.com/photo-1556761223-4c4282c73f77?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    created_at: new Date().toISOString(),
+    shared_by: "Gordon Ramsay"
+  },
+  {
+    id: "f3",
+    title: "Urban Gardening Ideas",
+    description: "Innovative solutions for growing plants in small urban spaces. Perfect for apartment dwellers.",
+    tags: ["gardening", "urban", "plants"],
+    category: "gardening",
+    visibility: "public",
+    wdylt_comment: "My balcony has never looked better!",
+    image_url: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    created_at: new Date().toISOString(),
+    shared_by: "Martha Stewart"
+  },
+  {
+    id: "f4",
+    title: "Minimal Web Design Principles",
+    description: "Key principles of effective minimal web design. Less is more when done right.",
+    tags: ["design", "web", "minimal"],
+    category: "design",
+    visibility: "public",
+    image_url: "https://images.unsplash.com/photo-1494797262163-102fae527c62?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    created_at: new Date().toISOString(),
+    shared_by: "John Doe"
+  }
+];
+
 const categoryImages = [
   "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   "https://images.unsplash.com/photo-1550439062-609e1531270e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   "https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   "https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-  "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+  "https://images.unsplash.com/photo-1529245856630-f4853233d2ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   "https://images.unsplash.com/photo-1519748771451-a94c596ffd67?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
   "https://images.unsplash.com/photo-1529245856630-f4853233d2ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
@@ -85,6 +135,7 @@ const Dashboard = () => {
   const [greeting, setGreeting] = useState<string>("Hello");
   const [bits, setBits] = useState<Bit[]>(sampleBits);
   const [bitCount, setBitCount] = useState<number>(0);
+  const [sharedBits, setSharedBits] = useState<any[]>(friendSharedBits);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -188,13 +239,31 @@ const Dashboard = () => {
             <h2 className="text-xl font-semibold mb-4">More ideas for this board</h2>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max mb-12">
             {bits.map((bit) => (
               <BitCard 
                 key={bit.id} 
                 bit={bit} 
                 onBitUpdated={handleBitUpdated} 
               />
+            ))}
+          </div>
+
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4">Shared by friends</h2>
+            <p className="text-muted-foreground mb-4">Discover bits that your friends have shared with you</p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
+            {sharedBits.map((bit) => (
+              <div key={bit.id} className="relative">
+                <BitCard 
+                  bit={bit}
+                />
+                <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                  {bit.shared_by}
+                </div>
+              </div>
             ))}
           </div>
         </main>
