@@ -14,7 +14,6 @@ export const initialBookmarksData: {
       parentId: null,
       createdAt: "2023-01-15T12:00:00Z",
       updatedAt: "2023-01-15T12:00:00Z",
-      isPrivate: true, // Private work folder
       bookmarks: [
         {
           id: "bookmark-1",
@@ -23,7 +22,6 @@ export const initialBookmarksData: {
           description: "Project management tool for tracking tasks and issues",
           createdAt: "2023-01-15T12:00:00Z",
           updatedAt: "2023-01-15T12:00:00Z",
-          isPrivate: true,
         },
         {
           id: "bookmark-2",
@@ -32,7 +30,6 @@ export const initialBookmarksData: {
           description: "Code repository and version control platform",
           createdAt: "2023-01-15T12:00:00Z",
           updatedAt: "2023-01-15T12:00:00Z",
-          isPrivate: false,
         }
       ]
     },
@@ -43,7 +40,6 @@ export const initialBookmarksData: {
       parentId: null,
       createdAt: "2023-01-15T12:00:00Z",
       updatedAt: "2023-01-15T12:00:00Z",
-      isPrivate: false, // Public learning folder
       bookmarks: [
         {
           id: "bookmark-3",
@@ -52,7 +48,6 @@ export const initialBookmarksData: {
           description: "Comprehensive resource for web development documentation",
           createdAt: "2023-01-15T12:00:00Z",
           updatedAt: "2023-01-15T12:00:00Z",
-          isPrivate: false,
         },
         {
           id: "bookmark-7",
@@ -61,7 +56,6 @@ export const initialBookmarksData: {
           description: "Official documentation for the React JavaScript library",
           createdAt: "2023-02-10T14:30:00Z",
           updatedAt: "2023-02-10T14:30:00Z",
-          isPrivate: false,
         },
         {
           id: "bookmark-8",
@@ -70,7 +64,6 @@ export const initialBookmarksData: {
           description: "Official TypeScript documentation with comprehensive guides",
           createdAt: "2023-02-15T09:15:00Z",
           updatedAt: "2023-02-15T09:15:00Z",
-          isPrivate: false,
         }
       ]
     },
@@ -81,7 +74,6 @@ export const initialBookmarksData: {
       parentId: "folder-2",
       createdAt: "2023-01-15T12:00:00Z",
       updatedAt: "2023-01-15T12:00:00Z",
-      isPrivate: false,
       bookmarks: [
         {
           id: "bookmark-4",
@@ -90,7 +82,6 @@ export const initialBookmarksData: {
           description: "Modern JavaScript tutorial with detailed explanations and examples",
           createdAt: "2023-01-15T12:00:00Z",
           updatedAt: "2023-01-15T12:00:00Z",
-          isPrivate: false,
         },
         {
           id: "bookmark-9",
@@ -99,7 +90,6 @@ export const initialBookmarksData: {
           description: "A comprehensive book about JavaScript, programming, and the wonders of the digital world",
           createdAt: "2023-03-05T11:20:00Z",
           updatedAt: "2023-03-05T11:20:00Z",
-          isPrivate: false,
         }
       ]
     },
@@ -110,7 +100,6 @@ export const initialBookmarksData: {
       parentId: null,
       createdAt: "2023-02-20T10:00:00Z",
       updatedAt: "2023-02-20T10:00:00Z",
-      isPrivate: false,
       bookmarks: [
         {
           id: "bookmark-10",
@@ -119,7 +108,6 @@ export const initialBookmarksData: {
           description: "Design inspiration and creative community for designers",
           createdAt: "2023-02-20T10:05:00Z",
           updatedAt: "2023-02-20T10:05:00Z",
-          isPrivate: false,
         },
         {
           id: "bookmark-11",
@@ -128,7 +116,6 @@ export const initialBookmarksData: {
           description: "A utility-first CSS framework for rapidly building custom designs",
           createdAt: "2023-02-21T15:30:00Z",
           updatedAt: "2023-02-21T15:30:00Z",
-          isPrivate: false,
         }
       ]
     }
@@ -141,7 +128,6 @@ export const initialBookmarksData: {
       description: "Search engine",
       createdAt: "2023-01-15T12:00:00Z",
       updatedAt: "2023-01-15T12:00:00Z",
-      isPrivate: false,
     },
     {
       id: "bookmark-6",
@@ -150,7 +136,6 @@ export const initialBookmarksData: {
       description: "Video sharing platform with educational content and tutorials",
       createdAt: "2023-01-15T12:00:00Z",
       updatedAt: "2023-01-15T12:00:00Z",
-      isPrivate: false,
     },
     {
       id: "bookmark-12",
@@ -159,7 +144,6 @@ export const initialBookmarksData: {
       description: "Step by step guide to becoming a modern frontend developer in 2023",
       createdAt: "2023-01-28T16:45:00Z",
       updatedAt: "2023-01-28T16:45:00Z",
-      isPrivate: true,
     },
     {
       id: "bookmark-13",
@@ -168,7 +152,6 @@ export const initialBookmarksData: {
       description: "Tips, tricks, and techniques on using CSS and web design",
       createdAt: "2023-02-05T09:30:00Z",
       updatedAt: "2023-02-05T09:30:00Z",
-      isPrivate: false,
     }
   ]
 };

@@ -8,8 +8,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import FriendsList from "@/components/friends/FriendsList";
 import FriendRequests from "@/components/friends/FriendRequests";
 import FriendRecommendations from "@/components/friends/FriendRecommendations";
-import FriendBookmarks from "@/components/friends/FriendBookmarks";
-import { Toaster } from "sonner";
 
 const Friends = () => {
   const { user, loading: authLoading } = useAuth();
@@ -45,7 +43,6 @@ const Friends = () => {
               <TabsTrigger value="friends">My Buddies</TabsTrigger>
               <TabsTrigger value="requests">Buddy Requests</TabsTrigger>
               <TabsTrigger value="discover">Discover</TabsTrigger>
-              <TabsTrigger value="bookmarks">Buddy Bookmarks</TabsTrigger>
             </TabsList>
             
             <TabsContent value="friends" className="space-y-4">
@@ -59,13 +56,8 @@ const Friends = () => {
             <TabsContent value="discover" className="space-y-4">
               <FriendRecommendations />
             </TabsContent>
-            
-            <TabsContent value="bookmarks" className="space-y-4">
-              <FriendBookmarks />
-            </TabsContent>
           </Tabs>
         </main>
-        <Toaster position="bottom-right" />
       </div>
     </PageTransition>
   );

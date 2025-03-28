@@ -8,7 +8,6 @@ export interface BookmarkItem {
   updatedAt: string;
   icon?: string;
   tags?: string[];
-  isPrivate?: boolean; // New field to track privacy status
 }
 
 export interface BookmarkFolder {
@@ -19,7 +18,6 @@ export interface BookmarkFolder {
   createdAt: string;
   updatedAt: string;
   bookmarks: BookmarkItem[];
-  isPrivate?: boolean; // New field to track privacy status
 }
 
 export interface DragItem {
