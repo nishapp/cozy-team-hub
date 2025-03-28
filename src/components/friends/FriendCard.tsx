@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,15 +39,12 @@ const FriendCard = ({
 
   const handleFriendAction = () => {
     if (status.isFriend) {
-      // Remove friend
       setStatus({...status, isFriend: false});
       toast.success("Friend removed");
     } else if (status.isPending) {
-      // Cancel request
       setStatus({...status, isPending: false});
       toast.success("Friend request cancelled");
     } else {
-      // Send friend request
       setStatus({...status, isPending: true});
       toast.success("Friend request sent");
     }
@@ -87,10 +83,8 @@ const FriendCard = ({
   };
 
   const handleViewBits = () => {
-    // In a real application, we would navigate to a route with the friend's bits
+    navigate(`/friends/${friend.id}/bits`);
     toast.success(`Viewing ${friend.name}'s bits`);
-    // This could be navigate to a specific route like:
-    // navigate(`/friends/${friend.id}/bits`);
   };
 
   const memberSince = formatDistanceToNow(new Date(friend.joined_date), { addSuffix: true });
@@ -175,7 +169,6 @@ const FriendCard = ({
         )}
       </CardFooter>
 
-      {/* Message Dialog */}
       <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
