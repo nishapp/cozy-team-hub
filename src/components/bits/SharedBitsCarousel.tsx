@@ -61,17 +61,18 @@ const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) =
   }, 10000);
   
   const rotateCards = () => {
+    // Start the fade out animation
     setIsTransitioning(true);
     
     // After fade out animation completes, update the cards
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % sharedBits.length);
       
-      // Reset transition state
+      // Reset transition state after a short delay to allow DOM to update
       setTimeout(() => {
         setIsTransitioning(false);
-      }, 50);
-    }, 500); // Duration of fade-out animation
+      }, 100); // Slightly longer delay to ensure DOM updates
+    }, 700); // Longer duration for more visible fade-out
   };
   
   const updateDisplayedBits = () => {
@@ -88,15 +89,29 @@ const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) =
     updateDisplayedBits();
   }, [currentIndex, displayCount, sharedBits]);
   
+  // Manual advance control for testing
+  const handleAdvance = () => {
+    rotateCards();
+  };
+  
   return (
     <div className="mb-12">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-4">Shared by friends</h2>
-        <p className="text-muted-foreground mb-4">Discover bits that your friends have shared with you</p>
+      <div className="mb-6 flex justify-between items-end">
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Shared by friends</h2>
+          <p className="text-muted-foreground">Discover bits that your friends have shared with you</p>
+        </div>
+        
+        <button 
+          onClick={handleAdvance}
+          className="text-sm text-muted-foreground hover:text-primary transition-colors"
+        >
+          Next
+        </button>
       </div>
       
       <div 
-        className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
+        className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max transition-opacity duration-700 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
       >
         {displayedBits.map((bit) => (
           <div key={bit.id} className="relative">
