@@ -10,8 +10,26 @@ import BitDetailModal from "@/components/bits/BitDetailModal";
 import HeaderAddBitButton from "@/components/bits/HeaderAddBitButton";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Filter } from "lucide-react";
+import { ArrowLeft, Filter, Search, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 // Update the Bit interface to include shared_by
 interface Bit {
@@ -101,6 +119,17 @@ const Bits = () => {
   const [selectedBit, setSelectedBit] = useState<Bit | null>(null);
   const [activeTab, setActiveTab] = useState<string>("all");
   const navigate = useNavigate();
+  
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [tagFilters, setTagFilters] = useState<string[]>([]);
+  const [filteredBits, setFilteredBits] = useState<Bit[]>(bits);
+  const [filteredBookmarkedBits, setFilteredBookmarkedBits] = useState<Bit[]>(bookmarkedBits);
+  
+  // Get unique categories and tags from bits
+  const categories = [...new Set(bits.map(bit => bit.category))];
+  const allTags = [...new Set(bits.flatMap(bit => bit.tags))];
 
   useEffect(() => {
     // Fetch user's profile data to get full name
@@ -151,6 +180,59 @@ const Bits = () => {
     
     loadBookmarks();
   }, [user]);
+
+  // Apply filters whenever bits or filter criteria change
+  useEffect(() => {
+    applyFilters();
+  }, [bits, bookmarkedBits, searchTerm, categoryFilter, tagFilters]);
+
+  // Function to filter bits based on current filters
+  const applyFilters = () => {
+    const filterBits = (bitsToFilter: Bit[]) => {
+      return bitsToFilter.filter(bit => {
+        // Filter by search term (title, description, or tags)
+        const matchesSearch = 
+          searchTerm === "" || 
+          bit.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          bit.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          bit.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+        
+        // Filter by category
+        const matchesCategory = 
+          categoryFilter === "" || 
+          bit.category.toLowerCase() === categoryFilter.toLowerCase();
+        
+        // Filter by tags
+        const matchesTags = 
+          tagFilters.length === 0 || 
+          tagFilters.every(tag => bit.tags.includes(tag));
+        
+        return matchesSearch && matchesCategory && matchesTags;
+      });
+    };
+    
+    setFilteredBits(filterBits(bits));
+    setFilteredBookmarkedBits(filterBits(bookmarkedBits));
+  };
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchTerm("");
+    setCategoryFilter("");
+    setTagFilters([]);
+  };
+
+  // Add tag to filter
+  const addTagFilter = (tag: string) => {
+    if (!tagFilters.includes(tag)) {
+      setTagFilters([...tagFilters, tag]);
+    }
+  };
+
+  // Remove tag from filter
+  const removeTagFilter = (tag: string) => {
+    setTagFilters(tagFilters.filter(t => t !== tag));
+  };
 
   // Handle adding a new bit
   const handleBitAdded = (newBit: Bit) => {
@@ -247,13 +329,145 @@ const Bits = () => {
               <span className="text-muted-foreground">{bitCount} Pins</span>
             </div>
             
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex justify-between items-center mb-4">
               <p className="text-muted-foreground">
                 All your bits in one place. Browse and organize your collection.
               </p>
               <div className="flex items-center gap-2">
                 <HeaderAddBitButton onBitAdded={handleBitAdded} />
               </div>
+            </div>
+            
+            {/* Search and Filter UI */}
+            <div className="mb-4">
+              <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                <div className="relative flex-grow">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search by title, description, or tags..."
+                    className="pl-8 w-full"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  {searchTerm && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1 h-8 w-8"
+                      onClick={() => setSearchTerm("")}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="flex gap-2">
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="min-w-[150px]">
+                      <SelectValue placeholder="Filter by category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Categories</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category.toLowerCase()}>
+                          {category.charAt(0).toUpperCase() + category.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-1">
+                        <Filter className="h-4 w-4" />
+                        <span>Tags</span>
+                        {tagFilters.length > 0 && (
+                          <Badge variant="secondary" className="ml-1">
+                            {tagFilters.length}
+                          </Badge>
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuLabel>Filter by Tags</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <div className="max-h-[300px] overflow-y-auto">
+                        <DropdownMenuGroup>
+                          {allTags.map((tag) => (
+                            <DropdownMenuItem
+                              key={tag}
+                              className="flex items-center justify-between cursor-pointer"
+                              onClick={() => {
+                                if (tagFilters.includes(tag)) {
+                                  removeTagFilter(tag);
+                                } else {
+                                  addTagFilter(tag);
+                                }
+                              }}
+                            >
+                              <span>{tag}</span>
+                              {tagFilters.includes(tag) && (
+                                <span className="text-primary">✓</span>
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuGroup>
+                      </div>
+                      {tagFilters.length > 0 && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            className="text-destructive focus:text-destructive cursor-pointer"
+                            onClick={() => setTagFilters([])}
+                          >
+                            Clear tag filters
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  
+                  {(searchTerm || categoryFilter || tagFilters.length > 0) && (
+                    <Button variant="ghost" onClick={resetFilters}>
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
+              {/* Active filter badges */}
+              {(categoryFilter || tagFilters.length > 0) && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {categoryFilter && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <span>Category: {categoryFilter}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => setCategoryFilter("")}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  )}
+                  
+                  {tagFilters.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                      <span>Tag: {tag}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => removeTagFilter(tag)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           
@@ -268,7 +482,7 @@ const Bits = () => {
             <TabsContent value="all" className="mt-6">
               {/* Pinterest-style masonry grid for all bits */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
-                {bits.map((bit) => (
+                {filteredBits.map((bit) => (
                   <BitCard 
                     key={bit.id} 
                     bit={bit} 
@@ -279,9 +493,13 @@ const Bits = () => {
                 ))}
               </div>
               
-              {bits.length === 0 && (
+              {filteredBits.length === 0 && (
                 <div className="text-center py-10">
-                  <p className="text-muted-foreground">No bits yet. Add your first bit!</p>
+                  {bits.length > 0 ? (
+                    <p className="text-muted-foreground">No bits match your current filters. Try adjusting your search or filters.</p>
+                  ) : (
+                    <p className="text-muted-foreground">No bits yet. Add your first bit!</p>
+                  )}
                 </div>
               )}
             </TabsContent>
@@ -289,7 +507,7 @@ const Bits = () => {
             <TabsContent value="bookmarked" className="mt-6">
               {/* Pinterest-style masonry grid for bookmarked bits */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
-                {bookmarkedBits.map((bit) => (
+                {filteredBookmarkedBits.map((bit) => (
                   <BitCard 
                     key={bit.id} 
                     bit={bit} 
@@ -300,9 +518,13 @@ const Bits = () => {
                 ))}
               </div>
               
-              {bookmarkedBits.length === 0 && (
+              {filteredBookmarkedBits.length === 0 && (
                 <div className="text-center py-10">
-                  <p className="text-muted-foreground">No bookmarked bits yet. Bookmark some bits to see them here!</p>
+                  {bookmarkedBits.length > 0 ? (
+                    <p className="text-muted-foreground">No bookmarked bits match your current filters. Try adjusting your search or filters.</p>
+                  ) : (
+                    <p className="text-muted-foreground">No bookmarked bits yet. Bookmark some bits to see them here!</p>
+                  )}
                 </div>
               )}
             </TabsContent>
