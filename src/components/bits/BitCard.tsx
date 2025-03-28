@@ -1,15 +1,22 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
-import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Bookmark, ExternalLink } from "lucide-react";
+import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Bookmark, ExternalLink, Plus } from "lucide-react";
 import { toast } from "sonner";
 import EditBitButton from "./EditBitButton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
 
 interface Bit {
   id: string;
@@ -37,6 +44,8 @@ interface BitCardProps {
 
 const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmarkToggle }) => {
   const [isBookmarked, setIsBookmarked] = useState(bit.isBookmarked || false);
+  const [wdiltComment, setWdiltComment] = useState("");
+  const [isWdiltOpen, setIsWdiltOpen] = useState(false);
   
   const formattedDate = new Date(bit.created_at).toLocaleDateString("en-US", {
     month: "short",
@@ -82,6 +91,27 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmar
     window.open(url, '_blank', 'noopener,noreferrer');
     
     toast.success("Opening link in new tab");
+  };
+
+  const handleWdiltSubmit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!wdiltComment.trim()) {
+      setIsWdiltOpen(false);
+      return;
+    }
+    
+    if (onBitUpdated) {
+      const updatedBit = {
+        ...bit,
+        wdylt_comment: wdiltComment.trim()
+      };
+      onBitUpdated(updatedBit);
+    }
+    
+    toast.success("WDILT comment added!");
+    setWdiltComment("");
+    setIsWdiltOpen(false);
   };
 
   return (
@@ -180,6 +210,60 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmar
           <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={(e) => e.stopPropagation()}>
             <MessageCircle size={16} />
           </Button>
+          
+          <Popover open={isWdiltOpen} onOpenChange={setIsWdiltOpen}>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full h-8 w-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsWdiltOpen(true);
+                }}
+              >
+                <Plus size={16} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent 
+              className="w-72" 
+              onClick={(e) => e.stopPropagation()}
+              side="top"
+            >
+              <div className="space-y-2">
+                <h4 className="font-medium">Add @WDYLT Comment</h4>
+                <p className="text-xs text-muted-foreground">
+                  Share what you learned today about this bit
+                </p>
+                <div className="space-y-2">
+                  <Input 
+                    placeholder="Today I learned..." 
+                    value={wdiltComment}
+                    onChange={(e) => setWdiltComment(e.target.value)}
+                    className="w-full"
+                  />
+                  <div className="flex justify-end gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsWdiltOpen(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      size="sm"
+                      onClick={handleWdiltSubmit}
+                    >
+                      Add Comment
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="flex gap-1">
           <TooltipProvider>
