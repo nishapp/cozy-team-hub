@@ -2,12 +2,12 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
-import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
 import { supabase } from "@/lib/supabase";
-import { Card, CardContent } from "@/components/ui/card";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import BitCard from "@/components/bits/BitCard";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import LeftSidebar from "@/components/layout/LeftSidebar";
+import SearchBar from "@/components/layout/SearchBar";
 
 // Sample data for demonstration purposes
 const sampleBits = [
@@ -125,27 +125,36 @@ const Dashboard = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        
-        <main className="flex-1 container py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold">
-              {greeting}, {fullName}
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Here are your latest bits. What did you learn today?
-            </p>
-          </div>
+      <SidebarProvider>
+        <div className="flex min-h-screen">
+          <LeftSidebar />
           
-          {/* Pinterest-style masonry grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-max">
-            {bits.map((bit) => (
-              <BitCard key={bit.id} bit={bit} />
-            ))}
-          </div>
-        </main>
-      </div>
+          <SidebarInset>
+            <main className="flex-1 container py-6">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h1 className="text-3xl font-bold">
+                    {greeting}, {fullName}
+                  </h1>
+                  <p className="text-muted-foreground mt-2">
+                    Here are your latest bits. What did you learn today?
+                  </p>
+                </div>
+                <SearchBar />
+              </div>
+              
+              {/* Pinterest-style masonry grid */}
+              <div className="masonry-grid auto-rows-max">
+                {bits.map((bit) => (
+                  <div key={bit.id} className="masonry-item">
+                    <BitCard bit={bit} />
+                  </div>
+                ))}
+              </div>
+            </main>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
     </PageTransition>
   );
 };

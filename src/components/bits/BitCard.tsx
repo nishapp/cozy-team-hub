@@ -39,7 +39,7 @@ const BitCard: React.FC<BitCardProps> = ({ bit }) => {
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group rounded-xl border-0 saas-shadow">
+    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group rounded-xl border-0 saas-shadow rounded-full-elements">
       {bit.image_url && (
         <AspectRatio ratio={4/3} className="bg-muted">
           <img 
@@ -77,7 +77,7 @@ const BitCard: React.FC<BitCardProps> = ({ bit }) => {
                   +{bit.tags.length - 3}
                 </Badge>
               </HoverCardTrigger>
-              <HoverCardContent className="w-auto">
+              <HoverCardContent className="w-auto rounded-xl">
                 <div className="flex flex-wrap gap-1">
                   {bit.tags.slice(3).map((tag, index) => (
                     <Badge key={index} variant="secondary" className="rounded-full text-xs font-normal">
