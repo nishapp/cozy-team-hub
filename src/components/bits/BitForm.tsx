@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -21,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import useImageUpload from "@/hooks/useImageUpload";
+import { useImageUpload } from "@/hooks/useImageUpload";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
 
