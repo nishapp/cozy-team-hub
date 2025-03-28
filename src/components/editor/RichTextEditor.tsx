@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { useAuth } from "@/context/AuthContext";
@@ -22,11 +22,24 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const { uploadImage } = useImageUpload();
   const { user } = useAuth();
   const editorRef = useRef<HTMLDivElement>(null);
+  const [isInitialRender, setIsInitialRender] = useState(true);
+
+  // Set initial content and mark initial render as done
+  useEffect(() => {
+    if (isInitialRender && editorRef.current) {
+      editorRef.current.innerHTML = value;
+      setIsInitialRender(false);
+    }
+  }, [value, isInitialRender]);
 
   // Handle formatting commands
   const handleCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
     updateValue();
+    // Ensure focus is maintained
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
   };
 
   // Update the parent component with the editor's content
@@ -46,6 +59,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       const imageUrl = await uploadImage(file, user.id);
       
       if (imageUrl) {
+        // Preserve selection before inserting
+        const selection = window.getSelection();
+        const range = selection?.getRangeAt(0);
+        
         // Insert image at cursor position
         const imgHtml = `<img src="${imageUrl}" alt="Uploaded image" class="my-2 rounded-md max-w-full" />`;
         document.execCommand('insertHTML', false, imgHtml);
@@ -54,6 +71,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         // Also pass the URL up if needed
         if (onImageUpload) {
           onImageUpload(imageUrl);
+        }
+        
+        // Restore focus
+        if (editorRef.current) {
+          editorRef.current.focus();
         }
       }
     } catch (error) {
@@ -174,7 +196,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         ref={editorRef}
         className="p-4 min-h-[200px] outline-none"
         contentEditable
-        dangerouslySetInnerHTML={{ __html: value }}
         onInput={updateValue}
         onBlur={updateValue}
         data-placeholder={placeholder}
