@@ -105,6 +105,51 @@ const friendSharedBits = [
     image_url: "https://images.unsplash.com/photo-1494797262163-102fae527c62?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
     created_at: new Date().toISOString(),
     shared_by: "John Doe"
+  },
+  {
+    id: "f5",
+    title: "Beginner's Guide to Houseplants",
+    description: "Easy-to-care-for houseplants that even beginners can keep alive and thriving.",
+    tags: ["plants", "indoor", "gardening"],
+    category: "plants",
+    visibility: "public",
+    image_url: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    created_at: new Date().toISOString(),
+    shared_by: "Jane Smith"
+  },
+  {
+    id: "f6",
+    title: "Modern Calligraphy Basics",
+    description: "Learn the fundamentals of modern calligraphy and start creating beautiful lettering today.",
+    tags: ["art", "calligraphy", "handwriting"],
+    category: "art",
+    visibility: "public",
+    image_url: "https://images.unsplash.com/photo-1455651192900-d9d2a5c3091e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    created_at: new Date().toISOString(),
+    shared_by: "Mark Johnson"
+  },
+  {
+    id: "f7",
+    title: "DIY Natural Cleaning Solutions",
+    description: "Eco-friendly cleaning recipes using ingredients you already have at home.",
+    tags: ["eco", "cleaning", "diy"],
+    category: "home",
+    visibility: "public",
+    wdylt_comment: "My house smells amazing now!",
+    image_url: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    created_at: new Date().toISOString(),
+    shared_by: "David Green"
+  },
+  {
+    id: "f8",
+    title: "Effective Home Office Setup",
+    description: "Create a productive and comfortable workspace in your home with these proven tips.",
+    tags: ["productivity", "workspace", "wfh"],
+    category: "work",
+    visibility: "public",
+    image_url: "https://images.unsplash.com/photo-1593642634443-44adaa06623a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    created_at: new Date().toISOString(),
+    shared_by: "Sarah Connor"
   }
 ];
 

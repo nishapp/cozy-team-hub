@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import BitCard from "./BitCard";
 import { useInterval } from "@/hooks/useInterval";
+import { Card } from "@/components/ui/card";
 
 interface SharedBit {
   id: string;
@@ -23,7 +24,7 @@ interface SharedBitsCarouselProps {
 const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayedBits, setDisplayedBits] = useState<SharedBit[]>([]);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [fadingCardIndex, setFadingCardIndex] = useState<number | null>(null);
   
   // Number of cards to display at once based on screen size
   const getDisplayCount = () => {
@@ -61,18 +62,18 @@ const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) =
   }, 10000);
   
   const rotateCards = () => {
-    // Start the fade out animation
-    setIsTransitioning(true);
+    // Set the index of the first card as the one fading out
+    setFadingCardIndex(0);
     
     // After fade out animation completes, update the cards
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % sharedBits.length);
       
-      // Reset transition state after a short delay to allow DOM to update
+      // Reset fading state after a short delay to allow DOM to update
       setTimeout(() => {
-        setIsTransitioning(false);
-      }, 100); // Slightly longer delay to ensure DOM updates
-    }, 700); // Longer duration for more visible fade-out
+        setFadingCardIndex(null);
+      }, 100);
+    }, 700); // Duration of fade-out animation
   };
   
   const updateDisplayedBits = () => {
@@ -110,11 +111,12 @@ const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) =
         </button>
       </div>
       
-      <div 
-        className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max transition-opacity duration-700 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
-      >
-        {displayedBits.map((bit) => (
-          <div key={bit.id} className="relative">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
+        {displayedBits.map((bit, index) => (
+          <div 
+            key={bit.id} 
+            className={`relative transition-opacity duration-700 ease-in-out ${fadingCardIndex === index ? 'opacity-0' : 'opacity-100'}`}
+          >
             <BitCard bit={bit} />
             <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
               {bit.shared_by}
