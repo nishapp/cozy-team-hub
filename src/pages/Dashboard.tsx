@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import FeaturedBits from "@/components/bits/FeaturedBits";
 import SharedBitsCarousel from "@/components/bits/SharedBitsCarousel";
 
+// Update the Bit interface to include shared_by
 interface Bit {
   id: string;
   title: string;
@@ -23,6 +24,7 @@ interface Bit {
   wdylt_comment?: string;
   image_url?: string;
   created_at: string;
+  shared_by?: string; // Add shared_by as optional
 }
 
 const sampleBits = [
@@ -308,7 +310,7 @@ const Dashboard = () => {
           {/* Bit Detail Modal */}
           {selectedBit && (
             <BitDetailModal 
-              bit={selectedBit} 
+              bit={{...selectedBit, shared_by: selectedBit.shared_by || "You"}} 
               isOpen={!!selectedBit} 
               onClose={() => setSelectedBit(null)} 
             />

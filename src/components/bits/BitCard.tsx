@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -8,7 +7,6 @@ import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/h
 import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image } from "lucide-react";
 import EditBitButton from "./EditBitButton";
 
-// Define the Bit type
 interface Bit {
   id: string;
   title: string;
@@ -19,6 +17,7 @@ interface Bit {
   wdylt_comment?: string;
   image_url?: string;
   created_at: string;
+  shared_by?: string;
 }
 
 interface BitCardProps {
@@ -28,20 +27,17 @@ interface BitCardProps {
 }
 
 const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick }) => {
-  // Format the date
   const formattedDate = new Date(bit.created_at).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
 
-  // Truncate description if it's too long
   const truncateText = (text: string, maxLength: number) => {
     if (text.length <= maxLength) return text;
     return text.slice(0, maxLength) + "...";
   };
 
-  // Generate a gradient based on the bit's category
   const getGradientColor = (category: string) => {
     const gradients = {
       "coding": "from-blue-400 to-indigo-500",

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -11,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import BitForm from "./BitForm";
 
-// Define the Bit type
+// Update the Bit interface to include shared_by
 interface Bit {
   id?: string;
   title: string;
@@ -22,6 +21,7 @@ interface Bit {
   wdylt_comment?: string;
   image_url?: string;
   created_at?: string;
+  shared_by?: string; // Add shared_by as optional
 }
 
 interface HeaderAddBitButtonProps {
