@@ -21,7 +21,7 @@ const Posts = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Simplified loading of posts - eliminate the timeout which could be causing issues
+    // Load posts immediately to prevent hanging
     setPosts(samplePosts);
     setLoading(false);
   }, []);
@@ -32,24 +32,22 @@ const Posts = () => {
       id: newPost.id || `post-${Date.now()}`,
     };
     
-    setPosts([postWithId, ...posts]);
+    setPosts(prevPosts => [postWithId, ...prevPosts]);
     toast.success("Post created successfully!");
     setIsCreateModalOpen(false);
   };
 
   const handleUpdatePost = (updatedPost: Post) => {
-    const updatedPosts = posts.map(post => 
-      post.id === updatedPost.id ? {...updatedPost} : post
+    setPosts(prevPosts => 
+      prevPosts.map(post => post.id === updatedPost.id ? {...updatedPost} : post)
     );
     
-    setPosts(updatedPosts);
     toast.success("Post updated successfully!");
     setSelectedPost(null);
   };
 
   const handleDeletePost = (postId: string) => {
-    const filteredPosts = posts.filter(post => post.id !== postId);
-    setPosts(filteredPosts);
+    setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
     toast.success("Post deleted successfully!");
   };
 

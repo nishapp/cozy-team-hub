@@ -23,14 +23,10 @@ const PostDetail = () => {
     // Find the post with the matching ID
     setLoading(true);
     
-    // Add a small timeout to prevent any race conditions
-    const timer = setTimeout(() => {
-      const foundPost = samplePosts.find(p => p.id === postId);
-      setPost(foundPost || null);
-      setLoading(false);
-    }, 100);
-    
-    return () => clearTimeout(timer);
+    // Find the post without any timeout
+    const foundPost = samplePosts.find(p => p.id === postId);
+    setPost(foundPost || null);
+    setLoading(false);
   }, [postId]);
 
   if (loading) {
