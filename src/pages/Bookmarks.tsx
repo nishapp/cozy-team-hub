@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { BookmarkFolder, BookmarkItem } from "@/types/bookmark";
 import { initialBookmarksData } from "@/data/initialBookmarks";
-import { PageTransition } from "@/components/ui/PageTransition";
+import PageTransition from "@/components/ui/PageTransition";
 
 const Bookmarks = () => {
   // Get bookmarks data from local storage or use initial data

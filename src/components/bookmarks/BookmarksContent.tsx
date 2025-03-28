@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   FolderIcon, 
@@ -70,7 +69,6 @@ export const BookmarksContent = ({
   const [folderToEdit, setFolderToEdit] = useState<BookmarkFolder | null>(null);
   const [bookmarkToEdit, setBookmarkToEdit] = useState<BookmarkItem | null>(null);
   
-  // Filter items based on search query
   const filteredFolders = folders.filter(folder => 
     folder.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -81,7 +79,6 @@ export const BookmarksContent = ({
     bookmark.url.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Create folder handlers
   const handleCreateFolder = (folder: { name: string; description?: string; parentId?: string | null }) => {
     const newFolder: BookmarkFolder = {
       id: `folder-${Date.now()}`,
@@ -102,7 +99,6 @@ export const BookmarksContent = ({
     toast.success("Folder created successfully");
   };
 
-  // Create bookmark handlers
   const handleCreateBookmark = (bookmark: { 
     title: string; 
     url: string; 
@@ -118,7 +114,6 @@ export const BookmarksContent = ({
     };
 
     if (selectedFolderId) {
-      // Update a bookmark in a folder
       const updatedFolders = allFolders.map(folder => {
         if (folder.id === selectedFolderId) {
           return {
@@ -135,7 +130,6 @@ export const BookmarksContent = ({
         rootBookmarks,
       });
     } else {
-      // Add to root bookmarks
       updateBookmarksData({
         folders: allFolders,
         rootBookmarks: [...rootBookmarks, newBookmark],
@@ -146,7 +140,6 @@ export const BookmarksContent = ({
     toast.success("Bookmark added successfully");
   };
 
-  // Edit folder handlers
   const handleEditFolder = (folder: { name: string; description?: string; parentId?: string | null }) => {
     if (!folderToEdit) return;
 
@@ -173,7 +166,6 @@ export const BookmarksContent = ({
     toast.success("Folder updated successfully");
   };
 
-  // Edit bookmark handlers
   const handleEditBookmark = (bookmark: { 
     title: string; 
     url: string; 
@@ -182,7 +174,6 @@ export const BookmarksContent = ({
     if (!bookmarkToEdit) return;
 
     if (selectedFolderId) {
-      // Update a bookmark in a folder
       const updatedFolders = allFolders.map(folder => {
         if (folder.id === selectedFolderId) {
           const updatedBookmarks = folder.bookmarks.map(b => {
@@ -212,7 +203,6 @@ export const BookmarksContent = ({
         rootBookmarks,
       });
     } else {
-      // Update a root bookmark
       const updatedRootBookmarks = rootBookmarks.map(b => {
         if (b.id === bookmarkToEdit.id) {
           return {
@@ -237,13 +227,11 @@ export const BookmarksContent = ({
     toast.success("Bookmark updated successfully");
   };
 
-  // Delete folder handler
   const handleDeleteFolder = () => {
     if (!folderToEdit) return;
 
     const foldersToDelete = [folderToEdit.id];
     
-    // Recursively find all child folders
     const findChildFolders = (parentId: string) => {
       const children = allFolders.filter(f => f.parentId === parentId);
       children.forEach(child => {
@@ -261,7 +249,6 @@ export const BookmarksContent = ({
       rootBookmarks,
     });
 
-    // If we're deleting the currently selected folder, navigate to parent or root
     if (selectedFolderId === folderToEdit.id) {
       onSelectFolder(folderToEdit.parentId || null);
     }
@@ -271,12 +258,10 @@ export const BookmarksContent = ({
     toast.success("Folder deleted successfully");
   };
 
-  // Delete bookmark handler
   const handleDeleteBookmark = () => {
     if (!bookmarkToEdit) return;
 
     if (selectedFolderId) {
-      // Delete from folder
       const updatedFolders = allFolders.map(folder => {
         if (folder.id === selectedFolderId) {
           return {
@@ -293,7 +278,6 @@ export const BookmarksContent = ({
         rootBookmarks,
       });
     } else {
-      // Delete from root
       const updatedRootBookmarks = rootBookmarks.filter(b => b.id !== bookmarkToEdit.id);
 
       updateBookmarksData({
@@ -307,7 +291,6 @@ export const BookmarksContent = ({
     toast.success("Bookmark deleted successfully");
   };
 
-  // URL validation helper
   const validateUrl = (url: string) => {
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       return `https://${url}`;
@@ -317,7 +300,6 @@ export const BookmarksContent = ({
 
   return (
     <div className="flex-1 overflow-auto p-6">
-      {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -328,7 +310,6 @@ export const BookmarksContent = ({
               <p className="text-muted-foreground mt-1">{currentFolder.description}</p>
             )}
             
-            {/* Breadcrumbs */}
             {breadcrumbs.length > 0 && (
               <div className="flex items-center text-sm text-muted-foreground mt-2">
                 <button
@@ -374,7 +355,6 @@ export const BookmarksContent = ({
           </div>
         </div>
         
-        {/* Search */}
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -386,9 +366,7 @@ export const BookmarksContent = ({
         </div>
       </div>
       
-      {/* Content */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Folders */}
         {filteredFolders.length > 0 && (
           <>
             {filteredFolders.map((folder) => (
@@ -450,7 +428,6 @@ export const BookmarksContent = ({
           </>
         )}
         
-        {/* Bookmarks */}
         {filteredBookmarks.map((bookmark) => (
           <Card key={bookmark.id} className="group hover:shadow-md transition-shadow">
             <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
@@ -463,8 +440,12 @@ export const BookmarksContent = ({
                         alt=""
                         className="h-full w-full object-contain"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                          (e.target as HTMLImageElement).nextElementSibling!.style.display = 'block';
+                          const imgElement = e.target as HTMLImageElement;
+                          imgElement.style.display = 'none';
+                          const nextElement = imgElement.nextElementSibling as HTMLElement;
+                          if (nextElement) {
+                            nextElement.style.display = 'block';
+                          }
                         }}
                       />
                       <LinkIcon className="h-full w-full text-blue-500 hidden" />
@@ -539,7 +520,6 @@ export const BookmarksContent = ({
           </Card>
         ))}
 
-        {/* Empty state */}
         {filteredFolders.length === 0 && filteredBookmarks.length === 0 && (
           <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
             {searchQuery ? (
@@ -576,7 +556,6 @@ export const BookmarksContent = ({
         )}
       </div>
 
-      {/* Dialogs */}
       <FolderDialog
         isOpen={isCreateFolderOpen}
         onClose={() => setIsCreateFolderOpen(false)}
