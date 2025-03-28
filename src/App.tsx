@@ -24,7 +24,7 @@ import Settings from "./pages/Settings";
 import Contact from "./pages/Contact";
 import CompanySettings from "./pages/CompanySettings";
 import NotFound from "./pages/NotFound";
-import Bookmarks from "./pages/Bookmarks"; // New import
+import Bookmarks from "./pages/Bookmarks"; 
 
 // Create a QueryClient instance
 const queryClient = new QueryClient({
@@ -52,7 +52,7 @@ const AnimatedRoutes = () => {
         <Route path="/friends" element={<Friends />} />
         <Route path="/friends/:friendId/bits" element={<FriendBits />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/bookmarks" element={<Bookmarks />} /> {/* New route */}
+        <Route path="/bookmarks" element={<Bookmarks />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/settings" element={<Settings />} />
@@ -67,8 +67,8 @@ const AnimatedRoutes = () => {
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <ThemeProvider>
+      <ThemeProvider>
+        <TooltipProvider>
           <Toaster />
           <Sonner position="bottom-right" />
           <BrowserRouter>
@@ -76,8 +76,8 @@ const App = () => {
               <AnimatedRoutes />
             </AuthProvider>
           </BrowserRouter>
-        </ThemeProvider>
-      </TooltipProvider>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

@@ -10,6 +10,7 @@ import FriendRequests from "@/components/friends/FriendRequests";
 import FriendRecommendations from "@/components/friends/FriendRecommendations";
 import FriendBookmarks from "@/components/friends/FriendBookmarks";
 import { Toaster } from "sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const Friends = () => {
   const { user, loading: authLoading } = useAuth();
@@ -40,30 +41,32 @@ const Friends = () => {
             </p>
           </div>
           
-          <Tabs defaultValue="friends" className="w-full" onValueChange={setActiveTab}>
-            <TabsList className="mb-8">
-              <TabsTrigger value="friends">My Buddies</TabsTrigger>
-              <TabsTrigger value="requests">Buddy Requests</TabsTrigger>
-              <TabsTrigger value="discover">Discover</TabsTrigger>
-              <TabsTrigger value="bookmarks">Buddy Bookmarks</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="friends" className="space-y-4">
-              <FriendsList />
-            </TabsContent>
-            
-            <TabsContent value="requests" className="space-y-4">
-              <FriendRequests />
-            </TabsContent>
-            
-            <TabsContent value="discover" className="space-y-4">
-              <FriendRecommendations />
-            </TabsContent>
-            
-            <TabsContent value="bookmarks" className="space-y-4">
-              <FriendBookmarks />
-            </TabsContent>
-          </Tabs>
+          <TooltipProvider>
+            <Tabs defaultValue="friends" className="w-full" onValueChange={setActiveTab}>
+              <TabsList className="mb-8">
+                <TabsTrigger value="friends">My Buddies</TabsTrigger>
+                <TabsTrigger value="requests">Buddy Requests</TabsTrigger>
+                <TabsTrigger value="discover">Discover</TabsTrigger>
+                <TabsTrigger value="bookmarks">Buddy Bookmarks</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="friends" className="space-y-4">
+                <FriendsList />
+              </TabsContent>
+              
+              <TabsContent value="requests" className="space-y-4">
+                <FriendRequests />
+              </TabsContent>
+              
+              <TabsContent value="discover" className="space-y-4">
+                <FriendRecommendations />
+              </TabsContent>
+              
+              <TabsContent value="bookmarks" className="space-y-4">
+                <FriendBookmarks />
+              </TabsContent>
+            </Tabs>
+          </TooltipProvider>
         </main>
         <Toaster position="bottom-right" />
       </div>

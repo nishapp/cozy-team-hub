@@ -455,7 +455,7 @@ export const BookmarksContent = ({
                   <FolderIcon className="h-5 w-5 mr-2 text-amber-500" />
                   <CardTitle className="text-base">{folder.name}</CardTitle>
                   {folder.isPrivate && (
-                    <Lock className="h-4 w-4 ml-2 text-amber-500" title="Private folder" />
+                    <Lock className="h-4 w-4 ml-2 text-amber-500" aria-label="Private" />
                   )}
                 </div>
                 <DropdownMenu>
@@ -535,7 +535,7 @@ export const BookmarksContent = ({
                     {bookmark.title}
                   </CardTitle>
                   {bookmark.isPrivate && (
-                    <Lock className="h-4 w-4 ml-2 text-amber-500" title="Private bookmark" />
+                    <Lock className="h-4 w-4 ml-2 text-amber-500" aria-label="Private" />
                   )}
                 </div>
                 <div className="flex space-x-1">
@@ -656,7 +656,7 @@ export const BookmarksContent = ({
                         </td>
                         <td className="p-3 text-center">
                           {folder.isPrivate ? (
-                            <Lock className="h-4 w-4 mx-auto text-amber-500" title="Private" />
+                            <Lock className="h-4 w-4 mx-auto text-amber-500" aria-label="Private" />
                           ) : (
                             <LockOpen className="h-4 w-4 mx-auto text-green-500" title="Public" />
                           )}
@@ -753,7 +753,7 @@ export const BookmarksContent = ({
                         </td>
                         <td className="p-3 text-center">
                           {bookmark.isPrivate ? (
-                            <Lock className="h-4 w-4 mx-auto text-amber-500" title="Private" />
+                            <Lock className="h-4 w-4 mx-auto text-amber-500" aria-label="Private" />
                           ) : (
                             <LockOpen className="h-4 w-4 mx-auto text-green-500" title="Public" />
                           )}
