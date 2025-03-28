@@ -21,6 +21,10 @@ import Contact from "./pages/Contact";
 import CompanySettings from "./pages/CompanySettings";
 import NotFound from "./pages/NotFound";
 
+// Create a QueryClient instance outside of the component
+// This prevents issues with React hooks and ensures a single instance
+const queryClient = new QueryClient();
+
 // AnimatePresence wrapper component that provides location to children
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -45,9 +49,6 @@ const AnimatedRoutes = () => {
 };
 
 const App = () => {
-  // Create a new QueryClient instance inside the component
-  const queryClient = new QueryClient();
-  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
