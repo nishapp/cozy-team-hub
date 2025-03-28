@@ -1,8 +1,17 @@
 
+import React from "react";
 import { Post } from "@/types/post";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, ArrowUpRight } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { formatDistanceToNow } from "date-fns";
+import { Edit, Trash2, Sparkles } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import ConvertToBitDialog from "./ConvertToBitDialog";
 
@@ -24,99 +34,130 @@ interface PostsListProps {
 }
 
 const PostsList = ({ posts, onEditPost, onDeletePost }: PostsListProps) => {
-  const [postToConvert, setPostToConvert] = useState<Post | null>(null);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    }).format(date);
+  const handleConvertToBit = (post: Post) => {
+    setSelectedPost(post);
+    setIsConvertDialogOpen(true);
   };
 
-  const truncateContent = (content: string, maxLength = 150) => {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + '...';
-  };
+  if (posts.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-lg font-medium text-muted-foreground">
+          You haven't created any posts yet.
+        </h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Create your first post to get started.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {posts.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-muted-foreground">You haven't created any posts yet.</p>
-          <p className="text-muted-foreground">Create your first post to get started!</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post) => (
-            <Card key={post.id} className="flex flex-col h-full">
-              <CardHeader>
-                <CardTitle>{post.title}</CardTitle>
-                <CardDescription>Created on {formatDate(post.created_at)}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-muted-foreground whitespace-pre-line">
-                  {truncateContent(post.content)}
-                </p>
-              </CardContent>
-              <CardFooter className="flex justify-between items-center">
-                <div className="text-xs text-muted-foreground">
-                  Updated: {formatDate(post.updated_at)}
-                </div>
-                <div className="flex gap-2">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {posts.map((post) => (
+        <Card key={post.id} className="group">
+          <CardHeader className="relative pb-2">
+            {post.image_url && (
+              <div className="w-full h-40 mb-2 overflow-hidden rounded-md">
+                <img
+                  src={post.image_url}
+                  alt={post.title}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                />
+              </div>
+            )}
+            <CardTitle className="line-clamp-2">{post.title}</CardTitle>
+            <CardDescription>
+              {formatDistanceToNow(new Date(post.created_at), {
+                addSuffix: true,
+              })}
+              {post.created_at !== post.updated_at && " (edited)"}
+            </CardDescription>
+            {post.category && (
+              <Badge variant="outline" className="absolute top-3 right-3 bg-background/80">
+                {post.category}
+              </Badge>
+            )}
+          </CardHeader>
+          <CardContent className="pb-2">
+            <div 
+              className="text-sm text-muted-foreground line-clamp-3 min-h-[3em]"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
+            
+            {post.tags && post.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-3">
+                {post.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex justify-between pt-2">
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-muted-foreground"
+                onClick={() => onEditPost(post)}
+              >
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
                   <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onEditPost(post)}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-muted-foreground hover:text-destructive"
                   >
-                    <Edit className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete
                   </Button>
-                  
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="icon">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Post</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete this post? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => onDeletePost(post.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    onClick={() => setPostToConvert(post)}
-                  >
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      )}
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete
+                      the post.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => onDeletePost(post.id)}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-2"
+              onClick={() => handleConvertToBit(post)}
+            >
+              <Sparkles className="h-4 w-4 mr-1" />
+              Convert to Bit
+            </Button>
+          </CardFooter>
+        </Card>
+      ))}
       
-      {postToConvert && (
-        <ConvertToBitDialog 
-          post={postToConvert} 
-          isOpen={!!postToConvert}
-          onClose={() => setPostToConvert(null)}
+      {selectedPost && (
+        <ConvertToBitDialog
+          post={selectedPost}
+          isOpen={isConvertDialogOpen}
+          onClose={() => setIsConvertDialogOpen(false)}
         />
       )}
     </div>

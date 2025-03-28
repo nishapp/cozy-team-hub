@@ -26,12 +26,24 @@ const ConvertToBitDialog = ({ post, isOpen, onClose }: ConvertToBitDialogProps) 
 
   const createInitialBitData = () => {
     // Extract first paragraph or portion of content for description
-    const description = post.content.split('\n')[0].slice(0, 200);
+    // For HTML content, strip tags to get plain text
+    const stripHtml = (html: string) => {
+      const tmp = document.createElement("DIV");
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || "";
+    };
     
-    // Extract potential tags from the content
+    const plainContent = stripHtml(post.content);
+    const description = plainContent.split('\n')[0].slice(0, 200);
+    
+    // Use existing tags if available, otherwise extract potential tags from content
     const extractTags = () => {
+      if (post.tags && post.tags.length > 0) {
+        return post.tags;
+      }
+      
       const commonWords = ["the", "and", "a", "is", "in", "to", "of", "for", "with", "on"];
-      const words = post.content
+      const words = plainContent
         .toLowerCase()
         .replace(/[^\w\s]/g, '')
         .split(/\s+/)
@@ -50,17 +62,14 @@ const ConvertToBitDialog = ({ post, isOpen, onClose }: ConvertToBitDialogProps) 
         .map(([word]) => word);
     };
     
-    // The problem is here - we're returning a string for tags
-    // but BitForm expects an array. Let's fix this by returning an array directly
-    // instead of joining it into a string
     return {
       title: post.title,
       description: description,
-      tags: extractTags(), // Return as array, not as string
-      category: "",
+      tags: extractTags(), // Return as array
+      category: post.category || "",
       visibility: "public",
       wdylt_comment: "",
-      image_url: "",
+      image_url: post.image_url || "",
       link: "",
     };
   };
@@ -92,7 +101,16 @@ const ConvertToBitDialog = ({ post, isOpen, onClose }: ConvertToBitDialogProps) 
             <div className="py-4">
               <h3 className="font-medium mb-2">Post to convert:</h3>
               <p className="font-semibold">{post.title}</p>
-              <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{post.content}</p>
+              <div className="text-sm text-muted-foreground mt-2 line-clamp-3">
+                {post.image_url && (
+                  <img 
+                    src={post.image_url} 
+                    alt={post.title} 
+                    className="w-full h-32 object-cover rounded-md mb-2"
+                  />
+                )}
+                <div dangerouslySetInnerHTML={{ __html: post.content }} />
+              </div>
             </div>
             
             <DialogFooter>
