@@ -35,6 +35,7 @@ const formSchema = z.object({
   visibility: z.string().min(1, "Visibility is required"),
   wdylt_comment: z.string().optional(),
   image_url: z.string().optional(),
+  link: z.string().optional(),
 });
 
 interface BitFormProps {
@@ -62,6 +63,7 @@ const BitForm: React.FC<BitFormProps> = ({
       visibility: initialData?.visibility || "public",
       wdylt_comment: initialData?.wdylt_comment || "",
       image_url: initialData?.image_url || "",
+      link: initialData?.link || "",
     },
   });
 
@@ -117,6 +119,22 @@ const BitForm: React.FC<BitFormProps> = ({
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="link"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>URL / Link</FormLabel>
+              <FormControl>
+                <Input placeholder="https://example.com" type="url" {...field} />
+              </FormControl>
+              <FormDescription>
+                Add a URL that relates to this bit
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
