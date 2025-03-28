@@ -4,7 +4,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Plus, ExternalLink } from "lucide-react";
+import { BookmarkPlus, Image, Plus, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { BookmarkItem } from "@/types/bookmark";
@@ -49,7 +49,6 @@ const BookmarkDetailModal: React.FC<BookmarkDetailModalProps> = ({
   onCreateBitFromBookmark
 }) => {
   const [relatedBits, setRelatedBits] = useState<any[]>([]);
-  const [liked, setLiked] = useState(false);
 
   // For demo purposes, we're using sample data
   // In a real app, fetch related bits here
@@ -116,43 +115,23 @@ const BookmarkDetailModal: React.FC<BookmarkDetailModalProps> = ({
               </CardContent>
             </Card>
             
-            <div className="flex justify-between">
-              <div className="flex space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`${liked ? 'text-red-500' : ''}`}
-                  onClick={() => setLiked(!liked)}
-                >
-                  <Heart className="h-4 w-4 mr-1" fill={liked ? "currentColor" : "none"} />
-                  Like
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                >
-                  <MessageCircle className="h-4 w-4 mr-1" />
-                  Comment
-                </Button>
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onCopyBookmark(bookmark)}
-                >
-                  <BookmarkPlus className="h-4 w-4 mr-1" />
-                  Save
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => onCreateBitFromBookmark(bookmark)}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Create Bit
-                </Button>
-              </div>
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onCopyBookmark(bookmark)}
+              >
+                <BookmarkPlus className="h-4 w-4 mr-1" />
+                Save
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => onCreateBitFromBookmark(bookmark)}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Create Bit
+              </Button>
             </div>
           </div>
           
