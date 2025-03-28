@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
@@ -66,7 +65,8 @@ const sampleDailyLearnings = [
     date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     content: "CSS Grid is much more powerful than I initially thought. I can create complex layouts with minimal HTML structure.",
     tags: ["css", "layout", "web-design"],
-    title: "CSS Grid Mastery"
+    title: "CSS Grid Mastery",
+    externalUrl: "https://css-tricks.com/snippets/css/complete-guide-grid/"
   },
   {
     id: "learn3",
@@ -75,6 +75,14 @@ const sampleDailyLearnings = [
     tags: ["react", "hooks", "performance"],
     relatedBitId: "bit3",
     title: "React Performance Optimization"
+  },
+  {
+    id: "learn4",
+    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    content: "Discovered a great resource for TypeScript best practices. This article explains how to properly type React components and hooks.",
+    tags: ["typescript", "react", "best-practices"],
+    title: "TypeScript and React",
+    externalUrl: "https://react-typescript-cheatsheet.netlify.app/"
   }
 ];
 

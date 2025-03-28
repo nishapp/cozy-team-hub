@@ -4,8 +4,9 @@ import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Book, Lightbulb, Calendar } from "lucide-react";
+import { Book, Lightbulb, Calendar, Link, ExternalLink } from "lucide-react";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
+import { useNavigate } from "react-router-dom";
 
 interface DailyLearningProps {
   learnings: {
@@ -14,6 +15,7 @@ interface DailyLearningProps {
     content: string;
     tags: string[];
     relatedBitId?: string;
+    externalUrl?: string;
     title?: string;
   }[];
   friendName: string;
@@ -25,6 +27,8 @@ const DailyLearningSection: React.FC<DailyLearningProps> = ({
   friendName,
   friendAvatar
 }) => {
+  const navigate = useNavigate();
+  
   // Group learnings by date
   const groupedByDate = learnings.reduce((acc, learning) => {
     const dateKey = format(new Date(learning.date), 'MMM d, yyyy');
@@ -39,6 +43,17 @@ const DailyLearningSection: React.FC<DailyLearningProps> = ({
   const sortedDates = Object.keys(groupedByDate).sort((a, b) => 
     new Date(b).getTime() - new Date(a).getTime()
   );
+  
+  const handleLearningClick = (learning: typeof learnings[0]) => {
+    if (learning.relatedBitId) {
+      // Navigate to bit detail or open bit modal
+      console.log("Navigate to bit:", learning.relatedBitId);
+      // For demonstration purposes, we're just logging. In a real app, this would navigate or open a modal.
+    } else if (learning.externalUrl) {
+      // Open external URL in a new tab
+      window.open(learning.externalUrl, "_blank", "noopener,noreferrer");
+    }
+  };
 
   if (learnings.length === 0) {
     return null;
@@ -62,7 +77,10 @@ const DailyLearningSection: React.FC<DailyLearningProps> = ({
             {groupedByDate[date].map(learning => (
               <Card 
                 key={learning.id} 
-                className="overflow-hidden border-l-4 border-l-primary bg-card/50 hover:bg-card/80 transition-colors"
+                className={`overflow-hidden border-l-4 border-l-primary bg-card/50 
+                  ${(learning.relatedBitId || learning.externalUrl) ? 
+                    'hover:bg-card/80 transition-colors cursor-pointer' : ''}`}
+                onClick={() => (learning.relatedBitId || learning.externalUrl) && handleLearningClick(learning)}
               >
                 <CardContent className="p-4">
                   <div className="flex gap-3">
@@ -71,7 +89,15 @@ const DailyLearningSection: React.FC<DailyLearningProps> = ({
                     </div>
                     <div className="flex-1">
                       {learning.title && (
-                        <h4 className="font-medium mb-1">{learning.title}</h4>
+                        <h4 className="font-medium mb-1 flex items-center gap-1">
+                          {learning.title}
+                          {learning.externalUrl && (
+                            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
+                          {learning.relatedBitId && !learning.externalUrl && (
+                            <Link className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
+                        </h4>
                       )}
                       <p className="text-muted-foreground">{learning.content}</p>
                       
@@ -98,6 +124,12 @@ const DailyLearningSection: React.FC<DailyLearningProps> = ({
                         {learning.relatedBitId && (
                           <Badge variant="secondary" className="text-xs cursor-pointer">
                             Related Bit
+                          </Badge>
+                        )}
+                        
+                        {learning.externalUrl && (
+                          <Badge variant="secondary" className="text-xs cursor-pointer">
+                            External Link
                           </Badge>
                         )}
                       </div>
