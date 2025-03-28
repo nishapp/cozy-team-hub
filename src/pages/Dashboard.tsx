@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -6,7 +5,6 @@ import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
 import { supabase } from "@/lib/supabase";
 import BitCard from "@/components/bits/BitCard";
-import AddBitButton from "@/components/bits/AddBitButton";
 import HeaderAddBitButton from "@/components/bits/HeaderAddBitButton";
 import { toast } from "sonner";
 
@@ -186,9 +184,6 @@ const Dashboard = () => {
               />
             ))}
           </div>
-          
-          {/* Add Bit Button */}
-          <AddBitButton onBitAdded={handleBitAdded} />
         </main>
       </div>
     </PageTransition>
