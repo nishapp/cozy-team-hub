@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import { 
   Carousel,
@@ -8,6 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious
 } from "@/components/ui/carousel";
+import { useInterval } from "@/hooks/useInterval";
 
 interface FeaturedBitProps {
   imageUrl: string;
@@ -41,6 +42,15 @@ interface FeaturedBitsProps {
 }
 
 const FeaturedBits: React.FC<FeaturedBitsProps> = ({ images, titles = [] }) => {
+  const [api, setApi] = useState<any>(null);
+
+  // Auto-scroll carousel every 3 seconds
+  useInterval(() => {
+    if (api) {
+      api.scrollNext();
+    }
+  }, 3000);
+
   return (
     <Carousel
       opts={{
@@ -49,6 +59,7 @@ const FeaturedBits: React.FC<FeaturedBitsProps> = ({ images, titles = [] }) => {
         dragFree: true,
       }}
       className="w-full mb-8"
+      setApi={setApi}
     >
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Categories</h2>
