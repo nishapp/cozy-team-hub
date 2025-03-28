@@ -10,6 +10,25 @@ import { initialBookmarksData } from "@/data/initialBookmarks";
 import PageTransition from "@/components/ui/PageTransition";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
+// Make sure existing bookmarks data is migrated to include the isPrivate field
+const migrateBookmarksData = (data: any) => {
+  const folders = data.folders.map((folder: any) => ({
+    ...folder,
+    isPrivate: folder.isPrivate !== undefined ? folder.isPrivate : false,
+    bookmarks: folder.bookmarks.map((bookmark: any) => ({
+      ...bookmark,
+      isPrivate: bookmark.isPrivate !== undefined ? bookmark.isPrivate : false,
+    })),
+  }));
+
+  const rootBookmarks = data.rootBookmarks.map((bookmark: any) => ({
+    ...bookmark,
+    isPrivate: bookmark.isPrivate !== undefined ? bookmark.isPrivate : false,
+  }));
+
+  return { folders, rootBookmarks };
+};
+
 const Bookmarks = () => {
   // Get bookmarks data from local storage or use initial data
   const [bookmarksData, setBookmarksData] = useLocalStorage<{
@@ -17,29 +36,32 @@ const Bookmarks = () => {
     rootBookmarks: BookmarkItem[];
   }>("bookmarks-data", initialBookmarksData);
 
+  // Migrate existing data to include the isPrivate field
+  const migratedData = migrateBookmarksData(bookmarksData);
+
   // State for currently selected folder
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
 
   // Find the selected folder from the folders array
   const selectedFolder = selectedFolderId
-    ? bookmarksData.folders.find((folder) => folder.id === selectedFolderId)
+    ? migratedData.folders.find((folder) => folder.id === selectedFolderId)
     : null;
 
   // Contents to display based on current selection
   const currentContents = selectedFolder
     ? {
-        folders: bookmarksData.folders.filter(
+        folders: migratedData.folders.filter(
           (folder) => folder.parentId === selectedFolderId
         ),
-        bookmarks: bookmarksData.folders
+        bookmarks: migratedData.folders
           .find((folder) => folder.id === selectedFolderId)
           ?.bookmarks || [],
-        breadcrumbs: getBreadcrumbs(selectedFolderId, bookmarksData.folders),
+        breadcrumbs: getBreadcrumbs(selectedFolderId, migratedData.folders),
         currentFolder: selectedFolder,
       }
     : {
-        folders: bookmarksData.folders.filter((folder) => !folder.parentId),
-        bookmarks: bookmarksData.rootBookmarks,
+        folders: migratedData.folders.filter((folder) => !folder.parentId),
+        bookmarks: migratedData.rootBookmarks,
         breadcrumbs: [],
         currentFolder: null,
       };
@@ -89,7 +111,7 @@ const Bookmarks = () => {
         <SidebarProvider>
           <div className="flex flex-1 overflow-hidden w-full">
             <BookmarksSidebar
-              folders={bookmarksData.folders}
+              folders={migratedData.folders}
               selectedFolderId={selectedFolderId}
               onSelectFolder={handleFolderSelect}
               updateBookmarksData={updateBookmarksData}
@@ -102,8 +124,8 @@ const Bookmarks = () => {
               selectedFolderId={selectedFolderId}
               onSelectFolder={handleFolderSelect}
               updateBookmarksData={updateBookmarksData}
-              allFolders={bookmarksData.folders}
-              rootBookmarks={bookmarksData.rootBookmarks}
+              allFolders={migratedData.folders}
+              rootBookmarks={migratedData.rootBookmarks}
             />
           </div>
         </SidebarProvider>

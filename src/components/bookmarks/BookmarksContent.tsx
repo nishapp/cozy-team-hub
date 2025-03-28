@@ -10,7 +10,9 @@ import {
   ChevronRight,
   LayoutGrid,
   LayoutList,
-  FileCode
+  FileCode,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { BookmarkFolder, BookmarkItem } from "@/types/bookmark";
 import { FolderDialog } from "./FolderDialog";
@@ -79,7 +81,7 @@ export const BookmarksContent = ({
   const [isDeleteBookmarkOpen, setIsDeleteBookmarkOpen] = useState(false);
   const [folderToEdit, setFolderToEdit] = useState<BookmarkFolder | null>(null);
   const [bookmarkToEdit, setBookmarkToEdit] = useState<BookmarkItem | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("list"); // Default to list view
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [isCreateBitOpen, setIsCreateBitOpen] = useState(false);
   const [selectedBookmark, setSelectedBookmark] = useState<BookmarkItem | null>(null);
   
@@ -93,7 +95,12 @@ export const BookmarksContent = ({
     bookmark.url.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCreateFolder = (folder: { name: string; description?: string; parentId?: string | null }) => {
+  const handleCreateFolder = (folder: { 
+    name: string; 
+    description?: string; 
+    parentId?: string | null;
+    isPrivate: boolean;
+  }) => {
     const newFolder: BookmarkFolder = {
       id: `folder-${Date.now()}`,
       name: folder.name,
@@ -102,6 +109,7 @@ export const BookmarksContent = ({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       bookmarks: [],
+      isPrivate: folder.isPrivate,
     };
 
     updateBookmarksData({
@@ -117,6 +125,7 @@ export const BookmarksContent = ({
     title: string; 
     url: string; 
     description?: string;
+    isPrivate: boolean;
   }) => {
     const newBookmark: BookmarkItem = {
       id: `bookmark-${Date.now()}`,
@@ -125,6 +134,7 @@ export const BookmarksContent = ({
       description: bookmark.description,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      isPrivate: bookmark.isPrivate,
     };
 
     if (selectedFolderId) {
@@ -154,7 +164,12 @@ export const BookmarksContent = ({
     toast.success("Bookmark added successfully");
   };
 
-  const handleEditFolder = (folder: { name: string; description?: string; parentId?: string | null }) => {
+  const handleEditFolder = (folder: { 
+    name: string; 
+    description?: string; 
+    parentId?: string | null;
+    isPrivate: boolean;
+  }) => {
     if (!folderToEdit) return;
 
     const updatedFolders = allFolders.map(f => {
@@ -164,6 +179,7 @@ export const BookmarksContent = ({
           name: folder.name,
           description: folder.description,
           parentId: folder.parentId,
+          isPrivate: folder.isPrivate,
           updatedAt: new Date().toISOString(),
         };
       }
@@ -184,6 +200,7 @@ export const BookmarksContent = ({
     title: string; 
     url: string; 
     description?: string;
+    isPrivate: boolean;
   }) => {
     if (!bookmarkToEdit) return;
 
@@ -197,6 +214,7 @@ export const BookmarksContent = ({
                 title: bookmark.title,
                 url: validateUrl(bookmark.url),
                 description: bookmark.description,
+                isPrivate: bookmark.isPrivate,
                 updatedAt: new Date().toISOString(),
               };
             }
@@ -224,6 +242,7 @@ export const BookmarksContent = ({
             title: bookmark.title,
             url: validateUrl(bookmark.url),
             description: bookmark.description,
+            isPrivate: bookmark.isPrivate,
             updatedAt: new Date().toISOString(),
           };
         }
@@ -436,35 +455,42 @@ export const BookmarksContent = ({
                   <FolderIcon className="h-5 w-5 mr-2 text-amber-500" />
                   <CardTitle className="text-base">{folder.name}</CardTitle>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setFolderToEdit(folder);
-                        setIsEditFolderOpen(true);
-                      }}
-                    >
-                      <Pencil className="h-4 w-4 mr-2" />
-                      Edit Folder
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onClick={() => {
-                        setFolderToEdit(folder);
-                        setIsDeleteFolderOpen(true);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Folder
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex items-center">
+                  {folder.isPrivate ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground mr-2" aria-label="Private" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground mr-2" aria-label="Public" />
+                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setFolderToEdit(folder);
+                          setIsEditFolderOpen(true);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit Folder
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => {
+                          setFolderToEdit(folder);
+                          setIsDeleteFolderOpen(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Folder
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </CardHeader>
               <CardContent>
                 {folder.description ? (
@@ -514,6 +540,11 @@ export const BookmarksContent = ({
                   </CardTitle>
                 </div>
                 <div className="flex space-x-1">
+                  {bookmark.isPrivate ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" aria-label="Private" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" aria-label="Public" />
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -593,7 +624,6 @@ export const BookmarksContent = ({
         </div>
       ) : (
         <div className="space-y-2">
-          {/* Folder rows */}
           {filteredFolders.length > 0 && (
             <div className="mb-4">
               <h2 className="text-lg font-medium mb-2">Folders</h2>
@@ -604,6 +634,7 @@ export const BookmarksContent = ({
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm">Name</th>
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden md:table-cell">Description</th>
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden lg:table-cell">Items</th>
+                      <th className="text-left p-3 font-medium text-muted-foreground text-sm w-24">Privacy</th>
                       <th className="text-right p-3 font-medium text-muted-foreground text-sm w-24">Actions</th>
                     </tr>
                   </thead>
@@ -628,6 +659,21 @@ export const BookmarksContent = ({
                         </td>
                         <td className="p-3 text-muted-foreground text-sm hidden lg:table-cell">
                           {folder.bookmarks.length} bookmark{folder.bookmarks.length !== 1 && 's'}
+                        </td>
+                        <td className="p-3 text-muted-foreground text-sm">
+                          <div className="flex items-center">
+                            {folder.isPrivate ? (
+                              <>
+                                <EyeOff className="h-4 w-4 mr-1" aria-label="Private" />
+                                <span>Private</span>
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-4 w-4 mr-1" aria-label="Public" />
+                                <span>Public</span>
+                              </>
+                            )}
+                          </div>
                         </td>
                         <td className="p-3 text-right">
                           <div className="flex justify-end space-x-1">
@@ -665,7 +711,6 @@ export const BookmarksContent = ({
             </div>
           )}
           
-          {/* Bookmark rows */}
           {filteredBookmarks.length > 0 && (
             <div>
               <h2 className="text-lg font-medium mb-2">Bookmarks</h2>
@@ -676,6 +721,7 @@ export const BookmarksContent = ({
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm">Title</th>
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden md:table-cell">URL</th>
                       <th className="text-left p-3 font-medium text-muted-foreground text-sm hidden lg:table-cell">Description</th>
+                      <th className="text-left p-3 font-medium text-muted-foreground text-sm w-24">Privacy</th>
                       <th className="text-right p-3 font-medium text-muted-foreground text-sm w-36">Actions</th>
                     </tr>
                   </thead>
@@ -718,6 +764,21 @@ export const BookmarksContent = ({
                           ) : (
                             <span className="italic">No description</span>
                           )}
+                        </td>
+                        <td className="p-3 text-muted-foreground text-sm">
+                          <div className="flex items-center">
+                            {bookmark.isPrivate ? (
+                              <>
+                                <EyeOff className="h-4 w-4 mr-1" aria-label="Private" />
+                                <span>Private</span>
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-4 w-4 mr-1" aria-label="Public" />
+                                <span>Public</span>
+                              </>
+                            )}
+                          </div>
                         </td>
                         <td className="p-3 text-right">
                           <div className="flex justify-end space-x-1">
@@ -838,6 +899,7 @@ export const BookmarksContent = ({
           name: folderToEdit.name,
           description: folderToEdit.description,
           parentId: folderToEdit.parentId,
+          isPrivate: folderToEdit.isPrivate,
         } : undefined}
         mode="edit"
       />
@@ -859,6 +921,7 @@ export const BookmarksContent = ({
           title: bookmarkToEdit.title,
           url: bookmarkToEdit.url,
           description: bookmarkToEdit.description,
+          isPrivate: bookmarkToEdit.isPrivate,
         } : undefined}
         mode="edit"
       />
