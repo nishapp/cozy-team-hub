@@ -23,6 +23,16 @@ import Contact from "./pages/Contact";
 import CompanySettings from "./pages/CompanySettings";
 import NotFound from "./pages/NotFound";
 
+// Create a QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+  },
+});
+
 // AnimatePresence wrapper component that provides location to children
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -47,33 +57,22 @@ const AnimatedRoutes = () => {
   );
 };
 
-// Create a QueryClient instance outside of the component to avoid hooks rules issues
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: false,
-    },
-  },
-});
-
+// Main App component
 const App = () => {
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <ThemeProvider>
-            <Toaster />
-            <Sonner position="bottom-right" />
-            <BrowserRouter>
-              <AuthProvider>
-                <AnimatedRoutes />
-              </AuthProvider>
-            </BrowserRouter>
-          </ThemeProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <ThemeProvider>
+          <Toaster />
+          <Sonner position="bottom-right" />
+          <BrowserRouter>
+            <AuthProvider>
+              <AnimatedRoutes />
+            </AuthProvider>
+          </BrowserRouter>
+        </ThemeProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 };
 
