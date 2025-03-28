@@ -24,8 +24,9 @@ interface Bit {
   wdylt_comment?: string;
   image_url?: string;
   created_at: string;
-  shared_by?: string; // Add shared_by as optional
+  shared_by?: string;
   isBookmarked?: boolean;
+  link?: string;
 }
 
 // Sample data for demonstration purposes
@@ -40,6 +41,7 @@ const sampleBits = [
     wdylt_comment: "Excited to master TypeScript!",
     image_url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
     created_at: new Date().toISOString(),
+    link: "https://www.typescriptlang.org/docs/"
   },
   {
     id: "2",
@@ -50,6 +52,7 @@ const sampleBits = [
     visibility: "public",
     wdylt_comment: "Hooks have changed the way I write React!",
     created_at: new Date().toISOString(),
+    link: "https://reactjs.org/docs/hooks-intro.html"
   },
   {
     id: "3",
@@ -61,6 +64,7 @@ const sampleBits = [
     wdylt_comment: "Feeling centered and calm.",
     image_url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
     created_at: new Date().toISOString(),
+    link: "https://www.mindful.org/meditation/mindfulness-getting-started/"
   },
   {
     id: "4",
@@ -72,6 +76,7 @@ const sampleBits = [
     wdylt_comment: "Growing my own food is so rewarding!",
     image_url: "https://images.unsplash.com/photo-1466692476655-ab0c26c69cbf?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
     created_at: new Date().toISOString(),
+    link: "https://www.gardeningknowhow.com/vegetable/"
   },
   {
     id: "5",
@@ -83,6 +88,7 @@ const sampleBits = [
     wdylt_comment: "This book changed my approach to habits!",
     image_url: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
     created_at: new Date().toISOString(),
+    link: "https://jamesclear.com/atomic-habits"
   },
 ];
 

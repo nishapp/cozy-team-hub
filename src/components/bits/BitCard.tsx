@@ -1,13 +1,13 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
-import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Bookmark } from "lucide-react";
+import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Bookmark, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import EditBitButton from "./EditBitButton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Bit {
   id: string;
@@ -21,6 +21,7 @@ interface Bit {
   created_at: string;
   shared_by?: string;
   isBookmarked?: boolean;
+  link?: string;
 }
 
 interface BitCardProps {
@@ -67,6 +68,16 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmar
     }
     
     toast.success(newBookmarkState ? "Bit bookmarked" : "Bookmark removed");
+  };
+
+  const handleOpenLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const url = bit.link || `https://bits.app/view/${bit.id}`;
+    
+    window.open(url, '_blank', 'noopener,noreferrer');
+    
+    toast.success("Opening link in new tab");
   };
 
   return (
@@ -150,18 +161,41 @@ const BitCard: React.FC<BitCardProps> = ({ bit, onBitUpdated, onClick, onBookmar
           </Button>
         </div>
         <div className="flex gap-1">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full h-8 w-8" 
-            onClick={handleBookmarkToggle}
-          >
-            {isBookmarked ? (
-              <Bookmark size={16} className="fill-current" />
-            ) : (
-              <BookmarkPlus size={16} />
-            )}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-full h-8 w-8" 
+                  onClick={handleBookmarkToggle}
+                >
+                  {isBookmarked ? (
+                    <Bookmark size={16} className="fill-current" />
+                  ) : (
+                    <BookmarkPlus size={16} />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isBookmarked ? 'Remove bookmark' : 'Bookmark this bit'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={handleOpenLink}>
+                  <ExternalLink size={16} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open link in new tab</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
           <Button variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={(e) => e.stopPropagation()}>
             <Share2 size={16} />
           </Button>

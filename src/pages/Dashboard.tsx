@@ -23,6 +23,7 @@ interface Bit {
   image_url?: string;
   created_at: string;
   shared_by?: string;
+  link?: string;
 }
 
 const sampleBits = [{
@@ -34,7 +35,8 @@ const sampleBits = [{
   visibility: "public",
   wdylt_comment: "Excited to master TypeScript!",
   image_url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-  created_at: new Date().toISOString()
+  created_at: new Date().toISOString(),
+  link: "https://www.typescriptlang.org/docs/"
 }, {
   id: "2",
   title: "React Hooks Deep Dive",
@@ -43,7 +45,8 @@ const sampleBits = [{
   category: "coding",
   visibility: "public",
   wdylt_comment: "Hooks have changed the way I write React!",
-  created_at: new Date().toISOString()
+  created_at: new Date().toISOString(),
+  link: "https://reactjs.org/docs/hooks-intro.html"
 }, {
   id: "3",
   title: "Mindfulness Meditation",
@@ -53,7 +56,8 @@ const sampleBits = [{
   visibility: "public",
   wdylt_comment: "Feeling centered and calm.",
   image_url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-  created_at: new Date().toISOString()
+  created_at: new Date().toISOString(),
+  link: "https://www.mindful.org/meditation/mindfulness-getting-started/"
 }];
 
 const friendSharedBits = [{
