@@ -21,6 +21,9 @@ import { BookmarkItem, BookmarkFolder } from "@/types/bookmark";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { initialBookmarksData } from "@/data/initialBookmarks";
+import { v4 as uuidv4 } from "uuid";
 
 const sampleFriendBits = [
   {
@@ -187,6 +190,11 @@ const FriendBits = () => {
   const [selectedBookmark, setSelectedBookmark] = useState<BookmarkItem | null>(null);
   const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
 
+  const [bookmarksData, setBookmarksData] = useLocalStorage<{
+    folders: BookmarkFolder[];
+    rootBookmarks: BookmarkItem[];
+  }>("bookmarks-data", initialBookmarksData);
+
   useEffect(() => {
     if (friendId) {
       const foundFriend = sampleFriends.find(f => f.id === friendId);
@@ -226,7 +234,65 @@ const FriendBits = () => {
   };
 
   const handleCopyBookmark = (bookmark: BookmarkItem) => {
-    toast.success(`Bookmark "${bookmark.title}" copied to your collection`);
+    const updatedBookmarksData = { ...bookmarksData };
+    
+    let sharedFolderId = updatedBookmarksData.folders.find(f => f.name === "Shared")?.id;
+    
+    if (!sharedFolderId) {
+      sharedFolderId = uuidv4();
+      updatedBookmarksData.folders.push({
+        id: sharedFolderId,
+        name: "Shared",
+        description: "Bookmarks shared by buddies",
+        parentId: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        bookmarks: [],
+        isPrivate: false
+      });
+    }
+    
+    let friendFolderId = updatedBookmarksData.folders.find(f => 
+      f.name === friend.name && f.parentId === sharedFolderId
+    )?.id;
+    
+    if (!friendFolderId) {
+      friendFolderId = uuidv4();
+      updatedBookmarksData.folders.push({
+        id: friendFolderId,
+        name: friend.name,
+        description: `Bookmarks shared by ${friend.name}`,
+        parentId: sharedFolderId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        bookmarks: [],
+        isPrivate: false
+      });
+    }
+    
+    const newBookmark: BookmarkItem = {
+      ...bookmark,
+      id: uuidv4(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    const friendFolder = updatedBookmarksData.folders.find(f => f.id === friendFolderId);
+    if (friendFolder) {
+      const existingBookmark = friendFolder.bookmarks.find(b => b.url === bookmark.url);
+      if (existingBookmark) {
+        toast.info(`Bookmark "${bookmark.title}" already exists in ${friend.name}'s folder`);
+        return;
+      }
+      
+      friendFolder.bookmarks.push(newBookmark);
+      
+      setBookmarksData(updatedBookmarksData);
+      
+      toast.success(`Bookmark "${bookmark.title}" copied to ${friend.name}'s folder`);
+    } else {
+      toast.error("Failed to copy bookmark: Friend's folder not found");
+    }
   };
 
   const handleCreateBitFromBookmark = (bookmark: BookmarkItem) => {
