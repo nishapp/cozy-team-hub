@@ -7,6 +7,7 @@ import PageTransition from "../components/ui/PageTransition";
 import { supabase } from "@/lib/supabase";
 import BitCard from "@/components/bits/BitCard";
 import AddBitButton from "@/components/bits/AddBitButton";
+import HeaderAddBitButton from "@/components/bits/HeaderAddBitButton";
 import { toast } from "sonner";
 
 // Define the Bit type
@@ -163,13 +164,16 @@ const Dashboard = () => {
         <Navbar />
         
         <main className="flex-1 container py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold">
-              {greeting}, {fullName}
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Here are your latest bits. What did you learn today?
-            </p>
+          <div className="mb-8 flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold">
+                {greeting}, {fullName}
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Here are your latest bits. What did you learn today?
+              </p>
+            </div>
+            <HeaderAddBitButton onBitAdded={handleBitAdded} />
           </div>
           
           {/* Pinterest-style masonry grid */}
