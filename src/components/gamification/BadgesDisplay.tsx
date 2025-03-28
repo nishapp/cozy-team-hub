@@ -84,9 +84,15 @@ const BadgesDisplay = ({
                               alt={badge.name}
                               className="object-cover"
                               onError={(e) => {
-                                // If image fails to load, replace with icon
-                                e.currentTarget.style.display = 'none';
-                                e.currentTarget.parentElement!.querySelector('.fallback-icon')!.style.display = 'flex';
+                                // Properly type the event target as HTMLImageElement
+                                const img = e.currentTarget as HTMLImageElement;
+                                img.style.display = 'none';
+                                // Use type assertion to tell TypeScript this is an HTMLElement
+                                const parent = img.parentElement as HTMLElement;
+                                const fallbackIcon = parent.querySelector('.fallback-icon') as HTMLElement;
+                                if (fallbackIcon) {
+                                  fallbackIcon.style.display = 'flex';
+                                }
                               }}
                             />
                           ) : null}
