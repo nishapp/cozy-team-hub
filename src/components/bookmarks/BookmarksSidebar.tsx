@@ -53,7 +53,12 @@ export const BookmarksSidebar = ({
   };
 
   // Handle adding a new folder
-  const handleAddFolder = (folder: { name: string; description?: string; parentId?: string | null }) => {
+  const handleAddFolder = (folder: { 
+    name: string; 
+    description?: string; 
+    parentId?: string | null;
+    isPrivate: boolean;
+  }) => {
     const newFolder: BookmarkFolder = {
       id: `folder-${Date.now()}`,
       name: folder.name,
@@ -62,6 +67,7 @@ export const BookmarksSidebar = ({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       bookmarks: [],
+      isPrivate: folder.isPrivate,
     };
 
     updateBookmarksData({

@@ -143,14 +143,14 @@ export const FolderDialog: React.FC<FolderDialogProps> = ({
               <div className="grid gap-2">
                 <Label htmlFor="parent">Parent Folder (Optional)</Label>
                 <Select
-                  value={parentId || ""}
-                  onValueChange={(value) => setParentId(value || null)}
+                  value={parentId || "root"}
+                  onValueChange={(value) => setParentId(value === "root" ? null : value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="No parent (root folder)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No parent (root folder)</SelectItem>
+                    <SelectItem value="root">No parent (root folder)</SelectItem>
                     {parentFolders.map((folder) => (
                       <SelectItem key={folder.id} value={folder.id}>
                         {folderPaths.get(folder.id) || folder.name}
