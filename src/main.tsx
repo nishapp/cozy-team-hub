@@ -1,16 +1,18 @@
 
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
-import './index.css';
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+import './index.css'
+import { BrowserRouter } from 'react-router-dom'
+import apiService from './services/apiService'
 
-// Get the root element
-const rootElement = document.getElementById('root');
+// Initialize our API service
+apiService.initialize();
 
-// Create root and render app
-if (rootElement) {
-  const root = createRoot(rootElement);
-  root.render(<App />);
-} else {
-  console.error('Root element not found');
-}
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>,
+)
