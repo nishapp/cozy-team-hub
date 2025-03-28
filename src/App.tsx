@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,7 +8,6 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AnimatePresence } from "framer-motion";
-import { useState } from "react";
 
 // Pages
 import Index from "./pages/Index";
@@ -47,31 +47,33 @@ const AnimatedRoutes = () => {
   );
 };
 
-const App = () => {
-  // Use useState to ensure the QueryClient is only created once
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        refetchOnWindowFocus: false,
-        retry: false,
-      },
+// Create a QueryClient instance outside of the component to avoid hooks rules issues
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
     },
-  }));
-  
+  },
+});
+
+const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <ThemeProvider>
-          <Toaster />
-          <Sonner position="bottom-right" />
-          <BrowserRouter>
-            <AuthProvider>
-              <AnimatedRoutes />
-            </AuthProvider>
-          </BrowserRouter>
-        </ThemeProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <ThemeProvider>
+            <Toaster />
+            <Sonner position="bottom-right" />
+            <BrowserRouter>
+              <AuthProvider>
+                <AnimatedRoutes />
+              </AuthProvider>
+            </BrowserRouter>
+          </ThemeProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
   );
 };
 
