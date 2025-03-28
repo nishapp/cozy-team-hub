@@ -4,10 +4,13 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
-import { MessageSquare, UserMinus, UserPlus, UserCheck, User, Calendar } from "lucide-react";
+import { MessageSquare, UserMinus, UserPlus, UserCheck, User, Calendar, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { Friend } from "@/types/friend";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useNavigate } from "react-router-dom";
 
 interface FriendCardProps {
   friend: Friend;
@@ -31,6 +34,9 @@ const FriendCard = ({
     isPending,
     isRecommendation
   });
+  const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+  const [messageText, setMessageText] = useState("");
+  const navigate = useNavigate();
 
   const handleFriendAction = () => {
     if (status.isFriend) {
@@ -64,6 +70,27 @@ const FriendCard = ({
       setStatus({...status, isPending: false});
       toast.success("Friend request rejected");
     }
+  };
+
+  const handleMessageClick = () => {
+    setIsMessageDialogOpen(true);
+  };
+
+  const handleSendMessage = () => {
+    if (messageText.trim()) {
+      toast.success(`Message sent to ${friend.name}`);
+      setMessageText("");
+      setIsMessageDialogOpen(false);
+    } else {
+      toast.error("Please enter a message");
+    }
+  };
+
+  const handleViewBits = () => {
+    // In a real application, we would navigate to a route with the friend's bits
+    toast.success(`Viewing ${friend.name}'s bits`);
+    // This could be navigate to a specific route like:
+    // navigate(`/friends/${friend.id}/bits`);
   };
 
   const memberSince = formatDistanceToNow(new Date(friend.joined_date), { addSuffix: true });
@@ -112,10 +139,16 @@ const FriendCard = ({
           </div>
         ) : (
           <>
-            <Button variant="ghost" size="sm">
-              <MessageSquare className="h-4 w-4 mr-1" />
-              Message
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={handleMessageClick}>
+                <MessageSquare className="h-4 w-4 mr-1" />
+                Message
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleViewBits}>
+                <BookOpen className="h-4 w-4 mr-1" />
+                View Bits
+              </Button>
+            </div>
             <Button 
               variant={status.isFriend ? "outline" : "default"} 
               size="sm"
@@ -141,6 +174,27 @@ const FriendCard = ({
           </>
         )}
       </CardFooter>
+
+      {/* Message Dialog */}
+      <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send message to {friend.name}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <Textarea 
+              placeholder="Type your message here..." 
+              className="min-h-[100px]"
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsMessageDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSendMessage}>Send Message</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
