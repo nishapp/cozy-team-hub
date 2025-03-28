@@ -22,7 +22,7 @@ const Settings = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex flex-col bg-[#f9fafb]">
+      <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
         
         <div className="container max-w-screen-xl mx-auto px-4 py-10">
