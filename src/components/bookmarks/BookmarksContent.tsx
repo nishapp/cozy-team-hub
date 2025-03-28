@@ -45,6 +45,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import BookmarkDetailModal from "@/components/bookmarks/BookmarkDetailModal";
 
 interface BookmarksContentProps {
   folders: BookmarkFolder[];
@@ -84,6 +85,7 @@ export const BookmarksContent = ({
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [isCreateBitOpen, setIsCreateBitOpen] = useState(false);
   const [selectedBookmark, setSelectedBookmark] = useState<BookmarkItem | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   
   const filteredFolders = folders.filter(folder => 
     folder.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -94,6 +96,11 @@ export const BookmarksContent = ({
     bookmark.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     bookmark.url.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleBookmarkClick = (bookmark: BookmarkItem) => {
+    setSelectedBookmark(bookmark);
+    setIsDetailModalOpen(true);
+  };
 
   const handleCreateFolder = (folder: { 
     name: string; 
@@ -510,7 +517,11 @@ export const BookmarksContent = ({
           ))}
           
           {filteredBookmarks.map((bookmark) => (
-            <Card key={bookmark.id} className="group hover:shadow-md transition-shadow">
+            <Card 
+              key={bookmark.id} 
+              className="group hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => handleBookmarkClick(bookmark)}
+            >
               <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
                 <div className="flex items-center flex-1">
                   <div className="h-5 w-5 mr-2 flex-shrink-0">
@@ -539,7 +550,7 @@ export const BookmarksContent = ({
                     {bookmark.title}
                   </CardTitle>
                 </div>
-                <div className="flex space-x-1">
+                <div className="flex space-x-1" onClick={(e) => e.stopPropagation()}>
                   {bookmark.isPrivate ? (
                     <EyeOff className="h-4 w-4 text-muted-foreground" aria-label="Private" />
                   ) : (
@@ -564,7 +575,10 @@ export const BookmarksContent = ({
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
-                    onClick={() => handleCreateBit(bookmark)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCreateBit(bookmark);
+                    }}
                     title="Create Bit from Bookmark"
                   >
                     <FileCode className="h-4 w-4" />
@@ -572,13 +586,19 @@ export const BookmarksContent = ({
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setBookmarkToEdit(bookmark);
                           setIsEditBookmarkOpen(true);
                         }}
@@ -587,7 +607,10 @@ export const BookmarksContent = ({
                         Edit Bookmark
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => handleCreateBit(bookmark)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCreateBit(bookmark);
+                        }}
                       >
                         <FileCode className="h-4 w-4 mr-2" />
                         Create Bit
@@ -595,7 +618,8 @@ export const BookmarksContent = ({
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setBookmarkToEdit(bookmark);
                           setIsDeleteBookmarkOpen(true);
                         }}
@@ -727,7 +751,11 @@ export const BookmarksContent = ({
                   </thead>
                   <tbody className="divide-y">
                     {filteredBookmarks.map((bookmark) => (
-                      <tr key={bookmark.id} className="bg-card hover:bg-muted/30 transition-colors">
+                      <tr 
+                        key={bookmark.id} 
+                        className="bg-card hover:bg-muted/30 transition-colors cursor-pointer"
+                        onClick={() => handleBookmarkClick(bookmark)}
+                      >
                         <td className="p-3">
                           <div className="flex items-center">
                             <div className="h-4 w-4 mr-2 flex-shrink-0">
@@ -780,7 +808,7 @@ export const BookmarksContent = ({
                             )}
                           </div>
                         </td>
-                        <td className="p-3 text-right">
+                        <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex justify-end space-x-1">
                             <Button
                               variant="ghost"
@@ -801,7 +829,10 @@ export const BookmarksContent = ({
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8"
-                              onClick={() => handleCreateBit(bookmark)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCreateBit(bookmark);
+                              }}
                               title="Create Bit from Bookmark"
                             >
                               <FileCode className="h-4 w-4" />
@@ -811,7 +842,8 @@ export const BookmarksContent = ({
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setBookmarkToEdit(bookmark);
                                 setIsEditBookmarkOpen(true);
                               }}
@@ -823,7 +855,8 @@ export const BookmarksContent = ({
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 text-destructive hover:text-destructive"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setBookmarkToEdit(bookmark);
                                 setIsDeleteBookmarkOpen(true);
                               }}
@@ -972,6 +1005,20 @@ export const BookmarksContent = ({
           />
         </DialogContent>
       </Dialog>
+
+      <BookmarkDetailModal
+        bookmark={selectedBookmark}
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedBookmark(null);
+        }}
+        onEdit={(bookmark) => {
+          setBookmarkToEdit(bookmark);
+          setIsDetailModalOpen(false);
+          setIsEditBookmarkOpen(true);
+        }}
+      />
     </div>
   );
 };
