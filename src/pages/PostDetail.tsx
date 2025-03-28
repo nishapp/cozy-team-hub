@@ -7,6 +7,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Post } from "@/types/post";
 import ConvertToBitDialog from "@/components/posts/ConvertToBitDialog";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Import sample data for demo purposes
+// In a real app, this would be fetched from an API or database
+import { samplePosts } from "@/data/samplePosts";
 
 const PostDetail = () => {
   const { postId } = useParams();
@@ -16,23 +21,46 @@ const PostDetail = () => {
   const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
 
   useEffect(() => {
-    // In a real app, we would fetch the post from the database
-    // For now, use sample data from the Posts page
-    import("@/pages/Posts").then((module) => {
-      const samplePosts: Post[] = module.default().props.children[1].props.children[2].props.posts;
-      const foundPost = samplePosts.find(p => p.id === postId);
-      
-      if (foundPost) {
-        setPost(foundPost);
-      }
+    // Find the post with the matching ID
+    const foundPost = samplePosts.find(p => p.id === postId);
+    
+    // Simulate a loading delay for demo purposes
+    const timer = setTimeout(() => {
+      setPost(foundPost || null);
       setLoading(false);
-    });
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, [postId]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 container py-8">
+          <div className="mb-8">
+            <Skeleton className="h-8 w-8" />
+          </div>
+          
+          <div className="max-w-3xl mx-auto">
+            <Skeleton className="h-[300px] w-full mb-6 rounded-lg" />
+            <Skeleton className="h-12 w-3/4 mb-4" />
+            <div className="flex gap-2 mb-4">
+              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-20" />
+            </div>
+            <Skeleton className="h-5 w-40 mb-6" />
+            
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
