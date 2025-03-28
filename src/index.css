@@ -121,4 +121,32 @@
   .input-focus-ring {
     @apply focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-0;
   }
+  
+  /* Pinterest-style masonry grid */
+  .masonry-grid {
+    @apply columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4;
+  }
+  
+  .masonry-item {
+    @apply mb-4 break-inside-avoid;
+  }
+  
+  /* Pinterest-style card */
+  .bit-card {
+    @apply rounded-xl overflow-hidden border-0 bg-white dark:bg-gray-800 transition-all duration-300 hover:shadow-xl;
+  }
+  
+  .bit-card-img {
+    @apply rounded-t-xl object-cover w-full transition-transform duration-300 hover:scale-105;
+  }
+  
+  .bit-card-content {
+    @apply p-4;
+  }
+  
+  /* Rounded elements utility */
+  .rounded-full-elements * {
+    @apply rounded-full;
+  }
 }
+
