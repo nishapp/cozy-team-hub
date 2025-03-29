@@ -20,75 +20,6 @@ const Dashboard = () => {
   const [userPoints, setUserPoints] = useState(0);
   const [streak, setStreak] = useState(0);
 
-  // Sample feature image data
-  const featureImages = [
-    "https://images.unsplash.com/photo-1581276879432-15e50529f34b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1523800503107-5bc3ba2a6f81?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1544256718-3bcf237f3974?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1520333789090-1afc82db536a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1509062522246-3755977927d7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-  ];
-
-  const featureTitles = ["Development", "Design", "Marketing", "Data Science", "Business", "AI"];
-
-  // Sample daily learning data
-  const sampleLearnings = [
-    {
-      id: "1",
-      title: "JavaScript Promises",
-      description: "Learn how to use promises to handle asynchronous operations effectively.",
-      link: "/bit/1",
-      completed: true,
-      imageUrl: "https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-    },
-    {
-      id: "2",
-      title: "CSS Grid Layouts",
-      description: "Master CSS Grid for responsive web design.",
-      link: "/bit/2",
-      completed: false,
-      imageUrl: "https://images.unsplash.com/photo-1583339793403-3d9b001b6008?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-    },
-    {
-      id: "3",
-      title: "React Hooks",
-      description: "Understand how to use React hooks for state management and side effects.",
-      link: "/bit/3",
-      completed: false,
-      imageUrl: "https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-    }
-  ];
-
-  // Sample buddy data
-  const sampleBuddies = [
-    {
-      id: "1",
-      name: "Alex Johnson",
-      avatar: "https://randomuser.me/api/portraits/men/32.jpg"
-    },
-    {
-      id: "2",
-      name: "Maria Rodriguez",
-      avatar: "https://randomuser.me/api/portraits/women/44.jpg"
-    },
-    {
-      id: "3",
-      name: "David Kim",
-      avatar: "https://randomuser.me/api/portraits/men/22.jpg"
-    },
-    {
-      id: "4",
-      name: "Sophie Chen",
-      avatar: "https://randomuser.me/api/portraits/women/28.jpg"
-    },
-    {
-      id: "5",
-      name: "Raj Patel",
-      avatar: "https://randomuser.me/api/portraits/men/45.jpg"
-    }
-  ];
-
   useEffect(() => {
     const fetchSharedBits = async () => {
       // This would be replaced with a real API call to get bits shared by friends
@@ -199,12 +130,6 @@ const Dashboard = () => {
     );
   }
 
-  // Handler for when a bit is added
-  const handleBitAdded = (bit) => {
-    console.log("New bit added:", bit);
-    // In a real app, we would update the state or refetch data
-  };
-
   return (
     <PageTransition>
       <div className="min-h-screen flex flex-col">
@@ -219,7 +144,7 @@ const Dashboard = () => {
                   Track your bits, view what your friends are sharing, and continue your learning journey.
                 </p>
               </div>
-              <HeaderAddBitButton onBitAdded={handleBitAdded} />
+              <HeaderAddBitButton />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -231,18 +156,18 @@ const Dashboard = () => {
                   </TabsList>
                   
                   <TabsContent value="featured" className="space-y-8 mt-6">
-                    <FeaturedBits images={featureImages} titles={featureTitles} />
+                    <FeaturedBits />
                     <SharedBitsCarousel sharedBits={recentSharedBits} />
                   </TabsContent>
                   
                   <TabsContent value="daily" className="mt-6">
-                    <DailyLearningSection learnings={sampleLearnings} friendName="You" />
+                    <DailyLearningSection />
                   </TabsContent>
                 </Tabs>
               </div>
               
               <div className="lg:col-span-1">
-                <TopBuddiesSection buddies={sampleBuddies} />
+                <TopBuddiesSection />
               </div>
             </div>
           </div>
