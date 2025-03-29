@@ -14,6 +14,7 @@ import {
 import BitForm from "@/components/bits/BitForm";
 import { toast } from "sonner";
 import { Sparkles, Loader2 } from "lucide-react";
+import { handleGenerateTagsRequest } from "@/mock/api/generate-tags";
 
 interface BookmarkToBitDialogProps {
   bookmark: BookmarkItem;
@@ -27,45 +28,19 @@ export const BookmarkToBitDialog = ({ bookmark, isOpen, onClose }: BookmarkToBit
   const [generatedData, setGeneratedData] = useState<any>(null);
   const navigate = useNavigate();
 
-  // Get suggested tags based on title, description and summary
-  const generateSuggestedTags = () => {
-    // Extract keywords from title and content
-    const content = `${bookmark.title} ${bookmark.description || ''} ${bookmark.summary || ''}`;
-    const commonWords = ["the", "and", "a", "is", "in", "to", "of", "for", "with", "on", "this", "that"];
-    
-    // Split content into words, remove punctuation, filter out common words and short words
-    const words = content
-      .toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .split(/\s+/)
-      .filter(word => word.length > 3 && !commonWords.includes(word));
-    
-    // Count word frequencies
-    const wordCount = words.reduce((acc, word) => {
-      acc[word] = (acc[word] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    
-    // Get top 5 words as potential tags
-    return Object.entries(wordCount)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([word]) => word);
-  };
-
   // Get the current domain + path to the post for use as the bit link
   const getBookmarkUrl = () => {
     return bookmark.url;
   };
 
-  const createInitialBitData = () => {
+  const createInitialBitData = (tags: string[] = []) => {
     // Extract content for description
     const description = bookmark.summary || bookmark.description || bookmark.title;
     
     return {
       title: bookmark.title,
       description: description.slice(0, 500), // Limit description length
-      tags: generateSuggestedTags().join(", "),
+      tags: tags.join(", "),
       category: "",
       visibility: "public",
       wdylt_comment: "",
@@ -78,19 +53,15 @@ export const BookmarkToBitDialog = ({ bookmark, isOpen, onClose }: BookmarkToBit
     setIsGenerating(true);
     
     try {
-      // Simulate AI processing with a short delay
-      await new Promise(resolve => setTimeout(resolve, 1200));
+      // Prepare content for tag generation
+      const content = `${bookmark.title} ${bookmark.description || ''} ${bookmark.summary || ''}`;
       
-      // Generate tags using our keyword extraction function
-      const suggestedTags = generateSuggestedTags();
-      console.log("Generated tags:", suggestedTags);
+      // Use our mock tag generation API
+      const result = await handleGenerateTagsRequest(content);
+      console.log("AI generated tags:", result.tags);
       
       // Use the bookmark's content to generate data
-      const aiGeneratedData = {
-        ...createInitialBitData(),
-        image_url: bookmark.imageUrl || "", // Ensure image URL is set
-        tags: suggestedTags.join(", ")
-      };
+      const aiGeneratedData = createInitialBitData(result.tags);
       
       console.log("Generated bit data:", aiGeneratedData);
       setGeneratedData(aiGeneratedData);
