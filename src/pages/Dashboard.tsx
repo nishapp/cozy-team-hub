@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import FeaturedBits from "@/components/bits/FeaturedBits";
 import SharedBitsCarousel from "@/components/bits/SharedBitsCarousel";
 import GamificationTopBar from "@/components/gamification/GamificationTopBar";
+import TopBuddiesSection from "@/components/friends/TopBuddiesSection";
 
 interface Bit {
   id: string;
@@ -229,6 +230,58 @@ const Dashboard = () => {
   const [longestStreak, setLongestStreak] = useState(10);
   const [badges, setBadges] = useState(sampleBadges);
   const [activityDates, setActivityDates] = useState(sampleActivityDates);
+  const [topBuddies, setTopBuddies] = useState([
+    {
+      id: "1",
+      name: "Emma Watson",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
+      topBit: {
+        id: "f1",
+        title: "Travel Photography Tips",
+        image_url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      }
+    },
+    {
+      id: "2",
+      name: "Gordon Ramsay",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop",
+      topBit: {
+        id: "f2",
+        title: "Homemade Pasta Recipe",
+        image_url: "https://images.unsplash.com/photo-1556761223-4c4282c73f77?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      }
+    },
+    {
+      id: "3",
+      name: "Martha Stewart",
+      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop",
+      topBit: {
+        id: "f3",
+        title: "Urban Gardening Ideas",
+        image_url: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      }
+    },
+    {
+      id: "4",
+      name: "John Doe",
+      avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&h=150&fit=crop",
+      topBit: {
+        id: "f4",
+        title: "Minimal Web Design Principles",
+        image_url: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      }
+    },
+    {
+      id: "5",
+      name: "Jane Smith",
+      avatar: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=150&h=150&fit=crop",
+      topBit: {
+        id: "f5",
+        title: "Beginner's Guide to Houseplants",
+        image_url: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      }
+    }
+  ]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -338,15 +391,21 @@ const Dashboard = () => {
           
           <FeaturedBits images={categoryImages} titles={categoryTitles} />
           
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4">My sharable bits</h2>
-            <p className="text-muted-foreground">Bits with public visibility that can be shared with others</p>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max mb-12">
-            {publicBits.length > 0 ? publicBits.map(bit => <BitCard key={bit.id} bit={bit} onBitUpdated={handleBitUpdated} onClick={() => handleBitSelected(bit)} />) : <div className="col-span-full text-center py-8">
-                <p className="text-muted-foreground">No public bits found. Make some of your bits public to share them!</p>
-              </div>}
+          <div className="flex flex-col md:flex-row gap-8 mb-12">
+            <div className="w-full md:w-2/3 lg:w-3/4">
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold mb-4">My sharable bits</h2>
+                <p className="text-muted-foreground">Bits with public visibility that can be shared with others</p>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-max">
+                {publicBits.length > 0 ? publicBits.map(bit => <BitCard key={bit.id} bit={bit} onBitUpdated={handleBitUpdated} onClick={() => handleBitSelected(bit)} />) : <div className="col-span-full text-center py-8">
+                    <p className="text-muted-foreground">No public bits found. Make some of your bits public to share them!</p>
+                  </div>}
+              </div>
+            </div>
+            
+            <TopBuddiesSection buddies={topBuddies} />
           </div>
 
           <SharedBitsCarousel sharedBits={sharedBits} />

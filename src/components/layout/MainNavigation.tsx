@@ -1,7 +1,7 @@
 
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { FileText, Settings, Users, UserPlus, Award } from "lucide-react";
+import { FileText, Users, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PointsBadge from "@/components/gamification/PointsBadge";
 
@@ -26,28 +26,7 @@ export function MainNavigation({ isAdmin, userPoints = 0 }: MainNavigationProps)
       icon: UserPlus,
       requiresAuth: true,
     },
-    {
-      name: "Achievements",
-      href: "/profile?tab=badges",
-      icon: Award,
-      requiresAuth: true,
-    },
-    {
-      name: "Settings",
-      href: "/settings",
-      icon: Settings,
-      requiresAuth: true,
-    },
   ];
-
-  if (isAdmin) {
-    menuItems.push({
-      name: "Admin",
-      href: "/admin",
-      icon: Users,
-      requiresAuth: true,
-    });
-  }
 
   const filteredMenuItems = menuItems.filter(
     (item) => !item.requiresAuth || user

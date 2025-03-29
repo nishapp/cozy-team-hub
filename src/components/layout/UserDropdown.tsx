@@ -1,6 +1,6 @@
 
 import React from "react";
-import { User } from "lucide-react";
+import { Award, Settings, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +15,11 @@ import { useAuth } from "@/context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
 
-const UserDropdown = () => {
+interface UserDropdownProps {
+  isAdmin?: boolean;
+}
+
+const UserDropdown = ({ isAdmin }: UserDropdownProps) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -50,9 +54,20 @@ const UserDropdown = () => {
           <DropdownMenuItem onClick={() => navigate("/profile")}>
             Profile
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/profile?tab=badges")}>
+            <Award className="h-4 w-4 mr-2" />
+            Achievements
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate("/settings")}>
+            <Settings className="h-4 w-4 mr-2" />
             Settings
           </DropdownMenuItem>
+          {isAdmin && (
+            <DropdownMenuItem onClick={() => navigate("/admin")}>
+              <Users className="h-4 w-4 mr-2" />
+              Admin
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={() => navigate("/bits")}>
             Bits
           </DropdownMenuItem>
