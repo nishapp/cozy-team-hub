@@ -244,6 +244,17 @@ const Bookmarks = () => {
     }
   }, [bookmarks]);
 
+  // Get all child folder IDs for a given folder
+  const getChildFolderIds = useCallback((folderId: string): string[] => {
+    const childFolders = folders.filter(f => f.parentId === folderId);
+    const childIds = childFolders.map(f => f.id);
+    
+    // Recursively get children of children
+    const grandchildIds = childFolders.flatMap(f => getChildFolderIds(f.id));
+    
+    return [...childIds, ...grandchildIds];
+  }, [folders]);
+
   // Filter bookmarks by search term and folder
   const filteredBookmarks = bookmarks.filter(bookmark => {
     const matchesSearch = searchTerm === '' || 
@@ -257,17 +268,6 @@ const Bookmarks = () => {
     
     return matchesSearch && matchesFolder;
   });
-
-  // Get all child folder IDs for a given folder
-  const getChildFolderIds = useCallback((folderId: string): string[] => {
-    const childFolders = folders.filter(f => f.parentId === folderId);
-    const childIds = childFolders.map(f => f.id);
-    
-    // Recursively get children of children
-    const grandchildIds = childFolders.flatMap(f => getChildFolderIds(f.id));
-    
-    return [...childIds, ...grandchildIds];
-  }, [folders]);
 
   // Get folder path for display (breadcrumbs)
   const getFolderPath = useCallback((folderId: string, path: Folder[] = []): Folder[] => {
