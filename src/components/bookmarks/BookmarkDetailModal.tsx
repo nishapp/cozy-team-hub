@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BookmarkItem } from "@/types/bookmark";
-import { BookmarkSummary } from "./BookmarkSummary";
+import BookmarkSummary from "./BookmarkSummary";
 import { ExternalLink, Image as ImageIcon, Sparkles } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { cn } from "@/lib/utils";
