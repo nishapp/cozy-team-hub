@@ -1,106 +1,65 @@
 
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { NavLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { 
-  Home, 
-  User, 
-  Newspaper, 
-  Users, 
-  LucideIcon, 
-  LayoutDashboard, 
-  Bookmark
-} from "lucide-react";
+import { FileText, Users, UserPlus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import PointsBadge from "@/components/gamification/PointsBadge";
 
-type NavItem = {
-  title: string;
-  href: string;
-  icon: LucideIcon;
+interface MainNavigationProps {
   isAdmin?: boolean;
-};
+  userPoints?: number;
+}
 
-export default function MainNavigation({ className }: { className?: string }) {
-  const [isAdmin, setIsAdmin] = useState(false);
+export function MainNavigation({ isAdmin, userPoints = 0 }: MainNavigationProps) {
   const { user } = useAuth();
-  const location = useLocation();
-  const { pathname } = location;
 
-  useEffect(() => {
-    const checkAdmin = async () => {
-      if (user) {
-        // You would check if user is admin from your auth system
-        // For now we'll just mock this
-        setIsAdmin(false);
-      }
-    };
-    
-    checkAdmin();
-  }, [user]);
-
-  const navItems: NavItem[] = [
+  const menuItems = [
     {
-      title: "Dashboard",
-      href: "/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      title: "Bits",
-      href: "/bits",
-      icon: Home,
-    },
-    {
-      title: "Posts",
+      name: "Posts",
       href: "/posts",
-      icon: Newspaper,
+      icon: FileText,
+      requiresAuth: true,
     },
     {
-      title: "Friends",
+      name: "Buddies",
       href: "/friends",
-      icon: Users,
-    },
-    {
-      title: "Bookmarks",
-      href: "/bookmarks",
-      icon: Bookmark,
-    },
-    {
-      title: "Profile",
-      href: "/profile",
-      icon: User,
-    },
-    {
-      title: "Admin",
-      href: "/admin",
-      icon: User,
-      isAdmin: true,
+      icon: UserPlus,
+      requiresAuth: true,
     },
   ];
 
-  const filteredNavItems = navItems.filter(
-    (item) => !item.isAdmin || (item.isAdmin && isAdmin)
+  const filteredMenuItems = menuItems.filter(
+    (item) => !item.requiresAuth || user
   );
 
   return (
-    <nav className={cn("p-1", className)}>
-      <ul className="flex flex-col gap-1">
-        {filteredNavItems.map((item) => (
-          <li key={item.href}>
-            <Link
-              to={item.href}
-              className={cn(
-                "group flex items-center justify-center xl:justify-start gap-x-3 p-3 text-sm font-medium rounded-md transition-all dark:hover:text-white",
-                pathname === item.href
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground/90"
-              )}
-            >
-              <item.icon className="h-5 w-5 shrink-0" />
-              <span className="hidden xl:inline">{item.title}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+    <nav className="flex items-center space-x-4 lg:space-x-6">
+      {filteredMenuItems.map((item) => (
+        <NavLink
+          key={item.name}
+          to={item.href}
+          end={item.href === "/"}
+          className={({ isActive }) =>
+            cn(
+              "text-sm font-medium transition-colors hover:text-primary flex items-center space-x-1",
+              isActive
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )
+          }
+        >
+          <item.icon className="h-4 w-4" />
+          <span>{item.name}</span>
+        </NavLink>
+      ))}
+      
+      {user && userPoints > 0 && (
+        <div className="ml-2">
+          <PointsBadge points={userPoints} size="sm" />
+        </div>
+      )}
     </nav>
   );
 }
+
+export default MainNavigation;

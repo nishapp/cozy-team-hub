@@ -23,7 +23,6 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Settings from "./pages/Settings";
 import Contact from "./pages/Contact";
 import CompanySettings from "./pages/CompanySettings";
-import Bookmarks from "./pages/Bookmarks"; // New import
 import NotFound from "./pages/NotFound";
 
 // Create a QueryClient instance
@@ -51,12 +50,11 @@ const AnimatedRoutes = () => {
         <Route path="/post/:postId" element={<PostDetail />} />
         <Route path="/friends" element={<Friends />} />
         <Route path="/friends/:friendId/bits" element={<FriendBits />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<Profile />} /> {/* New route */}
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/company-settings" element={<CompanySettings />} />
-        <Route path="/bookmarks" element={<Bookmarks />} /> {/* New route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
