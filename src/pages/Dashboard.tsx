@@ -7,6 +7,7 @@ import {
   BookMarked,
   BookOpen,
   Calendar,
+  ChevronRight,
   Clock,
   Code,
   Compass,
@@ -239,12 +240,12 @@ const Dashboard: React.FC = () => {
   ];
 
   const categoryTitles = [
-    "Coding",
-    "Reading",
-    "Fitness",
+    "Technology",
     "Travel",
-    "Finance",
-    "Productivity",
+    "Food & Recipes",
+    "Health & Fitness",
+    "Art & Design",
+    "DIY & Crafts",
   ];
 
   // Mock data for daily learning
@@ -326,363 +327,456 @@ const Dashboard: React.FC = () => {
     navigate(`/friends/${friendId}`);
   };
 
+  // Calculate greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 18) return "Good Afternoon";
+    return "Good Evening";
+  };
+
+  const username = profile?.full_name || "User";
+
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6">
-      <GamificationTopBar 
-        points={1250} 
-        level={5} 
-        currentStreak={streakData.currentStreak} 
-        badges={userBadges} 
-        activityDates={activityDates} 
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Left column */}
-        <div className="md:col-span-2 space-y-6">
-          {/* What did you learn today section */}
-          <DailyLearningSection 
-            learnings={learningData}
-            friendName={profile?.full_name || "You"}
-            friendAvatar={profile?.avatar_url}
-            onBitClick={openBitDetail}
-          />
-
-          {/* Bits Tabs */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl font-bold">Bits Collection</CardTitle>
-                <Button variant="outline" onClick={() => navigate("/bits")}>View All Bits</Button>
+    <div className="flex flex-col min-h-screen bg-black text-white">
+      {/* Hero Section */}
+      <div className="bg-black text-white py-8 px-4">
+        <div className="max-w-screen-xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center">
+                <span className="text-orange-500 mr-2">
+                  <span className="inline-flex items-center justify-center bg-orange-500/20 p-1 rounded-full">
+                    <span className="px-2 py-0.5">4</span>
+                  </span>
+                </span>
+                <span className="text-yellow-400 mr-2">
+                  <span className="inline-flex items-center justify-center bg-yellow-500/20 p-1 rounded-full">
+                    <span className="px-2 py-0.5">Level 4</span>
+                  </span>
+                </span>
+                <span className="text-yellow-400">
+                  <span className="inline-flex items-center justify-center bg-orange-500/80 px-2 py-0.5 rounded-full">
+                    <span>1,250</span>
+                  </span>
+                </span>
               </div>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="my-bits" value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="mb-4">
-                  <TabsTrigger value="my-bits">My Bits</TabsTrigger>
-                  <TabsTrigger value="friends-bits">Friends' Bits</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="my-bits" className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {myBits.map(bit => (
-                      <BitCard 
-                        key={bit.id} 
-                        bit={{...bit, shared_by: "You", author_avatar: profile?.avatar_url}}
-                        onClick={() => openBitDetail(bit)}
-                      />
-                    ))}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="friends-bits" className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {friendsBits.map(bit => (
-                      <BitCard 
-                        key={bit.id} 
-                        bit={bit}
-                        onClick={() => openBitDetail(bit)}
-                      />
-                    ))}
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+            </div>
+            <Button variant="outline" className="text-white border-white/20 hover:bg-white/10">
+              View all
+            </Button>
+          </div>
 
-          {/* Featured Bit */}
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold">Featured Bit</h2>
-                <Button
-                  variant="ghost"
-                  className="text-muted-foreground"
-                  onClick={() => openBitDetail(featuredBit)}
-                >
-                  View Details
-                </Button>
-              </div>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">My Reading Board</h1>
+              <p className="text-gray-400">{getGreeting()}, {username}. Here are your bits ready to be shared.</p>
+              <Button variant="outline" className="mt-4 border-white/20 hover:bg-white/10">
+                View board
+              </Button>
+            </div>
+            <Button size="icon" variant="outline" className="rounded-full p-2 border-white/20 hover:bg-white/10">
+              <Plus className="h-6 w-6" />
+            </Button>
+          </div>
+        </div>
+      </div>
 
-              <Card
-                className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => openBitDetail(featuredBit)}
+      {/* Categories Carousel */}
+      <FeaturedBits images={categoryImages} titles={categoryTitles} />
+
+      {/* Sharable Bits Section */}
+      <div className="bg-black text-white py-8 px-4">
+        <div className="max-w-screen-xl mx-auto">
+          <h2 className="text-2xl font-bold mb-4">My sharable bits</h2>
+          <p className="text-gray-400 mb-6">Bits with public visibility that can be shared with others</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {myBits.map(bit => (
+              <div 
+                key={bit.id} 
+                className="rounded-xl overflow-hidden cursor-pointer group"
+                onClick={() => openBitDetail({...bit, shared_by: "You", author_avatar: profile?.avatar_url})}
               >
-                {featuredBit.image_url && (
-                  <div className="h-48 overflow-hidden">
-                    <img
-                      src={featuredBit.image_url}
-                      alt={featuredBit.title}
+                <div className="h-48 bg-gray-800 relative">
+                  {bit.image_url ? (
+                    <img 
+                      src={bit.image_url} 
+                      alt={bit.title} 
                       className="w-full h-full object-cover"
                     />
-                  </div>
-                )}
-                <CardHeader className="p-4 pb-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <Badge variant="outline" className="flex items-center gap-1">
-                      {categoryIcons[featuredBit.category.toLowerCase()] || <Tag size={14} />}
-                      {featuredBit.category}
-                    </Badge>
-                    <div className="text-sm text-muted-foreground flex items-center">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      {new Date(featuredBit.created_at).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <span className="text-center text-3xl">{bit.category}</span>
                     </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Original Dashboard Content - Kept below as requested */}
+      <div className="bg-background text-foreground">
+        <div className="flex flex-col gap-6 p-4 md:p-6">
+          <GamificationTopBar 
+            points={1250} 
+            level={5} 
+            currentStreak={streakData.currentStreak} 
+            badges={userBadges} 
+            activityDates={activityDates} 
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column */}
+            <div className="md:col-span-2 space-y-6">
+              {/* What did you learn today section */}
+              <DailyLearningSection 
+                learnings={learningData}
+                friendName={profile?.full_name || "You"}
+                friendAvatar={profile?.avatar_url}
+                onBitClick={openBitDetail}
+              />
+
+              {/* Bits Tabs */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-2xl font-bold">Bits Collection</CardTitle>
+                    <Button variant="outline" onClick={() => navigate("/bits")}>View All Bits</Button>
                   </div>
-                  <CardTitle className="text-xl">{featuredBit.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <p className="text-muted-foreground mb-2 line-clamp-3">
-                    {featuredBit.description}
-                  </p>
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {featuredBit.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
+                <CardContent>
+                  <Tabs defaultValue="my-bits" value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList className="mb-4">
+                      <TabsTrigger value="my-bits">My Bits</TabsTrigger>
+                      <TabsTrigger value="friends-bits">Friends' Bits</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="my-bits" className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {myBits.map(bit => (
+                          <BitCard 
+                            key={bit.id} 
+                            bit={{...bit, shared_by: "You", author_avatar: profile?.avatar_url}}
+                            onClick={() => openBitDetail(bit)}
+                          />
+                        ))}
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="friends-bits" className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {friendsBits.map(bit => (
+                          <BitCard 
+                            key={bit.id} 
+                            bit={bit}
+                            onClick={() => openBitDetail(bit)}
+                          />
+                        ))}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+
+              {/* Featured Bit */}
+              <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-2xl font-bold">Featured Bit</h2>
+                    <Button
+                      variant="ghost"
+                      className="text-muted-foreground"
+                      onClick={() => openBitDetail(featuredBit)}
+                    >
+                      View Details
+                    </Button>
+                  </div>
+
+                  <Card
+                    className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => openBitDetail(featuredBit)}
+                  >
+                    {featuredBit.image_url && (
+                      <div className="h-48 overflow-hidden">
+                        <img
+                          src={featuredBit.image_url}
+                          alt={featuredBit.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <CardHeader className="p-4 pb-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <Badge variant="outline" className="flex items-center gap-1">
+                          {categoryIcons[featuredBit.category.toLowerCase()] || <Tag size={14} />}
+                          {featuredBit.category}
+                        </Badge>
+                        <div className="text-sm text-muted-foreground flex items-center">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {new Date(featuredBit.created_at).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </div>
+                      </div>
+                      <CardTitle className="text-xl">{featuredBit.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <p className="text-muted-foreground mb-2 line-clamp-3">
+                        {featuredBit.description}
+                      </p>
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {featuredBit.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                    <CardFooter className="p-4 pt-0 flex justify-between items-center">
+                      <div className="flex items-center">
+                        <ThumbsUp className="h-4 w-4 text-primary mr-1" />
+                        <span className="text-sm text-muted-foreground">12 likes</span>
+                      </div>
+                      {featuredBit.friend_count && (
+                        <div className="flex items-center">
+                          <Users className="h-4 w-4 text-primary mr-1" />
+                          <span className="text-sm text-muted-foreground">
+                            Shared with {featuredBit.friend_count} friends
+                          </span>
+                        </div>
+                      )}
+                    </CardFooter>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Shared by Friends Carousel */}
+              <SharedBitsCarousel />
+
+              {/* Recent Bits */}
+              <FeaturedBits 
+                images={categoryImages} 
+                titles={categoryTitles} 
+              />
+            </div>
+
+            {/* Right sidebar */}
+            <div className="space-y-6">
+              {/* User Points Card */}
+              <UserPointsCard 
+                userName={profile?.full_name || "User"} 
+                userAvatar={profile?.avatar_url} 
+                points={1250}
+                level={5}
+                currentStreak={streakData.currentStreak}
+                longestStreak={streakData.longestStreak}
+                isCurrentUser={true}
+              />
+
+              {/* My Friends Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">My Buddies</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-3">
+                    {sampleFriends.slice(0, 3).map((friend) => (
+                      <div 
+                        key={friend.id} 
+                        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                        onClick={() => viewFriendProfile(friend.id)}
+                      >
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={friend.avatar_url} />
+                          <AvatarFallback>
+                            {friend.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">{friend.name}</p>
+                          <div className="text-xs text-muted-foreground flex items-center">
+                            <FileText className="h-3 w-3 mr-1" />
+                            {Math.floor(Math.random() * 20) + 1} bits
+                          </div>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="ml-auto"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/friends/${friend.id}`);
+                          }}
+                        >
+                          View
+                        </Button>
+                      </div>
                     ))}
                   </div>
                 </CardContent>
-                <CardFooter className="p-4 pt-0 flex justify-between items-center">
-                  <div className="flex items-center">
-                    <ThumbsUp className="h-4 w-4 text-primary mr-1" />
-                    <span className="text-sm text-muted-foreground">12 likes</span>
-                  </div>
-                  {featuredBit.friend_count && (
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 text-primary mr-1" />
-                      <span className="text-sm text-muted-foreground">
-                        Shared with {featuredBit.friend_count} friends
-                      </span>
-                    </div>
-                  )}
+                <CardFooter>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full" 
+                    size="sm"
+                    onClick={() => navigate("/friends")}
+                  >
+                    View all buddies
+                  </Button>
                 </CardFooter>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {recentActivity.map((activity) => (
+                    <div
+                      key={activity.id}
+                      className="flex items-start space-x-3 pb-3 border-b last:border-0 last:pb-0"
+                    >
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={activity.avatar} />
+                        <AvatarFallback>
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          {getActivityIcon(activity.type)}
+                          <p className="text-sm font-medium">{activity.description}</p>
+                        </div>
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Clock className="mr-1 h-3 w-3" />
+                          {activity.time}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+                <CardFooter>
+                  <Button variant="ghost" className="w-full" size="sm">
+                    View all activity
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              {/* Popular Categories */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Popular Categories</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {popularCategories.map((category) => (
+                    <div
+                      key={category.name}
+                      className="flex items-center justify-between pb-2 last:pb-0"
+                    >
+                      <div className="flex items-center">
+                        {categoryIcons[category.name] || <Folder className="h-4 w-4 mr-2" />}
+                        <span className="ml-2 capitalize">{category.name}</span>
+                      </div>
+                      <Badge variant="secondary">{category.count}</Badge>
+                    </div>
+                  ))}
+                </CardContent>
+                <CardFooter>
+                  <Button variant="ghost" className="w-full" size="sm" onClick={() => navigate("/bits")}>
+                    View all categories
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              {/* Accomplishments */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Accomplishments</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {accomplishments.map((accomplishment) => (
+                    <div key={accomplishment.id} className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="font-medium">{accomplishment.title}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {accomplishment.progress}%
+                        </span>
+                      </div>
+                      <Progress value={accomplishment.progress} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {accomplishment.description}
+                      </p>
+                    </div>
+                  ))}
+                </CardContent>
+                <CardFooter>
+                  <Button variant="ghost" className="w-full" size="sm">
+                    View all achievements
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              {/* Quick Links */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Quick Links</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => navigate("/")}
+                  >
+                    <Home className="mr-2 h-4 w-4" /> Home
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => navigate("/bookmarks")}
+                  >
+                    <BookMarked className="mr-2 h-4 w-4" /> Bookmarks
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => navigate("/bits")}
+                  >
+                    <FileText className="mr-2 h-4 w-4" /> My Bits
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => navigate("/friends")}
+                  >
+                    <Users className="mr-2 h-4 w-4" /> Friends
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => navigate("/settings")}
+                  >
+                    <Library className="mr-2 h-4 w-4" /> Library
+                  </Button>
+                </CardContent>
               </Card>
             </div>
           </div>
 
-          {/* Shared by Friends Carousel */}
-          <SharedBitsCarousel />
-
-          {/* Recent Bits */}
-          <FeaturedBits 
-            images={categoryImages} 
-            titles={categoryTitles} 
-          />
-        </div>
-
-        {/* Right sidebar */}
-        <div className="space-y-6">
-          {/* User Points Card */}
-          <UserPointsCard 
-            userName={profile?.full_name || "User"} 
-            userAvatar={profile?.avatar_url} 
-            points={1250}
-            level={5}
-            currentStreak={streakData.currentStreak}
-            longestStreak={streakData.longestStreak}
-            isCurrentUser={true}
-          />
-
-          {/* My Friends Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">My Buddies</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-3">
-                {sampleFriends.slice(0, 3).map((friend) => (
-                  <div 
-                    key={friend.id} 
-                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => viewFriendProfile(friend.id)}
-                  >
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={friend.avatar_url} />
-                      <AvatarFallback>
-                        {friend.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">{friend.name}</p>
-                      <div className="text-xs text-muted-foreground flex items-center">
-                        <FileText className="h-3 w-3 mr-1" />
-                        {Math.floor(Math.random() * 20) + 1} bits
-                      </div>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="ml-auto"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/friends/${friend.id}`);
-                      }}
-                    >
-                      View
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                variant="ghost" 
-                className="w-full" 
-                size="sm"
-                onClick={() => navigate("/friends")}
-              >
-                View all buddies
-              </Button>
-            </CardFooter>
-          </Card>
-
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {recentActivity.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-start space-x-3 pb-3 border-b last:border-0 last:pb-0"
-                >
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={activity.avatar} />
-                    <AvatarFallback>
-                      <User className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      {getActivityIcon(activity.type)}
-                      <p className="text-sm font-medium">{activity.description}</p>
-                    </div>
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      <Clock className="mr-1 h-3 w-3" />
-                      {activity.time}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-            <CardFooter>
-              <Button variant="ghost" className="w-full" size="sm">
-                View all activity
-              </Button>
-            </CardFooter>
-          </Card>
-
-          {/* Popular Categories */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Popular Categories</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {popularCategories.map((category) => (
-                <div
-                  key={category.name}
-                  className="flex items-center justify-between pb-2 last:pb-0"
-                >
-                  <div className="flex items-center">
-                    {categoryIcons[category.name] || <Folder className="h-4 w-4 mr-2" />}
-                    <span className="ml-2 capitalize">{category.name}</span>
-                  </div>
-                  <Badge variant="secondary">{category.count}</Badge>
-                </div>
-              ))}
-            </CardContent>
-            <CardFooter>
-              <Button variant="ghost" className="w-full" size="sm" onClick={() => navigate("/bits")}>
-                View all categories
-              </Button>
-            </CardFooter>
-          </Card>
-
-          {/* Accomplishments */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Accomplishments</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {accomplishments.map((accomplishment) => (
-                <div key={accomplishment.id} className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-medium">{accomplishment.title}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {accomplishment.progress}%
-                    </span>
-                  </div>
-                  <Progress value={accomplishment.progress} className="h-2" />
-                  <p className="text-xs text-muted-foreground">
-                    {accomplishment.description}
-                  </p>
-                </div>
-              ))}
-            </CardContent>
-            <CardFooter>
-              <Button variant="ghost" className="w-full" size="sm">
-                View all achievements
-              </Button>
-            </CardFooter>
-          </Card>
-
-          {/* Quick Links */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quick Links</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={() => navigate("/")}
-              >
-                <Home className="mr-2 h-4 w-4" /> Home
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={() => navigate("/bookmarks")}
-              >
-                <BookMarked className="mr-2 h-4 w-4" /> Bookmarks
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={() => navigate("/bits")}
-              >
-                <FileText className="mr-2 h-4 w-4" /> My Bits
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={() => navigate("/friends")}
-              >
-                <Users className="mr-2 h-4 w-4" /> Friends
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={() => navigate("/settings")}
-              >
-                <Library className="mr-2 h-4 w-4" /> Library
-              </Button>
-            </CardContent>
-          </Card>
+          {currentBit && (
+            <BitDetailModal
+              bit={currentBit}
+              isOpen={bitDetailOpen}
+              onClose={closeBitDetail}
+              onBitUpdated={handleBitUpdated}
+            />
+          )}
         </div>
       </div>
-
-      {currentBit && (
-        <BitDetailModal
-          bit={currentBit}
-          isOpen={bitDetailOpen}
-          onClose={closeBitDetail}
-          onBitUpdated={handleBitUpdated}
-        />
-      )}
     </div>
   );
 };

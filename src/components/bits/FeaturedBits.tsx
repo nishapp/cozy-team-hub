@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { 
   Carousel,
   CarouselContent,
@@ -52,33 +52,39 @@ const FeaturedBits: React.FC<FeaturedBitsProps> = ({ images, titles = [] }) => {
   }, 3000);
 
   return (
-    <Carousel
-      opts={{
-        align: "start",
-        loop: true,
-        dragFree: true,
-      }}
-      className="w-full mb-8"
-      setApi={setApi}
-    >
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Categories</h2>
-      </div>
-      <div className="relative">
-        <CarouselContent className="-ml-2 md:-ml-4">
-          {images.map((imageUrl, index) => (
-            <CarouselItem key={index} className="pl-2 md:pl-4 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6">
-              <FeaturedBit 
-                imageUrl={imageUrl} 
-                title={titles[index] || `Category ${index + 1}`} 
-              />
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious className="left-0 bg-white dark:bg-black shadow-md" />
-        <CarouselNext className="right-0 bg-white dark:bg-black shadow-md" />
-      </div>
-    </Carousel>
+    <div className="bg-black text-white py-6">
+      <Carousel
+        opts={{
+          align: "start",
+          loop: true,
+          dragFree: true,
+        }}
+        className="w-full max-w-screen-xl mx-auto px-4"
+        setApi={setApi}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Categories</h2>
+        </div>
+        <div className="relative">
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {images.map((imageUrl, index) => (
+              <CarouselItem key={index} className="pl-2 md:pl-4 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6">
+                <FeaturedBit 
+                  imageUrl={imageUrl} 
+                  title={titles[index] || `Category ${index + 1}`} 
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-0 bg-white/10 hover:bg-white/20 text-white border-0">
+            <ChevronLeft className="h-6 w-6" />
+          </CarouselPrevious>
+          <CarouselNext className="right-0 bg-white/10 hover:bg-white/20 text-white border-0">
+            <ChevronRight className="h-6 w-6" />
+          </CarouselNext>
+        </div>
+      </Carousel>
+    </div>
   );
 };
 
