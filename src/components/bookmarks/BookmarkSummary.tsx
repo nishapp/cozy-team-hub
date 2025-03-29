@@ -1,84 +1,40 @@
 
-import React, { useState, useRef } from "react";
-import { BookmarkItem } from "@/types/bookmark";
+import React, { useState, useRef } from 'react';
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { RefreshCw, CheckCircle2, VolumeX, Volume2 } from "lucide-react";
+import { Bookmark, Copy, Volume2, VolumeX, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/lib/supabase";
-import { isDemoMode } from "@/lib/supabase";
 
 interface BookmarkSummaryProps {
-  bookmark: BookmarkItem;
-  onSaveDescription?: (bookmarkId: string, description: string) => void;
+  summary: string;
+  url: string;
+  heroImage?: string | null;
+  onConvertToBit: () => void;
 }
 
-export function BookmarkSummary({ bookmark, onSaveDescription }: BookmarkSummaryProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSummarized, setIsSummarized] = useState(!!bookmark.summary);
-  const [summary, setSummary] = useState(bookmark.summary || "");
-  const [descriptionDraft, setDescriptionDraft] = useState(bookmark.description || "");
-  
-  // Audio states
+const BookmarkSummary: React.FC<BookmarkSummaryProps> = ({
+  summary,
+  url,
+  heroImage,
+  onConvertToBit,
+}) => {
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const handleGenerateSummary = async () => {
-    if (isLoading) return;
-    
-    setIsLoading(true);
-    
-    try {
-      const response = await fetch('/api/summarize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: bookmark.url }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to generate summary');
-      }
-      
-      const data = await response.json();
-      
-      if (data.summary) {
-        setSummary(data.summary);
-        setDescriptionDraft(data.summary);
-        setIsSummarized(true);
-        
-        // If heroImage is returned, we'd handle it in the parent component
-        toast.success('Summary generated successfully');
-      } else {
-        toast.error('Could not generate a summary');
-      }
-    } catch (error) {
-      console.error('Error generating summary:', error);
-      toast.error('Failed to generate summary');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSaveDescription = () => {
-    if (onSaveDescription) {
-      onSaveDescription(bookmark.id, descriptionDraft);
-      toast.success('Description saved successfully');
-    }
+  const handleCopyToClipboard = () => {
+    navigator.clipboard.writeText(summary);
+    toast.success("Summary copied to clipboard");
   };
 
   const handleTextToSpeech = async () => {
-    if (!summary || isAudioLoading) return;
-    
     setIsAudioLoading(true);
     
     try {
-      let textToConvert = summary;
       // Limit text length to avoid issues with large summaries
+      let textToConvert = summary;
       if (textToConvert.length > 3000) {
         textToConvert = textToConvert.substring(0, 3000) + "...";
       }
@@ -149,106 +105,95 @@ export function BookmarkSummary({ bookmark, onSaveDescription }: BookmarkSummary
   };
 
   return (
-    <div className="mt-4 space-y-4">
-      {!isSummarized ? (
-        <div>
+    <div className="flex flex-col space-y-4 p-4">
+      {heroImage && (
+        <div className="w-full max-h-48 overflow-hidden rounded-lg">
+          <img
+            src={heroImage}
+            alt="Page preview"
+            className="w-full h-auto object-cover"
+          />
+        </div>
+      )}
+      
+      <div className="flex flex-wrap gap-2 justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleTextToSpeech}
+          disabled={isAudioLoading}
+          className="flex items-center gap-1"
+        >
+          {isAudioLoading ? 
+            <RefreshCw className="h-4 w-4 animate-spin" /> : 
+            <Volume2 className="h-4 w-4" />
+          }
+          <span>Listen</span>
+        </Button>
+        
+        {audioUrl && (
           <Button
             variant="outline"
             size="sm"
-            className="w-full"
-            onClick={handleGenerateSummary}
-            disabled={isLoading}
+            onClick={toggleAudioPlayback}
+            className="flex items-center gap-1"
           >
-            {isLoading ? (
-              <>
-                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                Generating summary...
-              </>
-            ) : (
-              "Generate AI Summary"
-            )}
+            {isPlaying ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            <span>{isPlaying ? 'Pause' : 'Play'}</span>
           </Button>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium">AI Summary</h3>
-            <div className="flex space-x-2">
-              {!isDemoMode && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleTextToSpeech}
-                  disabled={isAudioLoading}
-                  title="Listen to summary"
-                >
-                  {isAudioLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleGenerateSummary}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Regenerate"
-                )}
-              </Button>
-            </div>
-          </div>
-          
-          <div className="p-3 bg-secondary/50 rounded-md text-sm max-h-[200px] overflow-auto">
-            {summary}
-          </div>
-          
-          {audioUrl && (
-            <div className="flex items-center space-x-2 mt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={toggleAudioPlayback}
-                className="flex items-center space-x-1"
-              >
-                {isPlaying ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                <span>{isPlaying ? 'Pause' : 'Play'}</span>
-              </Button>
-              <audio 
-                ref={audioRef}
-                src={audioUrl}
-                onEnded={() => setIsPlaying(false)}
-                onPause={() => setIsPlaying(false)}
-                onPlay={() => setIsPlaying(true)}
-                className="hidden"
-                controls
-              />
-            </div>
-          )}
-          
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">Save as Description</h3>
-            <Textarea
-              value={descriptionDraft}
-              onChange={(e) => setDescriptionDraft(e.target.value)}
-              placeholder="Edit if needed before saving as description..."
-              className="min-h-[100px] max-h-[150px]"
-            />
-            
-            <div className="flex justify-end">
-              <Button
-                size="sm"
-                onClick={handleSaveDescription}
-                className="gap-1"
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                Save as Description
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+        )}
+        
+        <audio 
+          ref={audioRef}
+          src={audioUrl}
+          onEnded={() => setIsPlaying(false)}
+          onPause={() => setIsPlaying(false)}
+          onPlay={() => setIsPlaying(true)}
+          className="hidden"
+          controls
+        />
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleCopyToClipboard}
+          className="flex items-center gap-1"
+        >
+          <Copy className="h-4 w-4" />
+          <span>Copy</span>
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onConvertToBit}
+          className="flex items-center gap-1"
+        >
+          <Bookmark className="h-4 w-4" />
+          <span>Convert to Bit</span>
+        </Button>
+      </div>
+      
+      <Separator />
+      
+      <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
+        {summary}
+      </div>
+      
+      <Separator />
+      
+      <div>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline text-sm"
+        >
+          {url}
+        </a>
+      </div>
     </div>
   );
-}
+};
+
+export default BookmarkSummary;

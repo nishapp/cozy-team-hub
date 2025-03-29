@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Carousel, 
@@ -130,10 +129,8 @@ const SharedBitsCarousel: React.FC = () => {
     setSelectedBit(null);
   };
 
-  const handleBitUpdated = (updatedBit: any) => {
-    // In a real implementation, this would update the bit in the state or trigger a refetch
+  const handleBitUpdated = (updatedBit: SharedBit) => {
     toast.success("Bit updated successfully!");
-    // For now, we'll just close the modal
     closeBitDetail();
   };
 
