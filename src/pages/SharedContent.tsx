@@ -36,6 +36,7 @@ const SharedContent = () => {
     date: "May 15, 2023",
     author: "Communication Expert",
     tags: ["communication", "teamwork", "productivity"],
+    image_url: "/og-image.png"
   };
 
   return (
@@ -43,7 +44,7 @@ const SharedContent = () => {
       <OpenGraphHead 
         title={title}
         description={description}
-        imageUrl="/og-image.png" // Using absolute path for image
+        imageUrl={content.image_url}
         type="article"
       />
       

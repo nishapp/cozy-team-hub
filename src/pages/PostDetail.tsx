@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -68,7 +69,7 @@ const PostDetail = () => {
       <OpenGraphHead 
         title={post.title}
         description={post.content?.substring(0, 160) || "Check out this post"}
-        imageUrl={post.image_url ? post.image_url : "/og-image.png"}
+        imageUrl={post.image_url}
         type="article"
       />
       
