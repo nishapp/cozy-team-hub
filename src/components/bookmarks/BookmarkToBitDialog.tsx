@@ -37,10 +37,13 @@ export const BookmarkToBitDialog = ({ bookmark, isOpen, onClose }: BookmarkToBit
     // Extract content for description
     const description = bookmark.summary || bookmark.description || bookmark.title;
     
+    // Join the tags array into a comma-separated string for the form field
+    const tagsString = tags.join(", ");
+    
     return {
       title: bookmark.title,
       description: description.slice(0, 500), // Limit description length
-      tags: tags.join(", "),
+      tags: tagsString, // Make sure tags are in string format for the form
       category: "",
       visibility: "public",
       wdylt_comment: "",
