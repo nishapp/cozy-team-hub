@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Users } from 'lucide-react';
 
 interface Buddy {
   id: string;
@@ -32,9 +32,9 @@ const TopBuddiesSection: React.FC<TopBuddiesSectionProps> = ({ buddies }) => {
       </div>
       
       <div className="space-y-4">
-        {buddies.map((buddy) => (
+        {buddies.slice(0, 5).map((buddy) => (
           <Card key={buddy.id} className="p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-start space-x-3">
+            <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={buddy.avatar} alt={buddy.name} />
                 <AvatarFallback>{buddy.name.charAt(0)}</AvatarFallback>
@@ -42,25 +42,8 @@ const TopBuddiesSection: React.FC<TopBuddiesSectionProps> = ({ buddies }) => {
               
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{buddy.name}</p>
-                {buddy.topBit ? (
-                  <p className="text-sm text-muted-foreground truncate">
-                    Latest: {buddy.topBit.title}
-                  </p>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No bits shared yet</p>
-                )}
               </div>
             </div>
-            
-            {buddy.topBit && buddy.topBit.image_url && (
-              <div className="mt-3 h-24 rounded-md overflow-hidden">
-                <img 
-                  src={buddy.topBit.image_url} 
-                  alt={buddy.topBit.title} 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
           </Card>
         ))}
         
@@ -69,6 +52,7 @@ const TopBuddiesSection: React.FC<TopBuddiesSectionProps> = ({ buddies }) => {
           className="w-full" 
           onClick={() => navigate('/friends')}
         >
+          <Users className="h-4 w-4 mr-2" />
           View all buddies
           <ChevronRight className="h-4 w-4 ml-1" />
         </Button>
