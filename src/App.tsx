@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AnimatePresence } from "framer-motion";
+import Navbar from "./components/layout/Navbar";
 
 // Pages
 import Index from "./pages/Index";
@@ -24,7 +25,7 @@ import Settings from "./pages/Settings";
 import Contact from "./pages/Contact";
 import CompanySettings from "./pages/CompanySettings";
 import NotFound from "./pages/NotFound";
-import Bookmarks from "./pages/Bookmarks"; // New import
+import Bookmarks from "./pages/Bookmarks";
 
 // Create a QueryClient instance
 const queryClient = new QueryClient({
@@ -36,29 +37,41 @@ const queryClient = new QueryClient({
   },
 });
 
+// Layout component that includes Navbar
+const Layout = ({ children }) => {
+  return (
+    <>
+      <Navbar />
+      {children}
+    </>
+  );
+};
+
 // AnimatePresence wrapper component that provides location to children
 const AnimatedRoutes = () => {
   const location = useLocation();
   
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Index />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/bits" element={<Bits />} />
-        <Route path="/posts" element={<Posts />} />
-        <Route path="/post/:postId" element={<PostDetail />} />
-        <Route path="/friends" element={<Friends />} />
-        <Route path="/friends/:friendId/bits" element={<FriendBits />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/bookmarks" element={<Bookmarks />} /> {/* New route */}
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/company-settings" element={<CompanySettings />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <Layout>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/bits" element={<Bits />} />
+          <Route path="/posts" element={<Posts />} />
+          <Route path="/post/:postId" element={<PostDetail />} />
+          <Route path="/friends" element={<Friends />} />
+          <Route path="/friends/:friendId/bits" element={<FriendBits />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/bookmarks" element={<Bookmarks />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/company-settings" element={<CompanySettings />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Layout>
     </AnimatePresence>
   );
 };

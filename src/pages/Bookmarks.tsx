@@ -370,7 +370,7 @@ const FolderTreeItem = ({ folder, bookmarks, activeFolderId, onFolderClick, onAd
       </div>
       
       {hasChildren && (
-        <Collapsible className="ml-4 mt-1 border-l pl-2 border-border">
+        <Collapsible defaultOpen className="ml-4 mt-1 border-l pl-2 border-border">
           <CollapsibleContent className="space-y-1">
             {childFolders.map(childFolder => (
               <FolderTreeItem
@@ -518,7 +518,7 @@ const BookmarksPage = () => {
       
       if (editBookmark) {
         // Update existing bookmark
-        setBookmarks(prev => prev.map(b => 
+        const updatedBookmarks = bookmarks.map(b => 
           b.id === editBookmark.id 
             ? { 
                 ...b, 
@@ -528,7 +528,9 @@ const BookmarksPage = () => {
                 updated_at: new Date().toISOString()
               } 
             : b
-        ));
+        );
+        setBookmarks(updatedBookmarks);
+        saveToLocalStorage(STORAGE_KEYS.BOOKMARKS, updatedBookmarks);
         toast.success("Bookmark updated");
       } else {
         // Add new bookmark
@@ -550,7 +552,9 @@ const BookmarksPage = () => {
           source: "personal"
         };
         
-        setBookmarks(prev => [...prev, newBookmark]);
+        const updatedBookmarks = [...bookmarks, newBookmark];
+        setBookmarks(updatedBookmarks);
+        saveToLocalStorage(STORAGE_KEYS.BOOKMARKS, updatedBookmarks);
         toast.success("Bookmark added");
       }
       
@@ -602,7 +606,7 @@ const BookmarksPage = () => {
       ? Math.max(...folderBookmarks.map(b => b.order)) + 1 
       : 0;
     
-    setBookmarks(prev => prev.map(b => 
+    const updatedBookmarks = bookmarks.map(b => 
       b.id === moveBookmark.id 
         ? { 
             ...b, 
@@ -611,7 +615,10 @@ const BookmarksPage = () => {
             updated_at: new Date().toISOString()
           } 
         : b
-    ));
+    );
+    
+    setBookmarks(updatedBookmarks);
+    saveToLocalStorage(STORAGE_KEYS.BOOKMARKS, updatedBookmarks);
     
     setShowMoveBookmarkModal(false);
     toast.success("Bookmark moved");
@@ -638,10 +645,15 @@ const BookmarksPage = () => {
         }));
         
         // Replace the bookmarks in the current folder with the updated ones
-        return prev.map(bookmark => {
+        const updatedBookmarks = prev.map(bookmark => {
           const updatedBookmark = updated.find(u => u.id === bookmark.id);
           return updatedBookmark || bookmark;
         });
+        
+        // Save to localStorage
+        saveToLocalStorage(STORAGE_KEYS.BOOKMARKS, updatedBookmarks);
+        
+        return updatedBookmarks;
       });
     }
   }, [activeFolderId]);
