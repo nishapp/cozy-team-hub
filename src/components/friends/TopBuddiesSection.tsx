@@ -31,10 +31,10 @@ const TopBuddiesSection: React.FC<TopBuddiesSectionProps> = ({ buddies }) => {
         <p className="text-muted-foreground">Your most active connections</p>
       </div>
       
-      <div className="space-y-4">
-        {buddies.slice(0, 5).map((buddy) => (
-          <Card key={buddy.id} className="p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center space-x-3">
+      <Card className="p-4 hover:shadow-md transition-shadow">
+        <div className="space-y-4">
+          {buddies.slice(0, 5).map((buddy) => (
+            <div key={buddy.id} className="flex items-center space-x-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={buddy.avatar} alt={buddy.name} />
                 <AvatarFallback>{buddy.name.charAt(0)}</AvatarFallback>
@@ -44,19 +44,19 @@ const TopBuddiesSection: React.FC<TopBuddiesSectionProps> = ({ buddies }) => {
                 <p className="font-medium truncate">{buddy.name}</p>
               </div>
             </div>
-          </Card>
-        ))}
-        
-        <Button 
-          variant="outline" 
-          className="w-full" 
-          onClick={() => navigate('/friends')}
-        >
-          <Users className="h-4 w-4 mr-2" />
-          View all buddies
-          <ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
-      </div>
+          ))}
+          
+          <Button 
+            variant="outline" 
+            className="w-full mt-4" 
+            onClick={() => navigate('/friends')}
+          >
+            <Users className="h-4 w-4 mr-2" />
+            View all buddies
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 };
