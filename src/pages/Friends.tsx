@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
-import Navbar from "../components/layout/Navbar";
 import PageTransition from "../components/ui/PageTransition";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import FriendsList from "@/components/friends/FriendsList";
@@ -28,8 +27,6 @@ const Friends = () => {
   return (
     <PageTransition>
       <div className="min-h-screen flex flex-col">
-        <Navbar />
-        
         <main className="flex-1 container py-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold">Buddies</h1>
