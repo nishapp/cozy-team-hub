@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowLeft, Heart, MessageSquare, Share2 } from "lucide-react";
+import { ArrowLeft, Heart, MessageSquare } from "lucide-react";
 import { samplePosts } from "@/data/samplePosts";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
@@ -14,6 +14,8 @@ import PageTransition from "@/components/ui/PageTransition";
 import { toast } from "sonner";
 import ConvertToBitDialog from "@/components/posts/ConvertToBitDialog";
 import CreateBookmarkFromPost from "@/components/bookmarks/CreateBookmarkFromPost";
+import SocialShare from "@/components/share/SocialShare";
+import OpenGraphHead from "@/components/share/OpenGraphHead";
 
 const PostDetail = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -43,11 +45,6 @@ const PostDetail = () => {
     toast.success(liked ? "Removed like" : "Post liked!");
   };
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success("Link copied to clipboard!");
-  };
-
   const handleGoBack = () => {
     navigate(-1);
   };
@@ -71,6 +68,13 @@ const PostDetail = () => {
 
   return (
     <PageTransition>
+      <OpenGraphHead 
+        title={post.title}
+        description={post.content?.substring(0, 160) || "Check out this post"}
+        imageUrl={post.image_url || "/og-image.png"}
+        type="article"
+      />
+      
       <div className="container py-8 max-w-4xl">
         <Button variant="ghost" className="mb-6" onClick={handleGoBack}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
@@ -99,6 +103,11 @@ const PostDetail = () => {
               </div>
               
               <div className="flex space-x-2">
+                <SocialShare 
+                  title={post.title} 
+                  description={post.content?.substring(0, 160)} 
+                  hashtags={post.tags} 
+                />
                 <CreateBookmarkFromPost post={post} />
                 <Button
                   variant="ghost"
@@ -159,15 +168,14 @@ const PostDetail = () => {
                 <MessageSquare className="h-5 w-5" />
                 <span>Comment</span>
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex items-center gap-1"
-                onClick={handleShare}
-              >
-                <Share2 className="h-5 w-5" />
-                <span>Share</span>
-              </Button>
+              
+              <div className="ml-auto">
+                <SocialShare 
+                  title={post.title} 
+                  description={post.content?.substring(0, 160)} 
+                  hashtags={post.tags} 
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

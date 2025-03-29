@@ -26,6 +26,7 @@ import Contact from "./pages/Contact";
 import CompanySettings from "./pages/CompanySettings";
 import NotFound from "./pages/NotFound";
 import Bookmarks from "./pages/Bookmarks";
+import SharedContent from "./pages/SharedContent";
 
 // Create a QueryClient instance
 const queryClient = new QueryClient({
@@ -70,6 +71,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin" element={<Layout><AdminDashboard /></Layout>} />
         <Route path="/settings" element={<Layout><Settings /></Layout>} />
         <Route path="/company-settings" element={<Layout><CompanySettings /></Layout>} />
+        <Route path="/share/:id" element={<Layout><SharedContent /></Layout>} />
         <Route path="*" element={<Layout><NotFound /></Layout>} />
       </Routes>
     </AnimatePresence>
