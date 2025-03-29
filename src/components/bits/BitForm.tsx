@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -24,9 +23,10 @@ import {
 } from "@/components/ui/select";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { supabase } from "@/lib/supabase";
-import { Loader2, Bookmark, BookmarkCheck } from "lucide-react";
+import { Loader2, Bookmark, BookmarkCheck, Link as LinkIcon, ExternalLink } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { fetchWebpageSummary } from "@/lib/api";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -52,6 +52,7 @@ const BitForm: React.FC<BitFormProps> = ({
   initialData,
 }) => {
   const [uploading, setUploading] = useState(false);
+  const [summarizing, setSummarizing] = useState(false);
   const { uploadImage } = useImageUpload();
   const { user } = useAuth();
 
@@ -87,6 +88,68 @@ const BitForm: React.FC<BitFormProps> = ({
     },
   });
 
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const handleGenerateSummary = async () => {
+    const url = form.getValues("link");
+    
+    if (!url) {
+      toast.error("Please enter a URL first");
+      return;
+    }
+    
+    if (!isValidUrl(url)) {
+      toast.error("Please enter a valid URL");
+      return;
+    }
+    
+    setSummarizing(true);
+    try {
+      const summary = await fetchWebpageSummary(url);
+      
+      form.setValue("description", summary);
+      
+      if (!form.getValues("title")) {
+        try {
+          const urlObj = new URL(url);
+          const domain = urlObj.hostname.replace('www.', '');
+          const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+          const pageTitle = pathSegments.length > 0 
+            ? pathSegments[pathSegments.length - 1].replace(/-/g, ' ').replace(/\.(html|php|aspx)$/, '')
+            : domain;
+          
+          form.setValue("title", pageTitle.charAt(0).toUpperCase() + pageTitle.slice(1));
+        } catch (error) {
+          console.error("Error generating title from URL:", error);
+        }
+      }
+      
+      if (!form.getValues("tags")) {
+        try {
+          const urlObj = new URL(url);
+          const domain = urlObj.hostname.replace('www.', '').split('.')[0];
+          form.setValue("tags", domain);
+        } catch (error) {
+          console.error("Error generating tags from URL:", error);
+        }
+      }
+      
+      toast.success("Summary generated successfully!");
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      toast.error("Failed to generate summary. Please try again.");
+    } finally {
+      setSummarizing(false);
+    }
+  };
+
   const handleImageUpload = async (file: File) => {
     if (!user) {
       console.error("User is not authenticated");
@@ -107,7 +170,6 @@ const BitForm: React.FC<BitFormProps> = ({
   };
 
   const onSubmitHandler = async (values: z.infer<typeof formSchema>) => {
-    // Save to bookmarks if the bookmarked flag is set
     if (values.bookmarked && user) {
       try {
         const bookmark = {
@@ -115,19 +177,16 @@ const BitForm: React.FC<BitFormProps> = ({
           title: values.title,
           url: values.link || "",
           isPublic: values.visibility === "public",
-          folderId: "bits", // Use the special "bits" folder for bookmarked bits
+          folderId: "bits",
           createdAt: new Date().toISOString(),
         };
         
-        // Get existing bookmarks
         const existingBookmarksString = localStorage.getItem('wdylt_bookmarks') || '[]';
         const existingBookmarks = JSON.parse(existingBookmarksString);
         
-        // Add the new bookmark
         const updatedBookmarks = [bookmark, ...existingBookmarks];
         localStorage.setItem('wdylt_bookmarks', JSON.stringify(updatedBookmarks));
         
-        // Update bookmark IDs for the bookmark toggle feature
         const bookmarkIdsString = localStorage.getItem('bookmarkedBits') || '[]';
         const bookmarkIds = JSON.parse(bookmarkIdsString);
         localStorage.setItem('bookmarkedBits', JSON.stringify([...bookmarkIds, values.title]));
@@ -180,11 +239,56 @@ const BitForm: React.FC<BitFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>URL / Link</FormLabel>
-              <FormControl>
-                <Input placeholder="https://example.com" type="url" {...field} />
-              </FormControl>
+              <div className="flex space-x-2">
+                <div className="flex-grow relative">
+                  <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                    <LinkIcon size={16} />
+                  </div>
+                  <FormControl>
+                    <Input 
+                      placeholder="https://example.com" 
+                      type="url" 
+                      className="pl-8"
+                      {...field} 
+                    />
+                  </FormControl>
+                </div>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="icon"
+                  title="Open URL"
+                  className="flex-shrink-0"
+                  onClick={() => {
+                    const url = form.getValues("link");
+                    if (url && isValidUrl(url)) {
+                      window.open(url, '_blank');
+                    }
+                  }}
+                  disabled={!form.getValues("link") || !isValidUrl(form.getValues("link"))}
+                >
+                  <ExternalLink size={16} />
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  className="flex-shrink-0 whitespace-nowrap"
+                  onClick={handleGenerateSummary}
+                  disabled={summarizing || !form.getValues("link") || !isValidUrl(form.getValues("link"))}
+                >
+                  {summarizing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Summarizing...
+                    </>
+                  ) : (
+                    "Generate Summary"
+                  )}
+                </Button>
+              </div>
               <FormDescription>
-                Add a URL that relates to this bit
+                Add a URL that relates to this bit. Click "Generate Summary" to automatically create a description.
               </FormDescription>
               <FormMessage />
             </FormItem>
