@@ -1,11 +1,20 @@
 
-import React, { useState, useEffect } from "react";
-import BitCard from "./BitCard";
-import { useInterval } from "@/hooks/useInterval";
-import { Card } from "@/components/ui/card";
-import BitDetailModal from "./BitDetailModal";
+import React, { useState } from 'react';
+import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Share } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import BitDetailModal from "@/components/bits/BitDetailModal";
+import { toast } from "sonner";
 
-interface SharedBit {
+type SharedBit = {
   id: string;
   title: string;
   description: string;
@@ -16,142 +25,114 @@ interface SharedBit {
   image_url?: string;
   created_at: string;
   shared_by: string;
-}
+  author_avatar?: string;
+  friend_count?: number;
+};
 
 interface SharedBitsCarouselProps {
   sharedBits: SharedBit[];
 }
 
 const SharedBitsCarousel: React.FC<SharedBitsCarouselProps> = ({ sharedBits }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [displayedBits, setDisplayedBits] = useState<SharedBit[]>([]);
-  const [fadingCardIndex, setFadingCardIndex] = useState<number | null>(null);
-  const [fadingIn, setFadingIn] = useState(false);
   const [selectedBit, setSelectedBit] = useState<SharedBit | null>(null);
   
-  // Number of cards to display at once based on screen size
-  const getDisplayCount = () => {
-    if (window.innerWidth >= 1280) return 5; // xl
-    if (window.innerWidth >= 1024) return 4; // lg
-    if (window.innerWidth >= 768) return 3;  // md
-    if (window.innerWidth >= 640) return 2;  // sm
-    return 1;                                // xs
-  };
-  
-  const [displayCount, setDisplayCount] = useState(getDisplayCount());
-  
-  // Update display count on window resize
-  useEffect(() => {
-    const handleResize = () => {
-      setDisplayCount(getDisplayCount());
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
-  // Initialize displayed bits
-  useEffect(() => {
-    if (sharedBits.length > 0) {
-      updateDisplayedBits();
-    }
-  }, [sharedBits, displayCount]);
-  
-  // Auto-scroll every 10 seconds
-  useInterval(() => {
-    if (sharedBits.length > displayCount) {
-      rotateCards();
-    }
-  }, 10000);
-  
-  const rotateCards = () => {
-    // Set the index of the first card as the one fading out
-    setFadingCardIndex(0);
-    
-    // After fade out animation completes, update the cards
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % sharedBits.length);
-      setFadingIn(true); // Start fade-in animation
-      
-      // Reset fading state after the DOM updates with new cards
-      setTimeout(() => {
-        setFadingCardIndex(null);
-        
-        // After a brief delay to ensure DOM update, start fade-in
-        setTimeout(() => {
-          setFadingIn(false);
-        }, 50);
-      }, 100);
-    }, 700); // Duration of fade-out animation
-  };
-  
-  const updateDisplayedBits = () => {
-    const bits = [];
-    for (let i = 0; i < displayCount; i++) {
-      const index = (currentIndex + i) % sharedBits.length;
-      bits.push(sharedBits[index]);
-    }
-    setDisplayedBits(bits);
-  };
-  
-  // Update displayed bits when currentIndex changes
-  useEffect(() => {
-    updateDisplayedBits();
-  }, [currentIndex, displayCount, sharedBits]);
-  
-  // Manual advance control for testing
-  const handleAdvance = () => {
-    rotateCards();
-  };
+  if (!sharedBits || sharedBits.length === 0) {
+    return null;
+  }
 
-  // Handle card click
-  const handleCardClick = (bit: SharedBit) => {
+  const handleShareClick = (bit: SharedBit) => {
+    // In a real app, this would open a share dialog
+    navigator.clipboard.writeText(`Check out this bit: ${bit.title}`).then(() => {
+      toast.success("Link copied to clipboard!");
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+      toast.error("Failed to copy link");
+    });
+  };
+  
+  const handleBitClick = (bit: SharedBit) => {
     setSelectedBit(bit);
   };
-  
+
+  const handleBitUpdated = () => {
+    // This is a placeholder function since shared bits are read-only in this context
+    // However, we need to pass this prop to BitDetailModal
+    toast.success("Bit interaction recorded!");
+  };
+
   return (
-    <div className="mb-12">
-      <div className="mb-6 flex justify-between items-end">
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Shared by friends</h2>
-          <p className="text-muted-foreground">Discover bits that your friends have shared with you</p>
-        </div>
-        
-        <button 
-          onClick={handleAdvance}
-          className="text-sm text-muted-foreground hover:text-primary transition-colors"
-        >
-          Next
-        </button>
+    <div className="py-6 space-y-4">
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Shared by your buddies</h2>
+        <p className="text-muted-foreground">Interesting bits shared by people you follow</p>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
-        {displayedBits.map((bit, index) => (
-          <div 
-            key={bit.id} 
-            className={`relative transition-opacity duration-700 ease-in-out ${
-              fadingCardIndex === index 
-                ? 'opacity-0' 
-                : fadingIn && index === 0 
-                  ? 'opacity-0' 
-                  : 'opacity-100'
-            }`}
-            onClick={() => handleCardClick(bit)}
-          >
-            <BitCard bit={bit} />
-            <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-              {bit.shared_by}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Bit Detail Modal */}
+      <Carousel
+        opts={{
+          align: "start",
+          loop: true,
+        }}
+        className="w-full"
+      >
+        <CarouselContent>
+          {sharedBits.map((bit) => (
+            <CarouselItem key={bit.id} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+              <div className="p-1">
+                <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleBitClick(bit)}>
+                  {bit.image_url && (
+                    <div className="relative w-full aspect-[4/3] overflow-hidden">
+                      <img 
+                        src={bit.image_url} 
+                        alt={bit.title} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  
+                  <CardContent className={`p-4 ${!bit.image_url ? 'pt-6' : ''}`}>
+                    <h3 className="font-semibold line-clamp-2">{bit.title}</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                      {bit.description}
+                    </p>
+                  </CardContent>
+                  
+                  <CardFooter className="p-4 pt-0 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={bit.author_avatar} />
+                        <AvatarFallback>{bit.shared_by.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-muted-foreground">{bit.shared_by}</span>
+                    </div>
+                    
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 w-7 p-0" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleShareClick(bit);
+                      }}
+                    >
+                      <Share className="h-4 w-4" />
+                      <span className="sr-only">Share</span>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="left-4" />
+        <CarouselNext className="right-4" />
+      </Carousel>
+      
       {selectedBit && (
-        <BitDetailModal 
-          bit={selectedBit} 
-          isOpen={!!selectedBit} 
-          onClose={() => setSelectedBit(null)} 
+        <BitDetailModal
+          bit={selectedBit}
+          isOpen={!!selectedBit}
+          onClose={() => setSelectedBit(null)}
+          onBitUpdated={handleBitUpdated}
         />
       )}
     </div>

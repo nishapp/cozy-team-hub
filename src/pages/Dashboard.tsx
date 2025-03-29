@@ -433,10 +433,15 @@ const Dashboard = () => {
           <SharedBitsCarousel sharedBits={sharedBits} />
 
           {/* Bit Detail Modal */}
-          {selectedBit && <BitDetailModal bit={{
-          ...selectedBit,
-          shared_by: selectedBit.shared_by || "You"
-        }} isOpen={!!selectedBit} onClose={() => setSelectedBit(null)} />}
+          {selectedBit && <BitDetailModal 
+            bit={{
+              ...selectedBit,
+              shared_by: selectedBit.shared_by || "You"
+            }} 
+            isOpen={!!selectedBit} 
+            onClose={() => setSelectedBit(null)}
+            onBitUpdated={handleBitUpdated} 
+          />}
         </main>
       </div>
     </PageTransition>;
