@@ -11,6 +11,14 @@ interface GamificationTopBarProps {
 }
 
 const GamificationTopBar: React.FC<GamificationTopBarProps> = ({ points, streak }) => {
+  // Create mock activity dates for display purposes - in a real app this would come from the database
+  const today = new Date();
+  const activityDates = Array.from({ length: streak }, (_, i) => {
+    const date = new Date();
+    date.setDate(today.getDate() - i);
+    return date;
+  });
+
   return (
     <div className="w-full bg-primary/5 dark:bg-primary/10">
       <div className="container flex items-center justify-center sm:justify-end py-2 px-4">
@@ -26,7 +34,7 @@ const GamificationTopBar: React.FC<GamificationTopBarProps> = ({ points, streak 
           <div className="flex items-center">
             <Flame className="h-4 w-4 text-red-500 mr-2" />
             <span className="text-sm font-medium mr-1.5">Streak:</span>
-            <StreakDisplay days={streak} />
+            <StreakDisplay currentStreak={streak} activityDates={activityDates} />
           </div>
         </div>
       </div>
