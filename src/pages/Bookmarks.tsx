@@ -544,8 +544,8 @@ const Bookmarks = () => {
 
   // Handle folder deletion
   const handleDeleteFolder = (folderId: string) => {
-    const folder = folders.find(f => f.id === folderId);
-    if (folder?.isSpecial) {
+    const folderToDelete = folders.find(f => f.id === folderId);
+    if (folderToDelete?.isSpecial) {
       toast.error("Special folders cannot be deleted");
       return;
     }
@@ -563,8 +563,7 @@ const Bookmarks = () => {
       }
     }
 
-    const folder = folders.find(f => f.id === folderId);
-    const parentFolderId = folder?.parentId || 'root';
+    const parentFolderId = folderToDelete?.parentId || 'root';
 
     setBookmarks(prev => 
       prev.map(bookmark => 
