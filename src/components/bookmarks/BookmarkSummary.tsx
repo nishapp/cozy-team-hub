@@ -5,25 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Bookmark, Copy, Volume2, VolumeX, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { convertTextToSpeech, revokeAudioUrl } from "@/services/textToSpeechService";
+import { BookmarkItem } from "@/types/bookmark";
 
 interface BookmarkSummaryProps {
-  summary: string;
-  url: string;
-  heroImage?: string | null;
-  onConvertToBit: () => void;
+  bookmarkItem: BookmarkItem;
+  onSaveDescription: (bookmarkId: string, description: string) => void;
 }
 
 const BookmarkSummary: React.FC<BookmarkSummaryProps> = ({
-  summary,
-  url,
-  heroImage,
-  onConvertToBit,
+  bookmarkItem,
+  onSaveDescription,
 }) => {
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Extract the summary from the bookmark item
+  const summary = bookmarkItem.summary || '';
+  
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(summary);
     toast.success("Summary copied to clipboard");
@@ -80,6 +80,11 @@ const BookmarkSummary: React.FC<BookmarkSummaryProps> = ({
     setIsPlaying(!isPlaying);
   };
 
+  const handleConvertToBit = () => {
+    // This is a placeholder for the convert to bit functionality
+    toast.info("Convert to Bit functionality will be implemented");
+  };
+
   // Cleanup audio URL when component unmounts
   React.useEffect(() => {
     return () => {
@@ -89,12 +94,16 @@ const BookmarkSummary: React.FC<BookmarkSummaryProps> = ({
     };
   }, [audioUrl]);
 
+  if (!summary) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col space-y-4 p-4">
-      {heroImage && (
+      {bookmarkItem.imageUrl && (
         <div className="w-full max-h-48 overflow-hidden rounded-lg">
           <img
-            src={heroImage}
+            src={bookmarkItem.imageUrl}
             alt="Page preview"
             className="w-full h-auto object-cover"
           />
@@ -151,7 +160,7 @@ const BookmarkSummary: React.FC<BookmarkSummaryProps> = ({
         <Button
           variant="outline"
           size="sm"
-          onClick={onConvertToBit}
+          onClick={handleConvertToBit}
           className="flex items-center gap-1"
         >
           <Bookmark className="h-4 w-4" />
@@ -169,12 +178,12 @@ const BookmarkSummary: React.FC<BookmarkSummaryProps> = ({
       
       <div>
         <a
-          href={url}
+          href={bookmarkItem.url}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-500 hover:underline text-sm"
         >
-          {url}
+          {bookmarkItem.url}
         </a>
       </div>
     </div>

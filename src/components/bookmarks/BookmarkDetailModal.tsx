@@ -102,7 +102,7 @@ const BookmarkDetailModal = ({
             </div>
 
             {/* Summary Component */}
-            {bookmark && onSaveDescription && (
+            {bookmark && bookmark.summary && onSaveDescription && (
               <BookmarkSummary 
                 bookmarkItem={bookmark} 
                 onSaveDescription={onSaveDescription} 
