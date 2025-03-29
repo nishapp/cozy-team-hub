@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AnimatePresence } from "framer-motion";
@@ -18,13 +18,12 @@ import Posts from "./pages/Posts";
 import PostDetail from "./pages/PostDetail";
 import Friends from "./pages/Friends";
 import FriendBits from "./pages/FriendBits";
-import Profile from "./pages/Profile";
+import Profile from "./pages/Profile"; // New import
 import AdminDashboard from "./pages/AdminDashboard";
 import Settings from "./pages/Settings";
 import Contact from "./pages/Contact";
 import CompanySettings from "./pages/CompanySettings";
 import NotFound from "./pages/NotFound";
-import Bookmarks from "./pages/Bookmarks"; // New import
 
 // Create a QueryClient instance
 const queryClient = new QueryClient({
@@ -51,8 +50,7 @@ const AnimatedRoutes = () => {
         <Route path="/post/:postId" element={<PostDetail />} />
         <Route path="/friends" element={<Friends />} />
         <Route path="/friends/:friendId/bits" element={<FriendBits />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/bookmarks" element={<Bookmarks />} /> {/* New route */}
+        <Route path="/profile" element={<Profile />} /> {/* New route */}
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/settings" element={<Settings />} />
@@ -71,9 +69,11 @@ const App = () => {
         <ThemeProvider>
           <Toaster />
           <Sonner position="bottom-right" />
-          <AuthProvider>
-            <AnimatedRoutes />
-          </AuthProvider>
+          <BrowserRouter>
+            <AuthProvider>
+              <AnimatedRoutes />
+            </AuthProvider>
+          </BrowserRouter>
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>

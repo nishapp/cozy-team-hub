@@ -110,7 +110,7 @@ const sampleBits = [
 const Bits = () => {
   const { user, loading: authLoading } = useAuth();
   const [fullName, setFullName] = useState<string>("");
-  const [bits, setBits] = useState<Bit[]>([]);
+  const [bits, setBits] = useState<Bit[]>(sampleBits);
   const [bookmarkedBits, setBookmarkedBits] = useState<Bit[]>([]);
   const [bitCount, setBitCount] = useState<number>(0);
   const [selectedBit, setSelectedBit] = useState<Bit | null>(null);
@@ -148,31 +148,13 @@ const Bits = () => {
 
     fetchUserProfile();
     
-    const loadBits = () => {
-      try {
-        const savedBits = localStorage.getItem('bits-data');
-        if (savedBits) {
-          const loadedBits = JSON.parse(savedBits) as Bit[];
-          setBits(loadedBits);
-          setBitCount(loadedBits.length);
-        } else {
-          setBits(sampleBits);
-          setBitCount(sampleBits.length);
-          localStorage.setItem('bits-data', JSON.stringify(sampleBits));
-        }
-      } catch (error) {
-        console.error("Error loading bits:", error);
-        setBits(sampleBits);
-        setBitCount(sampleBits.length);
-      }
-    };
+    setBitCount(sampleBits.length);
     
     const loadBookmarks = () => {
       try {
         const savedBookmarks = localStorage.getItem('bookmarkedBits');
         if (savedBookmarks) {
           const bookmarkIds = JSON.parse(savedBookmarks) as string[];
-          
           const markedBits = bits.map(bit => ({
             ...bit,
             isBookmarked: bookmarkIds.includes(bit.id)
@@ -187,33 +169,8 @@ const Bits = () => {
       }
     };
     
-    loadBits();
     loadBookmarks();
   }, [user]);
-
-  useEffect(() => {
-    const applyBookmarks = () => {
-      try {
-        const savedBookmarks = localStorage.getItem('bookmarkedBits');
-        if (savedBookmarks) {
-          const bookmarkIds = JSON.parse(savedBookmarks) as string[];
-          
-          const markedBits = bits.map(bit => ({
-            ...bit,
-            isBookmarked: bookmarkIds.includes(bit.id)
-          }));
-          setBits(markedBits);
-          
-          const bookmarked = markedBits.filter(bit => bit.isBookmarked);
-          setBookmarkedBits(bookmarked);
-        }
-      } catch (error) {
-        console.error("Error applying bookmarks:", error);
-      }
-    };
-    
-    applyBookmarks();
-  }, [bits.length]);
 
   useEffect(() => {
     applyFilters();
@@ -263,13 +220,11 @@ const Bits = () => {
   const handleBitAdded = (newBit: Bit) => {
     const bitWithId = {
       ...newBit,
-      id: newBit.id || `bit-${Date.now()}`,
+      id: newBit.id || `temp-${Date.now()}`,
     };
     
-    const updatedBits = [bitWithId, ...bits];
-    setBits(updatedBits);
-    setBitCount(updatedBits.length);
-    localStorage.setItem('bits-data', JSON.stringify(updatedBits));
+    setBits([bitWithId, ...bits]);
+    setBitCount(prevCount => prevCount + 1);
     toast.success("Bit added successfully!");
   };
 
@@ -278,7 +233,6 @@ const Bits = () => {
       bit.id === updatedBit.id ? { ...updatedBit, isBookmarked: bit.isBookmarked } : bit
     );
     setBits(updatedBits);
-    localStorage.setItem('bits-data', JSON.stringify(updatedBits));
     
     if (bookmarkedBits.some(bit => bit.id === updatedBit.id)) {
       setBookmarkedBits(bookmarkedBits.map(bit => 

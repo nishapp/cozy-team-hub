@@ -1,6 +1,0 @@
-
-project_id = "znlgxnsizubcplghpokk"
-
-[env.OPENAI_API_KEY]
-description = "OpenAI API key for generating summaries"
-optional = true
