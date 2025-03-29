@@ -43,6 +43,7 @@ const SharedContent = () => {
       <OpenGraphHead 
         title={title}
         description={description}
+        imageUrl="/og-image.png" // Using absolute path for image
         type="article"
       />
       

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,8 +26,6 @@ const PostDetail = () => {
   const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
 
   useEffect(() => {
-    // In a real app, we would fetch the post from the API
-    // For now, we'll use a sample post
     const foundPost = samplePosts.find((p) => p.id === postId);
     
     if (foundPost) {
@@ -71,7 +68,7 @@ const PostDetail = () => {
       <OpenGraphHead 
         title={post.title}
         description={post.content?.substring(0, 160) || "Check out this post"}
-        imageUrl={post.image_url || "/og-image.png"}
+        imageUrl={post.image_url ? post.image_url : "/og-image.png"}
         type="article"
       />
       
@@ -180,8 +177,6 @@ const PostDetail = () => {
           </CardContent>
         </Card>
 
-        {/* Comments section would go here */}
-        
         {isConvertDialogOpen && (
           <ConvertToBitDialog
             post={post}

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Helmet } from "react-helmet";
 
@@ -21,6 +20,24 @@ const OpenGraphHead = ({
 }: OpenGraphHeadProps) => {
   // Use the current URL if none is provided
   const currentUrl = typeof window !== "undefined" ? url || window.location.href : url;
+  
+  // Make image URL absolute if it's not already
+  const absoluteImageUrl = (() => {
+    if (!imageUrl) return undefined;
+    
+    // Check if the URL is already absolute
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // Check if it's a relative URL starting with / and convert to absolute
+    if (imageUrl.startsWith('/')) {
+      return `${window.location.origin}${imageUrl}`;
+    }
+    
+    // Otherwise, assume it's relative to the current path
+    return `${window.location.origin}/${imageUrl}`;
+  })();
 
   return (
     <Helmet>
@@ -34,14 +51,14 @@ const OpenGraphHead = ({
       <meta property="og:url" content={currentUrl} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={imageUrl} />
+      <meta property="og:image" content={absoluteImageUrl} />
 
       {/* Twitter */}
       <meta property="twitter:card" content={twitterCard} />
       <meta property="twitter:url" content={currentUrl} />
       <meta property="twitter:title" content={title} />
       <meta property="twitter:description" content={description} />
-      <meta property="twitter:image" content={imageUrl} />
+      <meta property="twitter:image" content={absoluteImageUrl} />
     </Helmet>
   );
 };
