@@ -4,12 +4,14 @@ import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Plus, Folder, Link, Trash2, Edit, Grid, List, X, ChevronRight, ChevronDown, Home } from "lucide-react";
+import { Plus, Folder, Link, Trash2, Edit, Grid, List, ChevronRight, ChevronDown, Lock, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import PageTransition from "@/components/ui/PageTransition";
 
@@ -18,9 +20,7 @@ interface Bookmark {
   id: string;
   title: string;
   url: string;
-  description?: string;
-  icon?: string;
-  tags?: string[];
+  isPublic: boolean;
   createdAt: string;
   folderId: string;
 }
@@ -118,8 +118,7 @@ const createMockData = () => {
       id: uuidv4(),
       title: 'React Documentation',
       url: 'https://reactjs.org',
-      description: 'Official React documentation',
-      tags: ['programming', 'javascript', 'frontend'],
+      isPublic: false,
       folderId: 'programming',
       createdAt: new Date().toISOString(),
     },
@@ -127,8 +126,7 @@ const createMockData = () => {
       id: uuidv4(),
       title: 'TypeScript Documentation',
       url: 'https://www.typescriptlang.org',
-      description: 'Learn TypeScript from scratch',
-      tags: ['programming', 'typescript', 'javascript'],
+      isPublic: false,
       folderId: 'programming',
       createdAt: new Date().toISOString(),
     },
@@ -136,8 +134,7 @@ const createMockData = () => {
       id: uuidv4(),
       title: 'BBC News',
       url: 'https://www.bbc.com/news',
-      description: 'Latest news from around the world',
-      tags: ['news', 'current affairs'],
+      isPublic: true,
       folderId: 'root',
       createdAt: new Date().toISOString(),
     },
@@ -145,8 +142,7 @@ const createMockData = () => {
       id: uuidv4(),
       title: 'Italian Pasta Recipes',
       url: 'https://www.bonappetit.com/recipes/pasta',
-      description: 'Delicious pasta recipes from Italy',
-      tags: ['cooking', 'italian', 'pasta'],
+      isPublic: false,
       folderId: 'cooking',
       createdAt: new Date().toISOString(),
     },
@@ -154,8 +150,7 @@ const createMockData = () => {
       id: uuidv4(),
       title: 'Gordon Ramsay YouTube Channel',
       url: 'https://www.youtube.com/user/gordonramsay',
-      description: 'Cooking tutorials by Gordon Ramsay',
-      tags: ['cooking', 'video', 'chef'],
+      isPublic: false,
       folderId: 'cooking',
       createdAt: new Date().toISOString(),
     },
@@ -163,8 +158,7 @@ const createMockData = () => {
       id: uuidv4(),
       title: 'The New York Times',
       url: 'https://www.nytimes.com',
-      description: 'Breaking news, reviews and opinion',
-      tags: ['news', 'journalism'],
+      isPublic: true,
       folderId: 'root',
       createdAt: new Date().toISOString(),
     },
@@ -172,8 +166,7 @@ const createMockData = () => {
       id: uuidv4(),
       title: 'TechCrunch',
       url: 'https://techcrunch.com',
-      description: 'Latest technology news and startup information',
-      tags: ['tech', 'startups', 'news'],
+      isPublic: false,
       folderId: 'tech',
       createdAt: new Date().toISOString(),
     },
@@ -197,8 +190,7 @@ const Bookmarks = () => {
   const [formData, setFormData] = useState({
     title: '',
     url: '',
-    description: '',
-    tags: '',
+    isPublic: false,
     folderId: '',
   });
   const [searchTerm, setSearchTerm] = useState('');
@@ -215,8 +207,8 @@ const Bookmarks = () => {
 
   // Load data from localStorage or initialize with mock data
   useEffect(() => {
-    const storedFolders = getFromStorage<Folder[]>(STORAGE_KEYS.FOLDERS, []);
-    const storedBookmarks = getFromStorage<Bookmark[]>(STORAGE_KEYS.BOOKMARKS, []);
+    let storedFolders = getFromStorage<Folder[]>(STORAGE_KEYS.FOLDERS, []);
+    let storedBookmarks = getFromStorage<Bookmark[]>(STORAGE_KEYS.BOOKMARKS, []);
 
     if (storedFolders.length === 0 || storedBookmarks.length === 0) {
       // Initialize with mock data if no data exists
@@ -226,6 +218,15 @@ const Bookmarks = () => {
       saveToStorage(STORAGE_KEYS.FOLDERS, mockFolders);
       saveToStorage(STORAGE_KEYS.BOOKMARKS, mockBookmarks);
     } else {
+      // If we have old data format without isPublic field, convert it
+      if (storedBookmarks.length > 0 && !('isPublic' in storedBookmarks[0])) {
+        storedBookmarks = storedBookmarks.map(bookmark => ({
+          ...bookmark,
+          isPublic: false, // Default to private
+        }));
+        saveToStorage(STORAGE_KEYS.BOOKMARKS, storedBookmarks);
+      }
+      
       setFolders(storedFolders);
       setBookmarks(storedBookmarks);
     }
@@ -259,8 +260,7 @@ const Bookmarks = () => {
   const filteredBookmarks = bookmarks.filter(bookmark => {
     const matchesSearch = searchTerm === '' || 
       bookmark.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      bookmark.url.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (bookmark.description && bookmark.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      bookmark.url.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesFolder = bookmark.folderId === selectedFolderId || 
       // Include child folder bookmarks when parent folder is selected
@@ -279,6 +279,17 @@ const Bookmarks = () => {
     if (folder.parentId === null) return newPath;
     return getFolderPath(folder.parentId, newPath);
   }, [folders]);
+
+  // Toggle bookmark visibility
+  const toggleBookmarkVisibility = (bookmarkId: string) => {
+    setBookmarks(prev => 
+      prev.map(bookmark => 
+        bookmark.id === bookmarkId 
+          ? { ...bookmark, isPublic: !bookmark.isPublic } 
+          : bookmark
+      )
+    );
+  };
 
   // Handle expanding/collapsing folders
   const toggleFolderExpanded = (folderId: string) => {
@@ -319,7 +330,7 @@ const Bookmarks = () => {
 
   // Handle adding a new bookmark
   const handleAddBookmark = () => {
-    const { title, url, description, tags } = formData;
+    const { title, url, isPublic } = formData;
     
     if (!title.trim() || !url.trim()) {
       toast.error('Title and URL are required');
@@ -332,8 +343,7 @@ const Bookmarks = () => {
       id: uuidv4(),
       title,
       url,
-      description,
-      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+      isPublic,
       folderId,
       createdAt: new Date().toISOString(),
     };
@@ -342,8 +352,7 @@ const Bookmarks = () => {
     setFormData({
       title: '',
       url: '',
-      description: '',
-      tags: '',
+      isPublic: false,
       folderId: '',
     });
     setIsAddBookmarkOpen(false);
@@ -354,7 +363,7 @@ const Bookmarks = () => {
   const handleEditBookmark = () => {
     if (!currentBookmark) return;
     
-    const { title, url, description, tags, folderId } = formData;
+    const { title, url, isPublic, folderId } = formData;
     
     if (!title.trim() || !url.trim()) {
       toast.error('Title and URL are required');
@@ -365,8 +374,7 @@ const Bookmarks = () => {
       ...currentBookmark,
       title,
       url,
-      description,
-      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+      isPublic,
       folderId: folderId || currentBookmark.folderId,
     };
 
@@ -393,8 +401,7 @@ const Bookmarks = () => {
     setFormData({
       title: bookmark.title,
       url: bookmark.url,
-      description: bookmark.description || '',
-      tags: bookmark.tags ? bookmark.tags.join(', ') : '',
+      isPublic: bookmark.isPublic,
       folderId: bookmark.folderId,
     });
     setIsEditBookmarkOpen(true);
@@ -615,6 +622,15 @@ const Bookmarks = () => {
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6"
+                              onClick={() => toggleBookmarkVisibility(bookmark.id)}
+                              title={bookmark.isPublic ? "Public" : "Private"}
+                            >
+                              {bookmark.isPublic ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
                               onClick={() => openEditBookmarkModal(bookmark)}
                             >
                               <Edit className="h-3 w-3" />
@@ -638,23 +654,6 @@ const Bookmarks = () => {
                         >
                           {bookmark.url}
                         </a>
-                        
-                        {bookmark.description && (
-                          <p className="text-sm mt-2 line-clamp-2">{bookmark.description}</p>
-                        )}
-                        
-                        {bookmark.tags && bookmark.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-3">
-                            {bookmark.tags.map(tag => (
-                              <span
-                                key={tag}
-                                className="px-2 py-0.5 bg-muted text-xs rounded-full"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     ))
                   ) : (
@@ -686,6 +685,15 @@ const Bookmarks = () => {
                           </div>
                           
                           <div className="flex items-center space-x-2 ml-4">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => toggleBookmarkVisibility(bookmark.id)}
+                              title={bookmark.isPublic ? "Public" : "Private"}
+                            >
+                              {bookmark.isPublic ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"
@@ -743,23 +751,25 @@ const Bookmarks = () => {
                 onChange={(e) => setFormData({...formData, url: e.target.value})}
               />
             </div>
-            <div className="grid gap-2">
-              <label htmlFor="description" className="text-sm font-medium">Description (optional)</label>
-              <Input
-                id="description"
-                placeholder="A brief description"
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="isPublic"
+                checked={formData.isPublic}
+                onCheckedChange={(checked) => setFormData({...formData, isPublic: checked})}
               />
-            </div>
-            <div className="grid gap-2">
-              <label htmlFor="tags" className="text-sm font-medium">Tags (optional, comma separated)</label>
-              <Input
-                id="tags"
-                placeholder="tag1, tag2, tag3"
-                value={formData.tags}
-                onChange={(e) => setFormData({...formData, tags: e.target.value})}
-              />
+              <Label htmlFor="isPublic" className="text-sm font-medium cursor-pointer">
+                {formData.isPublic ? (
+                  <span className="flex items-center">
+                    <Globe className="h-4 w-4 mr-2" />
+                    Public bookmark
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <Lock className="h-4 w-4 mr-2" />
+                    Private bookmark
+                  </span>
+                )}
+              </Label>
             </div>
             <div className="grid gap-2">
               <label htmlFor="folder" className="text-sm font-medium">Folder</label>
@@ -809,23 +819,25 @@ const Bookmarks = () => {
                 onChange={(e) => setFormData({...formData, url: e.target.value})}
               />
             </div>
-            <div className="grid gap-2">
-              <label htmlFor="edit-description" className="text-sm font-medium">Description (optional)</label>
-              <Input
-                id="edit-description"
-                placeholder="A brief description"
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="edit-isPublic"
+                checked={formData.isPublic}
+                onCheckedChange={(checked) => setFormData({...formData, isPublic: checked})}
               />
-            </div>
-            <div className="grid gap-2">
-              <label htmlFor="edit-tags" className="text-sm font-medium">Tags (optional, comma separated)</label>
-              <Input
-                id="edit-tags"
-                placeholder="tag1, tag2, tag3"
-                value={formData.tags}
-                onChange={(e) => setFormData({...formData, tags: e.target.value})}
-              />
+              <Label htmlFor="edit-isPublic" className="text-sm font-medium cursor-pointer">
+                {formData.isPublic ? (
+                  <span className="flex items-center">
+                    <Globe className="h-4 w-4 mr-2" />
+                    Public bookmark
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <Lock className="h-4 w-4 mr-2" />
+                    Private bookmark
+                  </span>
+                )}
+              </Label>
             </div>
             <div className="grid gap-2">
               <label htmlFor="edit-folder" className="text-sm font-medium">Folder</label>
