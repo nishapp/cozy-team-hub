@@ -32,34 +32,30 @@ const Dashboard = () => {
 
   const featureTitles = ["Development", "Design", "Marketing", "Data Science", "Business", "AI"];
 
-  // Updated sample daily learning data to match the DailyLearningSection component's expected props
+  // Sample daily learning data
   const sampleLearnings = [
     {
       id: "1",
-      date: new Date().toISOString(),
       title: "JavaScript Promises",
-      content: "Learn how to use promises to handle asynchronous operations effectively.",
-      tags: ["javascript", "async", "webdev"],
-      relatedBitId: "1",
+      description: "Learn how to use promises to handle asynchronous operations effectively.",
+      link: "/bit/1",
+      completed: true,
       imageUrl: "https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
     },
     {
       id: "2",
-      date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
       title: "CSS Grid Layouts",
-      content: "Master CSS Grid for responsive web design.",
-      tags: ["css", "grid", "responsive"],
-      relatedBitId: "2",
+      description: "Master CSS Grid for responsive web design.",
+      link: "/bit/2",
+      completed: false,
       imageUrl: "https://images.unsplash.com/photo-1583339793403-3d9b001b6008?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
     },
     {
       id: "3",
-      date: new Date(Date.now() - 172800000).toISOString(), // Two days ago
       title: "React Hooks",
-      content: "Understand how to use React hooks for state management and side effects.",
-      tags: ["react", "hooks", "frontend"],
-      relatedBitId: "3",
-      externalUrl: "https://reactjs.org/docs/hooks-intro.html",
+      description: "Understand how to use React hooks for state management and side effects.",
+      link: "/bit/3",
+      completed: false,
       imageUrl: "https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
     }
   ];
