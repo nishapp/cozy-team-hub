@@ -14,6 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
+import { isDemoMode } from "@/lib/supabase";
 
 // Types
 type BookmarkViewMode = "grid" | "list";
@@ -43,6 +44,14 @@ interface BookmarkFolder {
   order: number;
   children?: BookmarkFolder[];
 }
+
+// Local Storage Keys
+const STORAGE_KEYS = {
+  FOLDERS: 'bookmark_folders',
+  BOOKMARKS: 'bookmarks',
+  ACTIVE_FOLDER: 'active_bookmark_folder',
+  VIEW_MODE: 'bookmark_view_mode'
+};
 
 // Client-side mock data function
 const createInitialData = (userId: string) => {
@@ -207,6 +216,25 @@ const createInitialData = (userId: string) => {
   ];
 
   return { folders, bookmarks };
+};
+
+// Helper functions for localStorage
+const saveToLocalStorage = (key: string, data: any) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error(`Error saving to localStorage (${key}):`, error);
+  }
+};
+
+const getFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
+  try {
+    const storedData = localStorage.getItem(key);
+    return storedData ? JSON.parse(storedData) : defaultValue;
+  } catch (error) {
+    console.error(`Error retrieving from localStorage (${key}):`, error);
+    return defaultValue;
+  }
 };
 
 // Component for Sortable Bookmark Item
@@ -391,16 +419,41 @@ const BookmarksPage = () => {
   const [newFolderName, setNewFolderName] = useState<string>("");
   const [selectedFolderId, setSelectedFolderId] = useState<string>("");
 
-  // Load initial data
+  // Initialize data from localStorage or create new data if not exists
   useEffect(() => {
     if (user) {
-      // Use client-side data
-      const { folders, bookmarks } = createInitialData(user.id);
-      setFolders(folders);
-      setBookmarks(bookmarks);
+      const storedFolders = getFromLocalStorage<BookmarkFolder[]>(STORAGE_KEYS.FOLDERS, []);
+      const storedBookmarks = getFromLocalStorage<Bookmark[]>(STORAGE_KEYS.BOOKMARKS, []);
+      const storedActiveFolderId = getFromLocalStorage<string>(STORAGE_KEYS.ACTIVE_FOLDER, "root");
+      const storedViewMode = getFromLocalStorage<BookmarkViewMode>(STORAGE_KEYS.VIEW_MODE, "grid");
+
+      // If there's no data in localStorage, create initial demo data
+      if (storedFolders.length === 0 || (isDemoMode && storedFolders.length === 0)) {
+        const { folders, bookmarks } = createInitialData(user.id);
+        setFolders(folders);
+        setBookmarks(bookmarks);
+        saveToLocalStorage(STORAGE_KEYS.FOLDERS, folders);
+        saveToLocalStorage(STORAGE_KEYS.BOOKMARKS, bookmarks);
+      } else {
+        setFolders(storedFolders);
+        setBookmarks(storedBookmarks);
+      }
+
+      setActiveFolderId(storedActiveFolderId);
+      setViewMode(storedViewMode);
       setIsLoading(false);
     }
   }, [user]);
+
+  // Save changes to localStorage whenever state changes
+  useEffect(() => {
+    if (!isLoading) {
+      saveToLocalStorage(STORAGE_KEYS.FOLDERS, folders);
+      saveToLocalStorage(STORAGE_KEYS.BOOKMARKS, bookmarks);
+      saveToLocalStorage(STORAGE_KEYS.ACTIVE_FOLDER, activeFolderId);
+      saveToLocalStorage(STORAGE_KEYS.VIEW_MODE, viewMode);
+    }
+  }, [folders, bookmarks, activeFolderId, viewMode, isLoading]);
 
   // Get current folder bookmarks
   const getCurrentFolderBookmarks = useCallback(() => {
@@ -529,9 +582,15 @@ const BookmarksPage = () => {
       order: newOrder
     };
     
-    setFolders(prev => [...prev, newFolder]);
+    const updatedFolders = [...folders, newFolder];
+    setFolders(updatedFolders);
+    saveToLocalStorage(STORAGE_KEYS.FOLDERS, updatedFolders);
+    
     setShowAddFolderModal(false);
     toast.success("Folder created");
+    
+    console.log("New folder added:", newFolder);
+    console.log("Updated folders list:", updatedFolders);
   }, [newFolderName, currentFolder, folders, user?.id]);
 
   // Move bookmark to another folder
