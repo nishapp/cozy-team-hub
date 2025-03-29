@@ -31,6 +31,7 @@ const Navbar = () => {
     created_at: "",
     updated_at: ""
   });
+  const [userPoints, setUserPoints] = useState(0);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -65,6 +66,21 @@ const Navbar = () => {
           .single();
         if (error) throw error;
         setProfileData(data);
+        
+        // Fetch user points
+        const { data: pointsData, error: pointsError } = await supabase
+          .from('user_stats')
+          .select('points')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (pointsError && pointsError.code !== 'PGRST116') {
+          console.error('Error fetching user points:', pointsError);
+        }
+        
+        if (pointsData) {
+          setUserPoints(pointsData.points);
+        }
       } catch (error) {
         console.error('Error fetching profile data:', error);
       }
@@ -81,7 +97,7 @@ const Navbar = () => {
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
         <div className="flex gap-6 md:gap-10">
           <CompanyLogo companyInfo={companyInfo} />
-          <MainNavigation isAdmin={isAdmin} />
+          <MainNavigation isAdmin={isAdmin} userPoints={userPoints} />
         </div>
         
         <div className="flex flex-1 items-center justify-end space-x-4">
