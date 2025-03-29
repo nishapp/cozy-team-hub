@@ -210,18 +210,16 @@ const Bookmarks = () => {
     let storedBookmarks = getFromStorage<Bookmark[]>(STORAGE_KEYS.BOOKMARKS, []);
 
     if (storedFolders.length === 0 || storedBookmarks.length === 0) {
-      // Initialize with mock data if no data exists
       const { folders: mockFolders, bookmarks: mockBookmarks } = createMockData();
       setFolders(mockFolders);
       setBookmarks(mockBookmarks);
       saveToStorage(STORAGE_KEYS.FOLDERS, mockFolders);
       saveToStorage(STORAGE_KEYS.BOOKMARKS, mockBookmarks);
     } else {
-      // If we have old data format without isPublic field, convert it
       if (storedBookmarks.length > 0 && !('isPublic' in storedBookmarks[0])) {
         storedBookmarks = storedBookmarks.map(bookmark => ({
           ...bookmark,
-          isPublic: false, // Default to private
+          isPublic: false,
         }));
         saveToStorage(STORAGE_KEYS.BOOKMARKS, storedBookmarks);
       }
@@ -249,7 +247,6 @@ const Bookmarks = () => {
     const childFolders = folders.filter(f => f.parentId === folderId);
     const childIds = childFolders.map(f => f.id);
     
-    // Recursively get children of children
     const grandchildIds = childFolders.flatMap(f => getChildFolderIds(f.id));
     
     return [...childIds, ...grandchildIds];
@@ -272,8 +269,7 @@ const Bookmarks = () => {
       bookmark.url.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesFolder = bookmark.folderId === selectedFolderId || 
-      // Include child folder bookmarks when parent folder is selected
-      (getChildFolderIds(selectedFolderId).includes(bookmark.folderId));
+      getChildFolderIds(selectedFolderId).includes(bookmark.folderId);
     
     return matchesSearch && matchesFolder;
   });
@@ -323,17 +319,38 @@ const Bookmarks = () => {
       return;
     }
 
+    const newFolderId = uuidv4();
+
     const newFolder: Folder = {
-      id: uuidv4(),
+      id: newFolderId,
       name: newFolderName,
       parentId: parentFolderId,
       isExpanded: false,
       createdAt: new Date().toISOString(),
     };
 
+    if (parentFolderId !== 'root' && !folders.some(folder => folder.id === parentFolderId)) {
+      toast.error(`Parent folder doesn't exist`);
+      return;
+    }
+
     setFolders(prev => [...prev, newFolder]);
+    
     setNewFolderName('');
     setIsAddFolderOpen(false);
+    
+    if (parentFolderId) {
+      setFolders(prev => 
+        prev.map(folder => 
+          folder.id === parentFolderId 
+            ? { ...folder, isExpanded: true } 
+            : folder
+        )
+      );
+    }
+    
+    setSelectedFolderId(newFolderId);
+    
     toast.success(`Folder "${newFolderName}" created`);
   };
 
@@ -422,26 +439,21 @@ const Bookmarks = () => {
     
     if (!over) return;
     
-    // Handle dragging bookmarks
     if (active.id !== over.id) {
-      // Move bookmark to another bookmark's position
       if (draggedItemRef.current?.type === 'bookmark' && over.id.toString().includes('bookmark:')) {
         const targetId = over.id.toString().replace('bookmark:', '');
         const bookmarkId = active.id.toString().replace('bookmark:', '');
         
-        // Rearrange bookmarks in the same folder
         const activeIndex = bookmarks.findIndex(b => b.id === bookmarkId);
         const overIndex = bookmarks.findIndex(b => b.id === targetId);
         
         setBookmarks(prev => arrayMove(prev, activeIndex, overIndex));
       }
       
-      // Move bookmark to a folder
       if (draggedItemRef.current?.type === 'bookmark' && over.id.toString().includes('folder:')) {
         const folderId = over.id.toString().replace('folder:', '');
         const bookmarkId = active.id.toString().replace('bookmark:', '');
         
-        // Update bookmark's folder
         setBookmarks(prev => 
           prev.map(bookmark => 
             bookmark.id === bookmarkId 
@@ -474,7 +486,7 @@ const Bookmarks = () => {
     }
   };
 
-  // Render folder tree recursively
+  // Recursively render folders
   const renderFolders = (parentId: string | null, depth = 0) => {
     const childFolders = folders.filter(folder => folder.parentId === parentId);
     
@@ -523,6 +535,63 @@ const Bookmarks = () => {
   
   // Get current folder name
   const currentFolder = folders.find(f => f.id === selectedFolderId);
+
+  // Handle subfolder creation
+  const handleAddSubfolder = (parentId: string) => {
+    setParentFolderId(parentId);
+    setIsAddFolderOpen(true);
+  };
+
+  // Handle folder deletion
+  const handleDeleteFolder = (folderId: string) => {
+    const folder = folders.find(f => f.id === folderId);
+    if (folder?.isSpecial) {
+      toast.error("Special folders cannot be deleted");
+      return;
+    }
+
+    const childFolderIds = getChildFolderIds(folderId);
+    const affectedBookmarks = bookmarks.filter(b => 
+      b.folderId === folderId || childFolderIds.includes(b.folderId)
+    );
+
+    if (childFolderIds.length > 0 || affectedBookmarks.length > 0) {
+      if (!window.confirm(
+        `This will delete the folder, ${childFolderIds.length} subfolders, and move ${affectedBookmarks.length} bookmarks to parent folder. Continue?`
+      )) {
+        return;
+      }
+    }
+
+    const folder = folders.find(f => f.id === folderId);
+    const parentFolderId = folder?.parentId || 'root';
+
+    setBookmarks(prev => 
+      prev.map(bookmark => 
+        bookmark.folderId === folderId 
+          ? { ...bookmark, folderId: parentFolderId } 
+          : bookmark
+      )
+    );
+
+    const updatedBookmarks = bookmarks.map(bookmark => {
+      if (childFolderIds.includes(bookmark.folderId)) {
+        return { ...bookmark, folderId: parentFolderId };
+      }
+      return bookmark;
+    });
+    setBookmarks(updatedBookmarks);
+
+    setFolders(prev => prev.filter(folder => 
+      folder.id !== folderId && !childFolderIds.includes(folder.id)
+    ));
+
+    if (selectedFolderId === folderId) {
+      setSelectedFolderId(parentFolderId);
+    }
+
+    toast.success("Folder deleted");
+  };
 
   return (
     <PageTransition>
@@ -617,6 +686,31 @@ const Bookmarks = () => {
               onDragEnd={handleDragEnd}
               onDragStart={handleDragStart}
             >
+              <div className="flex justify-end mb-4 space-x-2">
+                {!currentFolder?.isSpecial && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleAddSubfolder(selectedFolderId)}
+                  >
+                    <Folder className="mr-2 h-4 w-4" />
+                    Add Subfolder
+                  </Button>
+                )}
+                
+                {!currentFolder?.isSpecial && selectedFolderId !== 'root' && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-destructive hover:bg-destructive/10"
+                    onClick={() => handleDeleteFolder(selectedFolderId)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Folder
+                  </Button>
+                )}
+              </div>
+            
               {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredBookmarks.length > 0 ? (
