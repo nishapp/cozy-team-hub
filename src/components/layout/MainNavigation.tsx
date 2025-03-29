@@ -1,7 +1,7 @@
 
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { FileText, Users, Bookmark } from "lucide-react";
+import { FileText, Users, UserPlus, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PointsBadge from "@/components/gamification/PointsBadge";
 
@@ -23,7 +23,7 @@ export function MainNavigation({ isAdmin, userPoints = 0 }: MainNavigationProps)
     {
       name: "Buddies",
       href: "/friends",
-      icon: Users,
+      icon: UserPlus,
       requiresAuth: true,
     },
     {

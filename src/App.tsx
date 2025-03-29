@@ -42,9 +42,9 @@ const Layout = ({ children }) => {
   return (
     <>
       <Navbar />
-      <div className="flex-1">
+      <main className="flex-1">
         {children}
-      </div>
+      </main>
     </>
   );
 };
@@ -82,15 +82,13 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider>
-          <div className="flex flex-col min-h-screen overflow-hidden">
-            <Toaster />
-            <Sonner position="bottom-right" />
-            <BrowserRouter>
-              <AuthProvider>
-                <AnimatedRoutes />
-              </AuthProvider>
-            </BrowserRouter>
-          </div>
+          <Toaster />
+          <Sonner position="bottom-right" />
+          <BrowserRouter>
+            <AuthProvider>
+              <AnimatedRoutes />
+            </AuthProvider>
+          </BrowserRouter>
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
