@@ -14,10 +14,8 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import PageTransition from "@/components/ui/PageTransition";
 import CreateBitFromBookmark from "@/components/bookmarks/CreateBitFromBookmark";
-import { Card, CardContent } from "@/components/ui/card";
-import { Glow } from "@/components/ui/glow";
-import { cn } from "@/lib/utils";
 
+// Types
 interface Bookmark {
   id: string;
   title: string;
@@ -38,11 +36,13 @@ interface Folder {
   createdAt: string;
 }
 
+// Storage keys
 const STORAGE_KEYS = {
   BOOKMARKS: 'wdylt_bookmarks',
   FOLDERS: 'wdylt_folders',
 };
 
+// LocalStorage helper functions
 const getFromStorage = <T,>(key: string, defaultValue: T): T => {
   const storedData = localStorage.getItem(key);
   return storedData ? JSON.parse(storedData) : defaultValue;
@@ -52,6 +52,7 @@ const saveToStorage = <T,>(key: string, data: T): void => {
   localStorage.setItem(key, JSON.stringify(data));
 };
 
+// Mock data with special folders
 const createMockData = () => {
   const folders: Folder[] = [
     {
@@ -195,6 +196,7 @@ const Bookmarks = () => {
   const [parentFolderId, setParentFolderId] = useState<string | null>('root');
   const draggedItemRef = useRef<{ id: string; type: 'bookmark' | 'folder' } | null>(null);
 
+  // Set up DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -202,21 +204,24 @@ const Bookmarks = () => {
     })
   );
 
+  // Load data from localStorage or initialize with mock data
   useEffect(() => {
     let storedFolders = getFromStorage<Folder[]>(STORAGE_KEYS.FOLDERS, []);
     let storedBookmarks = getFromStorage<Bookmark[]>(STORAGE_KEYS.BOOKMARKS, []);
 
     if (storedFolders.length === 0 || storedBookmarks.length === 0) {
+      // Initialize with mock data if no data exists
       const { folders: mockFolders, bookmarks: mockBookmarks } = createMockData();
       setFolders(mockFolders);
       setBookmarks(mockBookmarks);
       saveToStorage(STORAGE_KEYS.FOLDERS, mockFolders);
       saveToStorage(STORAGE_KEYS.BOOKMARKS, mockBookmarks);
     } else {
+      // If we have old data format without isPublic field, convert it
       if (storedBookmarks.length > 0 && !('isPublic' in storedBookmarks[0])) {
         storedBookmarks = storedBookmarks.map(bookmark => ({
           ...bookmark,
-          isPublic: false,
+          isPublic: false, // Default to private
         }));
         saveToStorage(STORAGE_KEYS.BOOKMARKS, storedBookmarks);
       }
@@ -226,6 +231,7 @@ const Bookmarks = () => {
     }
   }, []);
 
+  // Save changes to localStorage whenever state updates
   useEffect(() => {
     if (folders.length > 0) {
       saveToStorage(STORAGE_KEYS.FOLDERS, folders);
@@ -238,15 +244,18 @@ const Bookmarks = () => {
     }
   }, [bookmarks]);
 
+  // Get all child folder IDs for a given folder
   const getChildFolderIds = useCallback((folderId: string): string[] => {
     const childFolders = folders.filter(f => f.parentId === folderId);
     const childIds = childFolders.map(f => f.id);
     
+    // Recursively get children of children
     const grandchildIds = childFolders.flatMap(f => getChildFolderIds(f.id));
     
     return [...childIds, ...grandchildIds];
   }, [folders]);
 
+  // Count bookmarks in a folder including all nested folders
   const countBookmarksInFolder = useCallback((folderId: string): number => {
     const childFolderIds = getChildFolderIds(folderId);
     const allFolderIds = [folderId, ...childFolderIds];
@@ -256,17 +265,20 @@ const Bookmarks = () => {
     ).length;
   }, [bookmarks, getChildFolderIds]);
 
+  // Filter bookmarks by search term and folder
   const filteredBookmarks = bookmarks.filter(bookmark => {
     const matchesSearch = searchTerm === '' || 
       bookmark.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
       bookmark.url.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesFolder = bookmark.folderId === selectedFolderId || 
-      getChildFolderIds(selectedFolderId).includes(bookmark.folderId);
+      // Include child folder bookmarks when parent folder is selected
+      (getChildFolderIds(selectedFolderId).includes(bookmark.folderId));
     
     return matchesSearch && matchesFolder;
   });
 
+  // Get folder path for display (breadcrumbs)
   const getFolderPath = useCallback((folderId: string, path: Folder[] = []): Folder[] => {
     const folder = folders.find(f => f.id === folderId);
     if (!folder) return path;
@@ -277,6 +289,7 @@ const Bookmarks = () => {
     return getFolderPath(folder.parentId, newPath);
   }, [folders]);
 
+  // Toggle bookmark visibility
   const toggleBookmarkVisibility = (bookmarkId: string) => {
     setBookmarks(prev => 
       prev.map(bookmark => 
@@ -287,6 +300,7 @@ const Bookmarks = () => {
     );
   };
 
+  // Handle expanding/collapsing folders
   const toggleFolderExpanded = (folderId: string) => {
     setFolders(prev => 
       prev.map(folder => 
@@ -297,10 +311,12 @@ const Bookmarks = () => {
     );
   };
 
+  // Handle selecting a folder
   const handleSelectFolder = (folderId: string) => {
     setSelectedFolderId(folderId);
   };
 
+  // Handle adding a new folder
   const handleAddFolder = () => {
     if (!newFolderName.trim()) {
       toast.error('Folder name cannot be empty');
@@ -321,6 +337,7 @@ const Bookmarks = () => {
     toast.success(`Folder "${newFolderName}" created`);
   };
 
+  // Handle adding a new bookmark
   const handleAddBookmark = () => {
     const { title, url, isPublic } = formData;
     
@@ -351,6 +368,7 @@ const Bookmarks = () => {
     toast.success(`Bookmark "${title}" added`);
   };
 
+  // Handle bookmark edit
   const handleEditBookmark = () => {
     if (!currentBookmark) return;
     
@@ -380,11 +398,13 @@ const Bookmarks = () => {
     toast.success(`Bookmark "${title}" updated`);
   };
 
+  // Handle bookmark delete
   const handleDeleteBookmark = (id: string) => {
     setBookmarks(prev => prev.filter(bookmark => bookmark.id !== id));
     toast.success('Bookmark deleted');
   };
 
+  // Open edit bookmark modal
   const openEditBookmarkModal = (bookmark: Bookmark) => {
     setCurrentBookmark(bookmark);
     setFormData({
@@ -396,26 +416,32 @@ const Bookmarks = () => {
     setIsEditBookmarkOpen(true);
   };
 
+  // Handle drag end for bookmarks and folders
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
     if (!over) return;
     
+    // Handle dragging bookmarks
     if (active.id !== over.id) {
+      // Move bookmark to another bookmark's position
       if (draggedItemRef.current?.type === 'bookmark' && over.id.toString().includes('bookmark:')) {
         const targetId = over.id.toString().replace('bookmark:', '');
         const bookmarkId = active.id.toString().replace('bookmark:', '');
         
+        // Rearrange bookmarks in the same folder
         const activeIndex = bookmarks.findIndex(b => b.id === bookmarkId);
         const overIndex = bookmarks.findIndex(b => b.id === targetId);
         
         setBookmarks(prev => arrayMove(prev, activeIndex, overIndex));
       }
       
+      // Move bookmark to a folder
       if (draggedItemRef.current?.type === 'bookmark' && over.id.toString().includes('folder:')) {
         const folderId = over.id.toString().replace('folder:', '');
         const bookmarkId = active.id.toString().replace('bookmark:', '');
         
+        // Update bookmark's folder
         setBookmarks(prev => 
           prev.map(bookmark => 
             bookmark.id === bookmarkId 
@@ -431,6 +457,7 @@ const Bookmarks = () => {
     draggedItemRef.current = null;
   };
 
+  // Set dragged item ref when drag starts
   const handleDragStart = (event: any) => {
     const id = event.active.id.toString();
     
@@ -447,6 +474,7 @@ const Bookmarks = () => {
     }
   };
 
+  // Render folder tree recursively
   const renderFolders = (parentId: string | null, depth = 0) => {
     const childFolders = folders.filter(folder => folder.parentId === parentId);
     
@@ -458,10 +486,8 @@ const Bookmarks = () => {
       return (
         <div key={folder.id}>
           <div 
-            className={`flex items-center py-1.5 px-2 rounded-md cursor-pointer transition-all duration-200 ${
-              selectedFolderId === folder.id 
-                ? 'bg-primary/10 text-primary' 
-                : 'hover:bg-muted hover:scale-[1.01]'
+            className={`flex items-center py-1 px-2 rounded-md cursor-pointer ${
+              selectedFolderId === folder.id ? 'bg-primary/10 text-primary' : 'hover:bg-muted'
             }`}
             style={{ 
               paddingLeft: `${depth * 16 + 8}px`,
@@ -492,8 +518,10 @@ const Bookmarks = () => {
     });
   };
 
+  // Breadcrumb for current folder
   const folderPath = getFolderPath(selectedFolderId);
   
+  // Get current folder name
   const currentFolder = folders.find(f => f.id === selectedFolderId);
 
   return (
@@ -501,7 +529,7 @@ const Bookmarks = () => {
       <div className="container py-6">
         <div className="flex flex-wrap items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gradient-primary">{currentFolder?.name || 'Bookmarks'}</h1>
+            <h1 className="text-3xl font-bold">{currentFolder?.name || 'Bookmarks'}</h1>
             <div className="flex items-center text-sm text-muted-foreground mt-1">
               {folderPath.map((folder, index) => (
                 <div key={folder.id} className="flex items-center">
@@ -520,18 +548,18 @@ const Bookmarks = () => {
           <div className="flex items-center gap-2 mt-4 sm:mt-0">
             <Input
               placeholder="Search bookmarks..."
-              className="w-full sm:w-64 transition-all duration-200 hover:border-primary/50 focus:border-primary"
+              className="w-full sm:w-64"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="hover:border-primary hover:text-primary transition-all duration-200">
+                <Button variant="outline" size="icon">
                   <Plus className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="animate-fade-in">
+              <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => {
                   setFormData({...formData, folderId: selectedFolderId});
                   setIsAddBookmarkOpen(true);
@@ -551,40 +579,37 @@ const Bookmarks = () => {
             
             <Tabs defaultValue={viewMode} onValueChange={(value) => setViewMode(value as 'grid' | 'list')}>
               <TabsList className="grid w-[80px] grid-cols-2">
-                <TabsTrigger value="grid" className="data-[state=active]:bg-primary/10"><Grid className="h-4 w-4" /></TabsTrigger>
-                <TabsTrigger value="list" className="data-[state=active]:bg-primary/10"><List className="h-4 w-4" /></TabsTrigger>
+                <TabsTrigger value="grid"><Grid className="h-4 w-4" /></TabsTrigger>
+                <TabsTrigger value="list"><List className="h-4 w-4" /></TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="md:col-span-1">
-            <Card className="relative overflow-hidden border-transparent smooth-transition">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent pointer-events-none rounded-lg opacity-50" />
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-semibold">Folders</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setParentFolderId('root');
-                      setIsAddFolderOpen(true);
-                    }}
-                    className="h-8 px-2 hover:bg-primary/10 hover:text-primary"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                <div className="space-y-1 max-h-[calc(100vh-300px)] overflow-y-auto pr-1">
-                  {renderFolders(null)}
-                </div>
-              </CardContent>
-            </Card>
+          {/* Sidebar */}
+          <div className="md:col-span-1 border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold">Folders</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setParentFolderId('root');
+                  setIsAddFolderOpen(true);
+                }}
+                className="h-8 px-2"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="space-y-1 max-h-[calc(100vh-300px)] overflow-y-auto">
+              {renderFolders(null)}
+            </div>
           </div>
           
+          {/* Main content */}
           <div className="md:col-span-3">
             <DndContext
               sensors={sensors}
@@ -599,53 +624,48 @@ const Bookmarks = () => {
                       <div
                         key={`bookmark:${bookmark.id}`}
                         id={`bookmark:${bookmark.id}`}
-                        className="group relative"
+                        className="border rounded-lg p-4 hover:shadow-md transition-shadow"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-secondary/20 to-accent/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
-                        <Card className="h-full transition-all duration-300 group-hover:shadow-md group-hover:border-primary/20 border-transparent bg-card/90 backdrop-blur-sm">
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                              <h3 className="font-medium truncate">{bookmark.title}</h3>
-                              <div className="flex space-x-1">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  onClick={() => toggleBookmarkVisibility(bookmark.id)}
-                                  title={bookmark.isPublic ? "Public" : "Private"}
-                                >
-                                  {bookmark.isPublic ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-                                </Button>
-                                <CreateBitFromBookmark bookmark={bookmark} />
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  onClick={() => openEditBookmarkModal(bookmark)}
-                                >
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 text-destructive/80 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                                  onClick={() => handleDeleteBookmark(bookmark.id)}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            <a
-                              href={bookmark.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-muted-foreground hover:text-primary truncate block mt-1"
+                        <div className="flex items-start justify-between">
+                          <h3 className="font-medium truncate">{bookmark.title}</h3>
+                          <div className="flex space-x-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => toggleBookmarkVisibility(bookmark.id)}
+                              title={bookmark.isPublic ? "Public" : "Private"}
                             >
-                              {bookmark.url}
-                            </a>
-                          </CardContent>
-                        </Card>
+                              {bookmark.isPublic ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                            </Button>
+                            <CreateBitFromBookmark bookmark={bookmark} />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => openEditBookmarkModal(bookmark)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-destructive/80 hover:text-destructive"
+                              onClick={() => handleDeleteBookmark(bookmark.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <a
+                          href={bookmark.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-muted-foreground hover:text-primary truncate block mt-1"
+                        >
+                          {bookmark.url}
+                        </a>
                       </div>
                     ))
                   ) : (
@@ -655,14 +675,14 @@ const Bookmarks = () => {
                   )}
                 </div>
               ) : (
-                <Card className="overflow-hidden border-transparent bg-card/90 backdrop-blur-sm transition-all duration-200 hover:shadow-md hover:border-primary/10">
+                <div className="border rounded-lg overflow-hidden">
                   {filteredBookmarks.length > 0 ? (
                     <div className="divide-y">
                       {filteredBookmarks.map(bookmark => (
                         <div
                           key={`bookmark:${bookmark.id}`}
                           id={`bookmark:${bookmark.id}`}
-                          className="flex items-center justify-between p-4 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-all duration-200"
+                          className="flex items-center justify-between p-4 hover:bg-muted/50"
                         >
                           <div className="flex-1 min-w-0">
                             <h3 className="font-medium truncate">{bookmark.title}</h3>
@@ -676,7 +696,7 @@ const Bookmarks = () => {
                             </a>
                           </div>
                           
-                          <div className="flex items-center space-x-2 ml-4 opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                          <div className="flex items-center space-x-2 ml-4">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -712,15 +732,16 @@ const Bookmarks = () => {
                       {searchTerm ? 'No bookmarks match your search' : 'No bookmarks in this folder'}
                     </div>
                   )}
-                </Card>
+                </div>
               )}
             </DndContext>
           </div>
         </div>
       </div>
 
+      {/* Add Bookmark Dialog */}
       <Dialog open={isAddBookmarkOpen} onOpenChange={setIsAddBookmarkOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Bookmark</DialogTitle>
           </DialogHeader>
@@ -779,15 +800,16 @@ const Bookmarks = () => {
               </select>
             </div>
           </div>
-          <DialogFooter className="mt-6">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddBookmarkOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddBookmark} className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Save</Button>
+            <Button onClick={handleAddBookmark}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* Edit Bookmark Dialog */}
       <Dialog open={isEditBookmarkOpen} onOpenChange={setIsEditBookmarkOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Bookmark</DialogTitle>
           </DialogHeader>
@@ -846,15 +868,16 @@ const Bookmarks = () => {
               </select>
             </div>
           </div>
-          <DialogFooter className="mt-6">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditBookmarkOpen(false)}>Cancel</Button>
-            <Button onClick={handleEditBookmark} className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Update</Button>
+            <Button onClick={handleEditBookmark}>Update</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* Add Folder Dialog */}
       <Dialog open={isAddFolderOpen} onOpenChange={setIsAddFolderOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>New Folder</DialogTitle>
           </DialogHeader>
@@ -884,9 +907,9 @@ const Bookmarks = () => {
               </select>
             </div>
           </div>
-          <DialogFooter className="mt-6">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddFolderOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddFolder} className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Create Folder</Button>
+            <Button onClick={handleAddFolder}>Create Folder</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
