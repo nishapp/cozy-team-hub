@@ -15,6 +15,7 @@ import BitForm from "@/components/bits/BitForm";
 import { toast } from "sonner";
 import { Sparkles, Loader2 } from "lucide-react";
 import { handleGenerateTagsRequest } from "@/mock/api/generate-tags";
+import { isDemoMode } from "@/lib/supabase";
 
 interface BookmarkToBitDialogProps {
   bookmark: BookmarkItem;
@@ -83,10 +84,47 @@ export const BookmarkToBitDialog = ({ bookmark, isOpen, onClose }: BookmarkToBit
   };
 
   const handleBitSubmit = (bitData: any) => {
-    // In a real app, we would create the bit in the database
-    toast.success("Bookmark converted to bit successfully!");
-    onClose();
-    navigate('/bits');
+    // Create a properly formatted bit with all required fields
+    const newBit = {
+      id: `bit-${Date.now()}`, // Generate a unique ID
+      title: bitData.title,
+      description: bitData.description,
+      tags: Array.isArray(bitData.tags) ? bitData.tags : bitData.tags.split(",").map((tag: string) => tag.trim()),
+      category: bitData.category,
+      visibility: bitData.visibility,
+      wdylt_comment: bitData.wdylt_comment || "",
+      image_url: bitData.image_url || "",
+      link: bitData.link || bookmark.url,
+      created_at: new Date().toISOString(),
+      isBookmarked: false
+    };
+    
+    try {
+      // Save to localStorage so it persists
+      const savedBits = localStorage.getItem('bits-data');
+      let bitsArray = [];
+      
+      if (savedBits) {
+        bitsArray = JSON.parse(savedBits);
+      }
+      
+      // Add the new bit to the beginning of the array
+      bitsArray.unshift(newBit);
+      
+      // Save back to localStorage
+      localStorage.setItem('bits-data', JSON.stringify(bitsArray));
+      
+      toast.success("Bookmark converted to bit successfully!");
+      onClose();
+      
+      // Navigate to bits page with a small delay to allow the toast to be seen
+      setTimeout(() => {
+        navigate('/bits');
+      }, 500);
+    } catch (error) {
+      console.error("Error saving bit:", error);
+      toast.error("Failed to save the bit. Please try again.");
+    }
   };
 
   const handleCancelDialog = () => {
