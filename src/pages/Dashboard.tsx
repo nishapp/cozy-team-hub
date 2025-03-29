@@ -398,11 +398,33 @@ const Dashboard = () => {
                 <p className="text-muted-foreground">Bits with public visibility that can be shared with others</p>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-max">
-                {publicBits.length > 0 ? publicBits.map(bit => <BitCard key={bit.id} bit={bit} onBitUpdated={handleBitUpdated} onClick={() => handleBitSelected(bit)} />) : <div className="col-span-full text-center py-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {publicBits.length > 0 ? 
+                  publicBits.slice(0, 3).map(bit => 
+                    <BitCard 
+                      key={bit.id} 
+                      bit={bit} 
+                      onBitUpdated={handleBitUpdated} 
+                      onClick={() => handleBitSelected(bit)} 
+                    />
+                  ) : 
+                  <div className="col-span-full text-center py-8">
                     <p className="text-muted-foreground">No public bits found. Make some of your bits public to share them!</p>
-                  </div>}
+                  </div>
+                }
               </div>
+              
+              {publicBits.length > 3 && (
+                <div className="mt-4">
+                  <Button 
+                    variant="outline" 
+                    className="text-sm"
+                    onClick={() => navigate('/bits')}
+                  >
+                    View all bits
+                  </Button>
+                </div>
+              )}
             </div>
             
             <TopBuddiesSection buddies={topBuddies} />
