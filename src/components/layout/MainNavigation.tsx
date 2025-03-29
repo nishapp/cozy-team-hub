@@ -39,6 +39,12 @@ export function MainNavigation({ isAdmin, userPoints = 0 }: MainNavigationProps)
       requiresAuth: true,
     },
     {
+      name: "Achievements",
+      href: "/profile?tab=badges",
+      icon: Award,
+      requiresAuth: true,
+    },
+    {
       name: "Settings",
       href: "/settings",
       icon: Settings,

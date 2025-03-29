@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Flame, Award, Star } from 'lucide-react';
+import { Flame, Award, Star, Ribbon } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { 
   Tooltip,
@@ -39,6 +39,21 @@ const GamificationTopBar = ({
   const activityStatus = last5Days.map(day => {
     return activityDates.some(activityDate => isSameDay(day, activityDate));
   });
+
+  // Function to get different badge icons
+  const getBadgeIcon = (index: number) => {
+    // Cycle through different badge styles with different colors
+    switch (index % 3) {
+      case 0:
+        return <Ribbon className="h-4 w-4 text-blue-500" />; 
+      case 1:
+        return <Award className="h-4 w-4 text-indigo-500" />;
+      case 2:
+        return <Star className="h-4 w-4 text-amber-500" />;
+      default:
+        return <Award className="h-4 w-4 text-primary" />;
+    }
+  };
 
   return (
     <div className="bg-muted/30 p-2 rounded-lg mb-6 flex flex-wrap items-center justify-between">
@@ -97,8 +112,8 @@ const GamificationTopBar = ({
             <TooltipProvider key={badge.id}>
               <Tooltip>
                 <TooltipTrigger>
-                  <div className="h-7 w-7 rounded-full bg-primary/10 border border-background flex items-center justify-center">
-                    <Award className="h-4 w-4 text-primary" />
+                  <div className="h-7 w-7 rounded-full bg-blue-900/80 border border-blue-500/50 flex items-center justify-center">
+                    {getBadgeIcon(i)}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
