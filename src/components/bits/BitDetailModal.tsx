@@ -1,346 +1,426 @@
-
-import React, { useState } from "react";
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import React, { useState, useRef } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Clock, MessageCircle, Heart, Share2, BookmarkPlus, Image, Send, X, Plus } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Edit, Link, X, RefreshCw, Volume2, VolumeX } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-
-interface Comment {
-  id: string;
-  user: {
-    name: string;
-    avatar?: string;
-  };
-  text: string;
-  timestamp: string;
-}
-
-// Sample comments data
-const sampleComments: Comment[] = [
-  {
-    id: "1",
-    user: {
-      name: "Emily Johnson",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    },
-    text: "This is such a great resource! I've been looking for something like this for ages.",
-    timestamp: "2 hours ago",
-  },
-  {
-    id: "2",
-    user: {
-      name: "Michael Chen",
-      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    },
-    text: "Thanks for sharing this! Just what I needed for my project.",
-    timestamp: "Yesterday",
-  },
-  {
-    id: "3",
-    user: {
-      name: "Sarah Williams",
-    },
-    text: "I tried this technique and it worked perfectly. Highly recommend!",
-    timestamp: "2 days ago",
-  },
-];
-
-interface Bit {
-  id: string;
-  title: string;
-  description: string;
-  tags: string[];
-  category: string;
-  visibility: string;
-  wdylt_comment?: string;
-  image_url?: string;
-  created_at: string;
-  shared_by: string;
-}
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { supabase } from "@/lib/supabase";
 
 interface BitDetailModalProps {
-  bit: Bit;
+  bit: any;
   isOpen: boolean;
   onClose: () => void;
-  onBitUpdated?: (bit: Bit) => void;
+  onBitUpdated: (bit: any) => void;
 }
 
 const BitDetailModal: React.FC<BitDetailModalProps> = ({ bit, isOpen, onClose, onBitUpdated }) => {
-  const [comments, setComments] = useState<Comment[]>(sampleComments);
-  const [newComment, setNewComment] = useState("");
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [wdiltComment, setWdiltComment] = useState(bit.wdylt_comment || "");
-  const [isWdiltOpen, setIsWdiltOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState(bit.title);
+  const [description, setDescription] = useState(bit.description);
+  const [tags, setTags] = useState(bit.tags.join(", "));
+  const [category, setCategory] = useState(bit.category);
+  const [visibility, setVisibility] = useState(bit.visibility);
+  const [wdyltComment, setWdyltComment] = useState(bit.wdylt_comment || "");
+  const [imageUrl, setImageUrl] = useState(bit.image_url || "");
+  const [link, setLink] = useState(bit.link || "");
+  
+  // Audio states
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Format the date
-  const formattedDate = new Date(bit.created_at).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  const categories = [
+    "coding",
+    "reading",
+    "wellness",
+    "hobbies",
+    "productivity",
+    "finance",
+    "travel",
+    "music",
+  ];
 
-  const handleAddComment = () => {
-    if (!newComment.trim()) return;
-
-    const comment: Comment = {
-      id: `temp-${Date.now()}`,
-      user: {
-        name: "You",
-      },
-      text: newComment,
-      timestamp: "Just now",
+  const handleUpdateBit = () => {
+    const updatedBit = {
+      ...bit,
+      title,
+      description,
+      tags: tags.split(",").map((tag: string) => tag.trim()),
+      category,
+      visibility,
+      wdylt_comment: wdyltComment,
+      image_url: imageUrl,
+      link,
     };
-
-    setComments([comment, ...comments]);
-    setNewComment("");
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleAddComment();
-    }
+    onBitUpdated(updatedBit);
+    setIsEditing(false);
+    onClose();
   };
   
-  const handleWdiltSubmit = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleTextToSpeech = async () => {
+    if (!bit.description && !bit.summary) return;
     
-    if (!wdiltComment.trim()) {
-      setIsWdiltOpen(false);
-      return;
+    setIsAudioLoading(true);
+    
+    try {
+      let textToConvert = bit.summary || bit.description;
+      // Limit text length to avoid issues with large summaries
+      if (textToConvert.length > 3000) {
+        textToConvert = textToConvert.substring(0, 3000) + "...";
+      }
+      
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: { text: textToConvert }
+      });
+      
+      if (error) {
+        throw new Error(error.message || 'Failed to convert text to speech');
+      }
+      
+      if (data && data.audio) {
+        // Convert base64 to Blob
+        const byteCharacters = atob(data.audio);
+        const byteArrays = [];
+        
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+          
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          
+          const byteArray = new Uint8Array(byteNumbers);
+          byteArrays.push(byteArray);
+        }
+        
+        const blob = new Blob(byteArrays, { type: 'audio/mpeg' });
+        
+        // Create audio URL
+        if (audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
+        
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+        
+        // Auto-play if needed
+        if (audioRef.current) {
+          audioRef.current.src = url;
+          audioRef.current.load();
+        }
+        
+        toast.success('Audio generated successfully');
+      } else {
+        throw new Error('No audio data received');
+      }
+    } catch (error) {
+      console.error('Error converting text to speech:', error);
+      toast.error('Failed to generate audio');
+    } finally {
+      setIsAudioLoading(false);
     }
-    
-    if (onBitUpdated) {
-      const updatedBit = {
-        ...bit,
-        wdylt_comment: wdiltComment.trim()
-      };
-      onBitUpdated(updatedBit);
-    }
-    
-    toast.success("WDILT comment added!");
-    setIsWdiltOpen(false);
   };
 
-  // Generate a gradient based on the bit's category
-  const getGradientColor = (category: string) => {
-    const gradients = {
-      "coding": "from-blue-400 to-indigo-500",
-      "health": "from-green-400 to-emerald-500",
-      "hobbies": "from-yellow-300 to-amber-500",
-      "reading": "from-orange-400 to-pink-500",
-      "photography": "from-purple-400 to-pink-500",
-      "food": "from-red-400 to-pink-500",
-      "gardening": "from-green-400 to-teal-500",
-      "design": "from-blue-400 to-violet-500",
-      "plants": "from-emerald-400 to-green-500",
-      "art": "from-rose-400 to-purple-500",
-      "home": "from-amber-400 to-yellow-500",
-      "work": "from-cyan-400 to-blue-500",
-      "default": "from-purple-400 to-pink-500"
-    };
+  const toggleAudioPlayback = () => {
+    if (!audioRef.current || !audioUrl) return;
     
-    return gradients[category as keyof typeof gradients] || gradients.default;
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    
+    setIsPlaying(!isPlaying);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] p-0 rounded-2xl overflow-hidden max-h-[90vh] flex flex-col">
-        <div className="grid md:grid-cols-2 h-full">
-          {/* Left side - Image/Content */}
-          <div className="relative bg-muted">
-            {bit.image_url ? (
-              <div className="h-full">
-                <img 
-                  src={bit.image_url} 
-                  alt={bit.title} 
-                  className="object-cover w-full h-full"
-                />
-              </div>
-            ) : (
-              <div className={`bg-gradient-to-br ${getGradientColor(bit.category)} h-full flex items-center justify-center text-white/80`}>
-                <div className="flex flex-col items-center justify-center p-4 text-center">
-                  <Image className="w-20 h-20 mb-2 opacity-70" />
-                  <p className="text-lg font-medium">{bit.category}</p>
-                </div>
-              </div>
-            )}
-            <DialogClose className="absolute top-2 left-2 z-10 rounded-full bg-black/60 p-1 text-white hover:bg-black/80">
-              <X size={16} />
-            </DialogClose>
-            <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-              Shared by {bit.shared_by}
-            </div>
-          </div>
+      <DialogContent className="max-w-[90%] sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{isEditing ? "Edit Bit" : bit.title}</DialogTitle>
+          <DialogDescription>
+            {isEditing ? "Update the bit details." : "View bit details."}
+          </DialogDescription>
+        </DialogHeader>
 
-          {/* Right side - Info and Comments */}
-          <div className="flex flex-col h-full max-h-[90vh] bg-background">
-            {/* Header and content */}
-            <div className="p-4 border-b">
-              <h2 className="text-xl font-bold mb-2">{bit.title}</h2>
-              <div className="flex items-center text-muted-foreground text-xs mb-3">
-                <Clock size={12} className="mr-1" />
-                <span>{formattedDate}</span>
-              </div>
-              <p className="text-sm text-muted-foreground mb-3">{bit.description}</p>
-              
-              <div className="flex flex-wrap gap-1 mb-3">
-                {bit.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="rounded-full text-xs font-normal">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              
-              {bit.wdylt_comment && (
-                <div className="bg-muted p-2 rounded-lg text-sm italic text-muted-foreground mt-2">
-                  <span className="font-medium text-primary">@WDYLT:</span> {bit.wdylt_comment}
+        <ScrollArea className="h-[calc(80vh-100px)]">
+          <div className="grid gap-4 py-4">
+            {!isEditing ? (
+              <>
+                <div className="grid grid-cols-3 items-start gap-4">
+                  <Label className="text-right">Title</Label>
+                  <div className="col-span-2 font-semibold">{bit.title}</div>
                 </div>
-              )}
-            </div>
 
-            {/* Comments section */}
-            <div className="flex-1 overflow-y-auto p-4">
-              <h3 className="text-sm font-semibold mb-4">Comments ({comments.length})</h3>
-              
-              <div className="space-y-4">
-                {comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-3">
-                    <Avatar className="h-8 w-8">
-                      {comment.user.avatar ? (
-                        <AvatarImage src={comment.user.avatar} />
-                      ) : (
-                        <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
-                      )}
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-baseline">
-                        <span className="font-medium text-sm">{comment.user.name}</span>
-                        <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
+                <div className="grid grid-cols-3 items-start gap-4">
+                  <Label className="text-right">Description</Label>
+                  <div className="col-span-2 text-muted-foreground">
+                    {bit.description}
+                    {bit.description && (
+                      <div className="flex items-center space-x-2 mt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleTextToSpeech}
+                          disabled={isAudioLoading}
+                          className="flex items-center space-x-1"
+                        >
+                          {isAudioLoading ? 
+                            <RefreshCw className="h-4 w-4 animate-spin" /> : 
+                            <Volume2 className="h-4 w-4" />
+                          }
+                          <span>Listen</span>
+                        </Button>
+                        
+                        {audioUrl && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={toggleAudioPlayback}
+                            className="flex items-center space-x-1"
+                          >
+                            {isPlaying ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                            <span>{isPlaying ? 'Pause' : 'Play'}</span>
+                          </Button>
+                        )}
+                        
+                        <audio 
+                          ref={audioRef}
+                          src={audioUrl}
+                          onEnded={() => setIsPlaying(false)}
+                          onPause={() => setIsPlaying(false)}
+                          onPlay={() => setIsPlaying(true)}
+                          className="hidden"
+                          controls
+                        />
                       </div>
-                      <p className="text-sm mt-1">{comment.text}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 items-start gap-4">
+                  <Label className="text-right">Tags</Label>
+                  <div className="col-span-2">
+                    {bit.tags.map((tag: string) => (
+                      <Badge key={tag} variant="secondary" className="mr-1">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 items-start gap-4">
+                  <Label className="text-right">Category</Label>
+                  <div className="col-span-2">{bit.category}</div>
+                </div>
+
+                <div className="grid grid-cols-3 items-start gap-4">
+                  <Label className="text-right">Visibility</Label>
+                  <div className="col-span-2">{bit.visibility}</div>
+                </div>
+
+                {bit.wdylt_comment && (
+                  <div className="grid grid-cols-3 items-start gap-4">
+                    <Label className="text-right">Comment</Label>
+                    <div className="col-span-2">{bit.wdylt_comment}</div>
+                  </div>
+                )}
+
+                {bit.image_url && (
+                  <div className="grid grid-cols-3 items-start gap-4">
+                    <Label className="text-right">Image</Label>
+                    <div className="col-span-2">
+                      <img
+                        src={bit.image_url}
+                        alt={bit.title}
+                        className="rounded-md max-h-40 object-cover"
+                      />
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                )}
 
-            {/* Actions and comment input */}
-            <div className="p-4 border-t">
-              <div className="flex justify-between mb-3">
-                <div className="flex gap-1">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className={`rounded-full h-8 w-8 ${liked ? 'text-red-500' : ''}`}
-                    onClick={() => setLiked(!liked)}
-                  >
-                    <Heart size={16} fill={liked ? "currentColor" : "none"} />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-                    <MessageCircle size={16} />
-                  </Button>
-                  
-                  <Popover open={isWdiltOpen} onOpenChange={setIsWdiltOpen}>
-                    <PopoverTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="rounded-full h-8 w-8 flex items-center justify-center"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsWdiltOpen(true);
-                        }}
+                {bit.link && (
+                  <div className="grid grid-cols-3 items-start gap-4">
+                    <Label className="text-right">Link</Label>
+                    <div className="col-span-2">
+                      <a
+                        href={bit.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
                       >
-                        <Plus size={16} />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-72" 
-                      onClick={(e) => e.stopPropagation()}
-                      side="top"
-                    >
-                      <div className="space-y-2">
-                        <h4 className="font-medium">Add @WDYLT Comment</h4>
-                        <p className="text-xs text-muted-foreground">
-                          Share what you learned today about this bit
-                        </p>
-                        <div className="space-y-2">
-                          <Input 
-                            placeholder="Today I learned..." 
-                            value={wdiltComment}
-                            onChange={(e) => setWdiltComment(e.target.value)}
-                            className="w-full"
-                          />
-                          <div className="flex justify-end gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setIsWdiltOpen(false);
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                            <Button 
-                              size="sm"
-                              onClick={handleWdiltSubmit}
-                            >
-                              Add Comment
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                        <Link className="mr-1 h-4 w-4 inline-block align-middle" />
+                        {bit.link}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-3 items-start gap-4">
+                  <Label className="text-right">Shared By</Label>
+                  <div className="col-span-2">{bit.shared_by || "You"}</div>
                 </div>
-                <div className="flex gap-1">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className={`rounded-full h-8 w-8 ${saved ? 'text-primary' : ''}`}
-                    onClick={() => setSaved(!saved)}
-                  >
-                    <BookmarkPlus size={16} fill={saved ? "currentColor" : "none"} />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-                    <Share2 size={16} />
-                  </Button>
+
+                <div className="grid grid-cols-3 items-start gap-4">
+                  <Label className="text-right">Created At</Label>
+                  <div className="col-span-2">
+                    {new Date(bit.created_at).toLocaleDateString()}
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Avatar className="h-7 w-7">
-                  <AvatarFallback>Y</AvatarFallback>
-                </Avatar>
-                <div className="relative flex-1">
+              </>
+            ) : (
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="title" className="text-right">
+                    Title
+                  </Label>
                   <Input
-                    placeholder="Add a comment..." 
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    className="pr-10 rounded-full"
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="col-span-3"
                   />
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 rounded-full"
-                    onClick={handleAddComment}
-                    disabled={!newComment.trim()}
-                  >
-                    <Send size={14} className={newComment.trim() ? "text-primary" : "text-muted-foreground"} />
-                  </Button>
                 </div>
-              </div>
-            </div>
+
+                <div className="grid grid-cols-4 items-start gap-4">
+                  <Label htmlFor="description" className="text-right">
+                    Description
+                  </Label>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="col-span-3 min-h-[100px]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="tags" className="text-right">
+                    Tags
+                  </Label>
+                  <Input
+                    id="tags"
+                    value={tags}
+                    onChange={(e) => setTags(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="category" className="text-right">
+                    Category
+                  </Label>
+                  <Select value={category} onValueChange={setCategory} >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="visibility" className="text-right">
+                    Visibility
+                  </Label>
+                  <Select value={visibility} onValueChange={setVisibility}>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select visibility" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Public</SelectItem>
+                      <SelectItem value="private">Private</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-4 items-start gap-4">
+                  <Label htmlFor="wdyltComment" className="text-right">
+                    Comment
+                  </Label>
+                  <Textarea
+                    id="wdyltComment"
+                    value={wdyltComment}
+                    onChange={(e) => setWdyltComment(e.target.value)}
+                    className="col-span-3 min-h-[80px]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="imageUrl" className="text-right">
+                    Image URL
+                  </Label>
+                  <Input
+                    id="imageUrl"
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="link" className="text-right">
+                    Link
+                  </Label>
+                  <Input
+                    id="link"
+                    type="url"
+                    value={link}
+                    onChange={(e) => setLink(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+              </>
+            )}
           </div>
-        </div>
+        </ScrollArea>
+
+        <DialogFooter>
+          {!isEditing ? (
+            <div className="flex justify-between w-full">
+              <Button variant="ghost" onClick={onClose}>
+                Close
+              </Button>
+              <Button onClick={() => setIsEditing(true)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            </div>
+          ) : (
+            <div className="flex justify-between w-full">
+              <Button variant="ghost" onClick={() => setIsEditing(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateBit}>Update</Button>
+            </div>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

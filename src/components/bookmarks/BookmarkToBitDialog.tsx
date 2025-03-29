@@ -96,7 +96,9 @@ export const BookmarkToBitDialog = ({ bookmark, isOpen, onClose }: BookmarkToBit
       image_url: bitData.image_url || "",
       link: bitData.link || bookmark.url,
       created_at: new Date().toISOString(),
-      isBookmarked: false
+      isBookmarked: false,
+      // Add summary from bookmark if available
+      summary: bookmark.summary || ""
     };
     
     try {

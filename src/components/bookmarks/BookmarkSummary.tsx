@@ -1,11 +1,13 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { BookmarkItem } from "@/types/bookmark";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { RefreshCw, CheckCircle2 } from "lucide-react";
+import { RefreshCw, CheckCircle2, VolumeX, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/lib/supabase";
+import { isDemoMode } from "@/lib/supabase";
 
 interface BookmarkSummaryProps {
   bookmark: BookmarkItem;
@@ -17,6 +19,12 @@ export function BookmarkSummary({ bookmark, onSaveDescription }: BookmarkSummary
   const [isSummarized, setIsSummarized] = useState(!!bookmark.summary);
   const [summary, setSummary] = useState(bookmark.summary || "");
   const [descriptionDraft, setDescriptionDraft] = useState(bookmark.description || "");
+  
+  // Audio states
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handleGenerateSummary = async () => {
     if (isLoading) return;
@@ -63,6 +71,83 @@ export function BookmarkSummary({ bookmark, onSaveDescription }: BookmarkSummary
     }
   };
 
+  const handleTextToSpeech = async () => {
+    if (!summary || isAudioLoading) return;
+    
+    setIsAudioLoading(true);
+    
+    try {
+      let textToConvert = summary;
+      // Limit text length to avoid issues with large summaries
+      if (textToConvert.length > 3000) {
+        textToConvert = textToConvert.substring(0, 3000) + "...";
+      }
+      
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: { text: textToConvert }
+      });
+      
+      if (error) {
+        throw new Error(error.message || 'Failed to convert text to speech');
+      }
+      
+      if (data && data.audio) {
+        // Convert base64 to Blob
+        const byteCharacters = atob(data.audio);
+        const byteArrays = [];
+        
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+          
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          
+          const byteArray = new Uint8Array(byteNumbers);
+          byteArrays.push(byteArray);
+        }
+        
+        const blob = new Blob(byteArrays, { type: 'audio/mpeg' });
+        
+        // Create audio URL
+        if (audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
+        
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+        
+        // Auto-play if needed
+        if (audioRef.current) {
+          audioRef.current.src = url;
+          audioRef.current.load();
+        }
+        
+        toast.success('Audio generated successfully');
+      } else {
+        throw new Error('No audio data received');
+      }
+    } catch (error) {
+      console.error('Error converting text to speech:', error);
+      toast.error('Failed to generate audio');
+    } finally {
+      setIsAudioLoading(false);
+    }
+  };
+
+  const toggleAudioPlayback = () => {
+    if (!audioRef.current || !audioUrl) return;
+    
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    
+    setIsPlaying(!isPlaying);
+  };
+
   return (
     <div className="mt-4 space-y-4">
       {!isSummarized ? (
@@ -88,23 +173,59 @@ export function BookmarkSummary({ bookmark, onSaveDescription }: BookmarkSummary
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium">AI Summary</h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleGenerateSummary}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
-              ) : (
-                "Regenerate"
+            <div className="flex space-x-2">
+              {!isDemoMode && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTextToSpeech}
+                  disabled={isAudioLoading}
+                  title="Listen to summary"
+                >
+                  {isAudioLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+                </Button>
               )}
-            </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleGenerateSummary}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Regenerate"
+                )}
+              </Button>
+            </div>
           </div>
           
           <div className="p-3 bg-secondary/50 rounded-md text-sm max-h-[200px] overflow-auto">
             {summary}
           </div>
+          
+          {audioUrl && (
+            <div className="flex items-center space-x-2 mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleAudioPlayback}
+                className="flex items-center space-x-1"
+              >
+                {isPlaying ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                <span>{isPlaying ? 'Pause' : 'Play'}</span>
+              </Button>
+              <audio 
+                ref={audioRef}
+                src={audioUrl}
+                onEnded={() => setIsPlaying(false)}
+                onPause={() => setIsPlaying(false)}
+                onPlay={() => setIsPlaying(true)}
+                className="hidden"
+                controls
+              />
+            </div>
+          )}
           
           <div className="space-y-2">
             <h3 className="text-sm font-medium">Save as Description</h3>

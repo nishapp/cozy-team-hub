@@ -1,0 +1,5 @@
+
+project_id = "znlgxnsizubcplghpokk"
+
+[env.ELEVENLABS_API_KEY]
+description = "ElevenLabs API key for text-to-speech conversion"
