@@ -175,7 +175,6 @@ const createMockData = () => {
   return { folders, bookmarks };
 };
 
-// Component
 const Bookmarks = () => {
   const { user } = useAuth();
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -255,6 +254,16 @@ const Bookmarks = () => {
     
     return [...childIds, ...grandchildIds];
   }, [folders]);
+
+  // Count bookmarks in a folder including all nested folders
+  const countBookmarksInFolder = useCallback((folderId: string): number => {
+    const childFolderIds = getChildFolderIds(folderId);
+    const allFolderIds = [folderId, ...childFolderIds];
+    
+    return bookmarks.filter(bookmark => 
+      allFolderIds.includes(bookmark.folderId)
+    ).length;
+  }, [bookmarks, getChildFolderIds]);
 
   // Filter bookmarks by search term and folder
   const filteredBookmarks = bookmarks.filter(bookmark => {
@@ -472,6 +481,7 @@ const Bookmarks = () => {
     return childFolders.map(folder => {
       const isExpanded = folder.isExpanded ?? false;
       const hasChildren = folders.some(f => f.parentId === folder.id);
+      const bookmarkCount = countBookmarksInFolder(folder.id);
       
       return (
         <div key={folder.id}>
@@ -498,6 +508,7 @@ const Bookmarks = () => {
             {!hasChildren && <div className="w-6" />}
             <Folder className="mr-2 h-4 w-4" />
             <span className="truncate">{folder.name}</span>
+            <span className="ml-2 text-xs text-muted-foreground">{bookmarkCount}</span>
             {folder.isSpecial && <div className="ml-auto w-1 h-1 bg-primary rounded-full" />}
           </div>
           
