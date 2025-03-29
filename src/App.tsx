@@ -18,12 +18,13 @@ import Posts from "./pages/Posts";
 import PostDetail from "./pages/PostDetail";
 import Friends from "./pages/Friends";
 import FriendBits from "./pages/FriendBits";
-import Profile from "./pages/Profile"; // New import
+import Profile from "./pages/Profile"; 
 import AdminDashboard from "./pages/AdminDashboard";
 import Settings from "./pages/Settings";
 import Contact from "./pages/Contact";
 import CompanySettings from "./pages/CompanySettings";
 import NotFound from "./pages/NotFound";
+import Bookmarks from "./pages/Bookmarks"; // New import
 
 // Create a QueryClient instance
 const queryClient = new QueryClient({
@@ -50,7 +51,8 @@ const AnimatedRoutes = () => {
         <Route path="/post/:postId" element={<PostDetail />} />
         <Route path="/friends" element={<Friends />} />
         <Route path="/friends/:friendId/bits" element={<FriendBits />} />
-        <Route path="/profile" element={<Profile />} /> {/* New route */}
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/bookmarks" element={<Bookmarks />} /> {/* New route */}
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/settings" element={<Settings />} />
