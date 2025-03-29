@@ -41,6 +41,9 @@ import UserPointsCard from "@/components/gamification/UserPointsCard";
 import SharedBitsCarousel from "@/components/bits/SharedBitsCarousel";
 import { toast } from "sonner";
 import BitDetailModal from "@/components/bits/BitDetailModal";
+import { sampleFriends } from "@/data/sampleFriends";
+import BitCard from "@/components/bits/BitCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const categoryIcons: Record<string, React.ReactNode> = {
   coding: <Code size={18} />,
@@ -59,6 +62,90 @@ const Dashboard: React.FC = () => {
   const [progress, setProgress] = useState(67);
   const [currentBit, setCurrentBit] = useState<any | null>(null);
   const [bitDetailOpen, setBitDetailOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("my-bits");
+
+  // Your bits data
+  const sampleBits = [
+    {
+      id: "1",
+      title: "Learning TypeScript",
+      description: "Notes on advanced TypeScript features and patterns. TypeScript is a strongly typed programming language that builds on JavaScript, giving you better tooling at any scale.",
+      tags: ["programming", "typescript", "web development"],
+      category: "coding",
+      visibility: "public",
+      wdylt_comment: "Excited to master TypeScript!",
+      image_url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      created_at: new Date().toISOString(),
+      link: "https://www.typescriptlang.org/docs/"
+    },
+    {
+      id: "2",
+      title: "React Hooks Deep Dive",
+      description: "Understanding useEffect, useMemo, and useCallback in depth.",
+      tags: ["react", "javascript", "hooks"],
+      category: "coding",
+      visibility: "public",
+      wdylt_comment: "Hooks have changed the way I write React!",
+      created_at: new Date().toISOString(),
+      link: "https://reactjs.org/docs/hooks-intro.html"
+    },
+    {
+      id: "3",
+      title: "Mindfulness Meditation",
+      description: "Practicing mindfulness daily has improved my focus and reduced stress significantly.",
+      tags: ["wellness", "mindfulness", "health"],
+      category: "health",
+      visibility: "public",
+      wdylt_comment: "Feeling centered and calm.",
+      image_url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      created_at: new Date().toISOString(),
+      link: "https://www.mindful.org/meditation/mindfulness-getting-started/"
+    },
+  ];
+
+  // Friends' bits data
+  const sampleFriendBits = [
+    {
+      id: "friend-bit-1",
+      title: "JavaScript Promises Explained",
+      description: "A deep dive into JavaScript promises and async/await.",
+      tags: ["javascript", "async", "promises"],
+      category: "coding",
+      visibility: "public",
+      image_url: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=500&h=350&fit=crop",
+      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      wdylt_comment: "Always remember that .catch() only catches errors in previous promises, not in the .then() that follows it.",
+      shared_by: "Sarah Johnson",
+      author_avatar: "https://i.pravatar.cc/150?img=1"
+    },
+    {
+      id: "friend-bit-2",
+      title: "CSS Grid Layout Tutorial",
+      description: "A comprehensive guide to CSS Grid Layout.",
+      tags: ["css", "grid", "layout", "web-design"],
+      category: "coding",
+      visibility: "public",
+      image_url: "https://images.unsplash.com/photo-1517134191118-9d595e4c8c2b?w=500&h=350&fit=crop",
+      created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      shared_by: "Mike Chen",
+      author_avatar: "https://i.pravatar.cc/150?img=2"
+    },
+    {
+      id: "friend-bit-3",
+      title: "Productivity Techniques for Developers",
+      description: "Learn how to stay productive as a developer.",
+      tags: ["productivity", "techniques", "workflow"],
+      category: "health",
+      visibility: "public",
+      created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      wdylt_comment: "The technique that worked best for me was time-blocking combined with the 2-minute rule.",
+      shared_by: "Emily Davis",
+      author_avatar: "https://i.pravatar.cc/150?img=3"
+    }
+  ];
+
+  const [myBits, setMyBits] = useState(sampleBits);
+  const [friendsBits, setFriendsBits] = useState(sampleFriendBits);
 
   // Your daily streak and points data
   const streakData = {
@@ -235,6 +322,10 @@ const Dashboard: React.FC = () => {
     };
   }, [progress]);
 
+  const viewFriendProfile = (friendId: string) => {
+    navigate(`/friends/${friendId}`);
+  };
+
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
       <GamificationTopBar 
@@ -255,6 +346,48 @@ const Dashboard: React.FC = () => {
             friendAvatar={profile?.avatar_url}
             onBitClick={openBitDetail}
           />
+
+          {/* Bits Tabs */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-2xl font-bold">Bits Collection</CardTitle>
+                <Button variant="outline" onClick={() => navigate("/bits")}>View All Bits</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="my-bits" value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="mb-4">
+                  <TabsTrigger value="my-bits">My Bits</TabsTrigger>
+                  <TabsTrigger value="friends-bits">Friends' Bits</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="my-bits" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {myBits.map(bit => (
+                      <BitCard 
+                        key={bit.id} 
+                        bit={{...bit, shared_by: "You", author_avatar: profile?.avatar_url}}
+                        onClick={() => openBitDetail(bit)}
+                      />
+                    ))}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="friends-bits" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {friendsBits.map(bit => (
+                      <BitCard 
+                        key={bit.id} 
+                        bit={bit}
+                        onClick={() => openBitDetail(bit)}
+                      />
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
 
           {/* Featured Bit */}
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
@@ -351,6 +484,59 @@ const Dashboard: React.FC = () => {
             longestStreak={streakData.longestStreak}
             isCurrentUser={true}
           />
+
+          {/* My Friends Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">My Buddies</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 gap-3">
+                {sampleFriends.slice(0, 3).map((friend) => (
+                  <div 
+                    key={friend.id} 
+                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                    onClick={() => viewFriendProfile(friend.id)}
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={friend.avatar_url} />
+                      <AvatarFallback>
+                        {friend.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">{friend.name}</p>
+                      <div className="text-xs text-muted-foreground flex items-center">
+                        <FileText className="h-3 w-3 mr-1" />
+                        {Math.floor(Math.random() * 20) + 1} bits
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="ml-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/friends/${friend.id}`);
+                      }}
+                    >
+                      View
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="ghost" 
+                className="w-full" 
+                size="sm"
+                onClick={() => navigate("/friends")}
+              >
+                View all buddies
+              </Button>
+            </CardFooter>
+          </Card>
 
           {/* Recent Activity */}
           <Card>

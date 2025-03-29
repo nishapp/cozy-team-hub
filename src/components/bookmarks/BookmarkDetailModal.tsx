@@ -102,10 +102,12 @@ const BookmarkDetailModal = ({
             </div>
 
             {/* Summary Component */}
-            <BookmarkSummary 
-              bookmark={bookmark} 
-              onSaveDescription={onSaveDescription} 
-            />
+            {bookmark && onSaveDescription && (
+              <BookmarkSummary 
+                bookmarkItem={bookmark} 
+                onSaveDescription={onSaveDescription} 
+              />
+            )}
           </ScrollArea>
 
           <DialogFooter className="flex gap-2 justify-end mt-6 pt-4 border-t">
