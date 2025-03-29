@@ -57,13 +57,13 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<Layout><Index /></Layout>} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-        <Route path="/bits" element={<Layout><Bits /></Layout>} />
+        <Route path="/bits" element={<Bits />} />
         <Route path="/posts" element={<Layout><Posts /></Layout>} />
         <Route path="/post/:postId" element={<Layout><PostDetail /></Layout>} />
         <Route path="/friends" element={<Layout><Friends /></Layout>} />
         <Route path="/friends/:friendId/bits" element={<Layout><FriendBits /></Layout>} />
         <Route path="/profile" element={<Layout><Profile /></Layout>} />
-        <Route path="/bookmarks" element={<Layout><Bookmarks /></Layout>} />
+        <Route path="/bookmarks" element={<Bookmarks />} />
         <Route path="/contact" element={<Layout><Contact /></Layout>} />
         <Route path="/admin" element={<Layout><AdminDashboard /></Layout>} />
         <Route path="/settings" element={<Layout><Settings /></Layout>} />

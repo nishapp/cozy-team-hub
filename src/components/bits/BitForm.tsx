@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,8 +24,9 @@ import {
 } from "@/components/ui/select";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { supabase } from "@/lib/supabase";
-import { Loader2 } from "lucide-react";
+import { Loader2, Bookmark, BookmarkCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -35,6 +37,7 @@ const formSchema = z.object({
   wdylt_comment: z.string().optional(),
   image_url: z.string().optional(),
   link: z.string().optional(),
+  bookmarked: z.boolean().default(false),
 });
 
 interface BitFormProps {
@@ -79,6 +82,7 @@ const BitForm: React.FC<BitFormProps> = ({
       wdylt_comment: "",
       image_url: "",
       link: "",
+      bookmarked: false,
       ...processInitialData()
     },
   });
@@ -103,6 +107,37 @@ const BitForm: React.FC<BitFormProps> = ({
   };
 
   const onSubmitHandler = async (values: z.infer<typeof formSchema>) => {
+    // Save to bookmarks if the bookmarked flag is set
+    if (values.bookmarked && user) {
+      try {
+        const bookmark = {
+          id: crypto.randomUUID(),
+          title: values.title,
+          url: values.link || "",
+          isPublic: values.visibility === "public",
+          folderId: "bits", // Use the special "bits" folder for bookmarked bits
+          createdAt: new Date().toISOString(),
+        };
+        
+        // Get existing bookmarks
+        const existingBookmarksString = localStorage.getItem('wdylt_bookmarks') || '[]';
+        const existingBookmarks = JSON.parse(existingBookmarksString);
+        
+        // Add the new bookmark
+        const updatedBookmarks = [bookmark, ...existingBookmarks];
+        localStorage.setItem('wdylt_bookmarks', JSON.stringify(updatedBookmarks));
+        
+        // Update bookmark IDs for the bookmark toggle feature
+        const bookmarkIdsString = localStorage.getItem('bookmarkedBits') || '[]';
+        const bookmarkIds = JSON.parse(bookmarkIdsString);
+        localStorage.setItem('bookmarkedBits', JSON.stringify([...bookmarkIds, values.title]));
+        
+        toast.success("Bit saved to bookmarks!");
+      } catch (error) {
+        console.error("Error saving to bookmarks:", error);
+      }
+    }
+    
     onSubmit(values);
   };
 
@@ -264,6 +299,38 @@ const BitForm: React.FC<BitFormProps> = ({
             </FormItem>
           )}
         />
+        
+        <FormField
+          control={form.control}
+          name="bookmarked"
+          render={({ field }) => (
+            <FormItem className="flex items-center space-x-2">
+              <FormControl>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="bookmark-checkbox"
+                    className="sr-only"
+                    checked={field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                  />
+                  <label
+                    htmlFor="bookmark-checkbox"
+                    className={`flex items-center cursor-pointer p-2 rounded-md ${field.value ? 'text-primary' : 'text-muted-foreground'}`}
+                  >
+                    {field.value ? (
+                      <BookmarkCheck className="h-5 w-5 mr-2" />
+                    ) : (
+                      <Bookmark className="h-5 w-5 mr-2" />
+                    )}
+                    <span>Save to bookmarks</span>
+                  </label>
+                </div>
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        
         <div className="flex justify-end space-x-2">
           <Button variant="ghost" type="button" onClick={onCancel}>
             Cancel

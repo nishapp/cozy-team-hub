@@ -1,166 +1,186 @@
 
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Navbar from "../components/layout/Navbar";
-import PageTransition from "../components/ui/PageTransition";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { Post } from "@/types/post";
-import ConvertToBitDialog from "@/components/posts/ConvertToBitDialog";
-import { Skeleton } from "@/components/ui/skeleton";
-
-// Import sample data for demo purposes
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { formatDistanceToNow } from "date-fns";
+import { ArrowLeft, Heart, MessageSquare, Share2 } from "lucide-react";
 import { samplePosts } from "@/data/samplePosts";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/context/AuthContext";
+import PageTransition from "@/components/ui/PageTransition";
+import { toast } from "sonner";
+import ConvertToBitDialog from "@/components/posts/ConvertToBitDialog";
+import CreateBookmarkFromPost from "@/components/bookmarks/CreateBookmarkFromPost";
 
 const PostDetail = () => {
-  const { postId } = useParams();
-  const navigate = useNavigate();
-  const [post, setPost] = useState<Post | null>(null);
+  const { postId } = useParams<{ postId: string }>();
+  const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [liked, setLiked] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
 
   useEffect(() => {
-    // Find the post with the matching ID
-    setLoading(true);
+    // In a real app, we would fetch the post from the API
+    // For now, we'll use a sample post
+    const foundPost = samplePosts.find((p) => p.id === postId);
     
-    // Find the post without any timeout
-    const foundPost = samplePosts.find(p => p.id === postId);
-    setPost(foundPost || null);
+    if (foundPost) {
+      setPost(foundPost);
+    } else {
+      toast.error("Post not found");
+    }
+    
     setLoading(false);
   }, [postId]);
 
+  const handleLike = () => {
+    setLiked(!liked);
+    toast.success(liked ? "Removed like" : "Post liked!");
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success("Link copied to clipboard!");
+  };
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-1 container py-8">
-          <div className="mb-8">
-            <Skeleton className="h-8 w-8" />
-          </div>
-          
-          <div className="max-w-3xl mx-auto">
-            <Skeleton className="h-[300px] w-full mb-6 rounded-lg" />
-            <Skeleton className="h-12 w-3/4 mb-4" />
-            <div className="flex gap-2 mb-4">
-              <Skeleton className="h-6 w-20" />
-              <Skeleton className="h-6 w-20" />
-              <Skeleton className="h-6 w-20" />
-            </div>
-            <Skeleton className="h-5 w-40 mb-6" />
-            
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-5/6" />
-              <Skeleton className="h-4 w-full" />
-            </div>
-          </div>
-        </main>
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (!post) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-1 container py-8">
-          <div className="mb-8">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => navigate('/posts')}
-              className="h-8 w-8"
-            >
-              <ArrowLeft size={18} />
-            </Button>
-          </div>
-          <div className="text-center py-16">
-            <h1 className="text-2xl font-bold mb-4">Post Not Found</h1>
-            <p className="text-muted-foreground mb-8">
-              The post you're looking for doesn't exist or has been removed.
-            </p>
-            <Button onClick={() => navigate('/posts')}>
-              Back to Posts
-            </Button>
-          </div>
-        </main>
+      <div className="flex flex-col items-center justify-center h-screen">
+        <h1 className="text-2xl font-bold mb-4">Post not found</h1>
+        <Button onClick={handleGoBack}>Go Back</Button>
       </div>
     );
   }
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        
-        <main className="flex-1 container py-8">
-          <div className="mb-8">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => navigate('/posts')}
-              className="h-8 w-8"
-            >
-              <ArrowLeft size={18} />
-            </Button>
-          </div>
-          
-          <article className="max-w-3xl mx-auto">
+      <div className="container py-8 max-w-4xl">
+        <Button variant="ghost" className="mb-6" onClick={handleGoBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+        </Button>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <Avatar className="h-10 w-10 mr-2">
+                  <AvatarImage src="/avatar-placeholder.png" />
+                  <AvatarFallback>
+                    {post.author?.substring(0, 2) || "AN"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-semibold">{post.author || "Anonymous"}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {post.created_at
+                      ? formatDistanceToNow(new Date(post.created_at), {
+                          addSuffix: true,
+                        })
+                      : "Unknown date"}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex space-x-2">
+                <CreateBookmarkFromPost post={post} />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsConvertDialogOpen(true)}
+                >
+                  Convert to Bit
+                </Button>
+              </div>
+            </div>
+
+            <h1 className="text-3xl font-bold mt-6 mb-4">{post.title}</h1>
+
             {post.image_url && (
-              <div className="mb-6">
-                <img 
-                  src={post.image_url} 
+              <div className="mb-6 rounded-lg overflow-hidden">
+                <img
+                  src={post.image_url}
                   alt={post.title}
-                  className="w-full h-[300px] md:h-[400px] object-cover rounded-lg"
+                  className="w-full object-cover"
+                  style={{ maxHeight: "400px" }}
                 />
               </div>
             )}
-            
-            <div className="mb-6">
-              <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {post.tags?.map((tag, index) => (
-                  <span key={index} className="bg-muted px-2 py-1 rounded-md text-sm">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {new Date(post.created_at).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-                {post.created_at !== post.updated_at && ' (updated)'}
-              </div>
-            </div>
-            
-            <div className="prose max-w-none dark:prose-invert prose-img:rounded-lg" 
-                 dangerouslySetInnerHTML={{ __html: post.content }} />
-              
-            <div className="mt-12 flex justify-between">
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/posts')}
-              >
-                Back to Posts
-              </Button>
-              <Button onClick={() => setIsConvertDialogOpen(true)}>
-                Convert to Bit
-              </Button>
-            </div>
-          </article>
-          
-          {post && (
-            <ConvertToBitDialog
-              post={post}
-              isOpen={isConvertDialogOpen}
-              onClose={() => setIsConvertDialogOpen(false)}
+
+            <div
+              className="prose dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: post.content }}
             />
-          )}
-        </main>
+
+            <div className="flex flex-wrap gap-2 mt-6">
+              {post.tags &&
+                post.tags.map((tag: string, index: number) => (
+                  <Badge key={index} variant="outline">
+                    {tag}
+                  </Badge>
+                ))}
+            </div>
+
+            <div className="flex items-center space-x-4 mt-8 pt-4 border-t">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`flex items-center gap-1 ${
+                  liked ? "text-red-500" : ""
+                }`}
+                onClick={handleLike}
+              >
+                <Heart
+                  className={`h-5 w-5 ${liked ? "fill-red-500" : ""}`}
+                />
+                <span>Like</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <MessageSquare className="h-5 w-5" />
+                <span>Comment</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1"
+                onClick={handleShare}
+              >
+                <Share2 className="h-5 w-5" />
+                <span>Share</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Comments section would go here */}
+        
+        {isConvertDialogOpen && (
+          <ConvertToBitDialog
+            post={post}
+            isOpen={isConvertDialogOpen}
+            onClose={() => setIsConvertDialogOpen(false)}
+          />
+        )}
       </div>
     </PageTransition>
   );

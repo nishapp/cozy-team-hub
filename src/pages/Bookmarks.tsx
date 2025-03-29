@@ -1,10 +1,9 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Plus, Folder, Link, Trash2, Edit, Grid, List, ChevronRight, ChevronDown, Lock, Globe } from "lucide-react";
+import { Plus, Folder, Link, Trash2, Edit, Grid, List, ChevronRight, ChevronDown, Lock, Globe, Code } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
@@ -14,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import PageTransition from "@/components/ui/PageTransition";
+import CreateBitFromBookmark from "@/components/bookmarks/CreateBitFromBookmark";
 
 // Types
 interface Bookmark {
@@ -627,6 +627,7 @@ const Bookmarks = () => {
                             >
                               {bookmark.isPublic ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
                             </Button>
+                            <CreateBitFromBookmark bookmark={bookmark} />
                             <Button
                               variant="ghost"
                               size="icon"
@@ -694,6 +695,7 @@ const Bookmarks = () => {
                             >
                               {bookmark.isPublic ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                             </Button>
+                            <CreateBitFromBookmark bookmark={bookmark} />
                             <Button
                               variant="ghost"
                               size="icon"
