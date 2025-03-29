@@ -1,968 +1,895 @@
 
-import React, { useState, useEffect, useCallback } from "react";
-import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
-import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { useAuth } from "@/context/AuthContext";
-import { PlusCircle, Folder, FolderPlus, Globe, BookmarkIcon, Grid2X2, LayoutList, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from 'uuid';
-import { isDemoMode } from "@/lib/supabase";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { Plus, Folder, Link, Trash2, Edit, Grid, List, X, ChevronRight, ChevronDown, Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/context/AuthContext";
+import PageTransition from "@/components/ui/PageTransition";
 
 // Types
-type BookmarkViewMode = "grid" | "list";
-
 interface Bookmark {
   id: string;
   title: string;
   url: string;
   description?: string;
-  thumbnail_url?: string;
-  folder_id: string;
-  user_id: string;
-  created_at: string;
-  updated_at: string;
-  order: number;
-  bit_id?: string;
-  source?: "personal" | "bit" | "friend_bit";
+  icon?: string;
+  tags?: string[];
+  createdAt: string;
+  folderId: string;
 }
 
-interface BookmarkFolder {
+interface Folder {
   id: string;
   name: string;
-  parent_id: string | null;
-  user_id: string;
-  created_at: string;
-  updated_at: string;
-  order: number;
-  children?: BookmarkFolder[];
+  icon?: string;
+  parentId: string | null;
+  isExpanded?: boolean;
+  isSpecial?: boolean;
+  specialType?: 'bits' | 'friends' | 'recent';
+  createdAt: string;
 }
 
-// Local Storage Keys
+// Storage keys
 const STORAGE_KEYS = {
-  FOLDERS: 'bookmark_folders',
-  BOOKMARKS: 'bookmarks',
-  ACTIVE_FOLDER: 'active_bookmark_folder',
-  VIEW_MODE: 'bookmark_view_mode'
+  BOOKMARKS: 'wdylt_bookmarks',
+  FOLDERS: 'wdylt_folders',
 };
 
-// Client-side mock data function
-const createInitialData = (userId: string) => {
-  const rootFolder: BookmarkFolder = {
-    id: "root",
-    name: "Bookmarks",
-    parent_id: null,
-    user_id: userId,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    order: 0
-  };
+// LocalStorage helper functions
+const getFromStorage = <T,>(key: string, defaultValue: T): T => {
+  const storedData = localStorage.getItem(key);
+  return storedData ? JSON.parse(storedData) : defaultValue;
+};
 
-  const bitsFolder: BookmarkFolder = {
-    id: "bits-folder",
-    name: "My Bits",
-    parent_id: "root",
-    user_id: userId,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    order: 1
-  };
+const saveToStorage = <T,>(key: string, data: T): void => {
+  localStorage.setItem(key, JSON.stringify(data));
+};
 
-  const friendsFolder: BookmarkFolder = {
-    id: "friends-folder",
-    name: "Friends' Bits",
-    parent_id: "root",
-    user_id: userId,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    order: 2
-  };
+// Mock data with special folders
+const createMockData = () => {
+  const folders: Folder[] = [
+    {
+      id: 'root',
+      name: 'All Bookmarks',
+      parentId: null,
+      isExpanded: true,
+      isSpecial: true,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'bits',
+      name: 'My Bits',
+      parentId: 'root',
+      isExpanded: true,
+      isSpecial: true,
+      specialType: 'bits',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'friends',
+      name: 'Friends Bits',
+      parentId: 'root',
+      isExpanded: true,
+      isSpecial: true,
+      specialType: 'friends',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'recent',
+      name: 'Recent',
+      parentId: 'root',
+      isExpanded: true,
+      isSpecial: true,
+      specialType: 'recent',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'tech',
+      name: 'Technology',
+      parentId: 'root',
+      isExpanded: true,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'programming',
+      name: 'Programming',
+      parentId: 'tech',
+      isExpanded: true,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'cooking',
+      name: 'Cooking',
+      parentId: 'root',
+      isExpanded: true,
+      createdAt: new Date().toISOString(),
+    },
+  ];
 
-  const workFolder: BookmarkFolder = {
-    id: "work-folder",
-    name: "Work",
-    parent_id: "root",
-    user_id: userId,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    order: 3
-  };
-
-  const personalFolder: BookmarkFolder = {
-    id: "personal-folder",
-    name: "Personal",
-    parent_id: "root",
-    user_id: userId,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    order: 4
-  };
-
-  // Nested folders
-  const devFolder: BookmarkFolder = {
-    id: "dev-folder",
-    name: "Development",
-    parent_id: "work-folder",
-    user_id: userId,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    order: 0
-  };
-
-  const folders = [rootFolder, bitsFolder, friendsFolder, workFolder, personalFolder, devFolder];
-
-  // Sample bookmarks
   const bookmarks: Bookmark[] = [
     {
       id: uuidv4(),
-      title: "GitHub",
-      url: "https://github.com",
-      description: "Where the world builds software",
-      thumbnail_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-      folder_id: devFolder.id,
-      user_id: userId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      order: 0,
-      source: "personal"
+      title: 'React Documentation',
+      url: 'https://reactjs.org',
+      description: 'Official React documentation',
+      tags: ['programming', 'javascript', 'frontend'],
+      folderId: 'programming',
+      createdAt: new Date().toISOString(),
     },
     {
       id: uuidv4(),
-      title: "Stack Overflow",
-      url: "https://stackoverflow.com",
-      description: "Where developers learn, share, & build careers",
-      thumbnail_url: "https://cdn.sstatic.net/Sites/stackoverflow/Img/apple-touch-icon.png",
-      folder_id: devFolder.id,
-      user_id: userId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      order: 1,
-      source: "personal"
+      title: 'TypeScript Documentation',
+      url: 'https://www.typescriptlang.org',
+      description: 'Learn TypeScript from scratch',
+      tags: ['programming', 'typescript', 'javascript'],
+      folderId: 'programming',
+      createdAt: new Date().toISOString(),
     },
     {
       id: uuidv4(),
-      title: "MDN Web Docs",
-      url: "https://developer.mozilla.org",
-      description: "Resources for developers, by developers",
-      thumbnail_url: "https://developer.mozilla.org/apple-touch-icon.6803c6f0.png",
-      folder_id: devFolder.id,
-      user_id: userId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      order: 2,
-      source: "personal"
+      title: 'BBC News',
+      url: 'https://www.bbc.com/news',
+      description: 'Latest news from around the world',
+      tags: ['news', 'current affairs'],
+      folderId: 'root',
+      createdAt: new Date().toISOString(),
     },
     {
       id: uuidv4(),
-      title: "Netflix",
-      url: "https://netflix.com",
-      description: "Watch TV shows and movies",
-      thumbnail_url: "https://assets.nflxext.com/us/ffe/siteui/common/icons/nficon2016.png",
-      folder_id: personalFolder.id,
-      user_id: userId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      order: 0,
-      source: "personal"
+      title: 'Italian Pasta Recipes',
+      url: 'https://www.bonappetit.com/recipes/pasta',
+      description: 'Delicious pasta recipes from Italy',
+      tags: ['cooking', 'italian', 'pasta'],
+      folderId: 'cooking',
+      createdAt: new Date().toISOString(),
     },
     {
       id: uuidv4(),
-      title: "Spotify",
-      url: "https://spotify.com",
-      description: "Music for everyone",
-      thumbnail_url: "https://www.scdn.co/i/_global/twitter_card-default.jpg",
-      folder_id: personalFolder.id,
-      user_id: userId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      order: 1,
-      source: "personal"
+      title: 'Gordon Ramsay YouTube Channel',
+      url: 'https://www.youtube.com/user/gordonramsay',
+      description: 'Cooking tutorials by Gordon Ramsay',
+      tags: ['cooking', 'video', 'chef'],
+      folderId: 'cooking',
+      createdAt: new Date().toISOString(),
     },
     {
       id: uuidv4(),
-      title: "Learning React",
-      url: "https://react.dev",
-      description: "A bit about React",
-      thumbnail_url: "https://react.dev/favicon.ico",
-      folder_id: bitsFolder.id,
-      user_id: userId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      order: 0,
-      source: "bit",
-      bit_id: "bit1"
+      title: 'The New York Times',
+      url: 'https://www.nytimes.com',
+      description: 'Breaking news, reviews and opinion',
+      tags: ['news', 'journalism'],
+      folderId: 'root',
+      createdAt: new Date().toISOString(),
     },
     {
       id: uuidv4(),
-      title: "Friend's JavaScript Tips",
-      url: "https://javascript.info",
-      description: "Shared by a friend",
-      thumbnail_url: "https://javascript.info/img/favicon/apple-touch-icon.png",
-      folder_id: friendsFolder.id,
-      user_id: userId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      order: 0,
-      source: "friend_bit",
-      bit_id: "bit2"
-    }
+      title: 'TechCrunch',
+      url: 'https://techcrunch.com',
+      description: 'Latest technology news and startup information',
+      tags: ['tech', 'startups', 'news'],
+      folderId: 'tech',
+      createdAt: new Date().toISOString(),
+    },
   ];
 
   return { folders, bookmarks };
 };
 
-// Helper functions for localStorage
-const saveToLocalStorage = (key: string, data: any) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (error) {
-    console.error(`Error saving to localStorage (${key}):`, error);
-  }
-};
-
-const getFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
-  try {
-    const storedData = localStorage.getItem(key);
-    return storedData ? JSON.parse(storedData) : defaultValue;
-  } catch (error) {
-    console.error(`Error retrieving from localStorage (${key}):`, error);
-    return defaultValue;
-  }
-};
-
-// Component for Sortable Bookmark Item
-const BookmarkItem = ({ bookmark, viewMode, onEdit, onDelete, onMove }) => {
-  if (viewMode === "grid") {
-    return (
-      <ContextMenu>
-        <ContextMenuTrigger>
-          <Card className="bookmark-card hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden">
-            <CardContent className="p-0">
-              <div className="flex flex-col h-full">
-                {bookmark.thumbnail_url ? (
-                  <div className="h-32 overflow-hidden bg-gray-100 dark:bg-gray-800">
-                    <img 
-                      src={bookmark.thumbnail_url} 
-                      alt={bookmark.title} 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = "https://placehold.co/400x200/9ca3af/ffffff?text=No+Thumbnail";
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="h-32 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                    <Globe className="w-12 h-12 text-gray-400" />
-                  </div>
-                )}
-                <div className="p-3 flex flex-col flex-grow">
-                  <h3 className="font-medium text-sm line-clamp-1 mb-1">{bookmark.title}</h3>
-                  {bookmark.description && (
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{bookmark.description}</p>
-                  )}
-                  <div className="mt-auto flex items-center text-xs text-muted-foreground">
-                    <Globe className="w-3 h-3 mr-1" /> 
-                    <span className="truncate">{new URL(bookmark.url).hostname.replace('www.', '')}</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </ContextMenuTrigger>
-        <ContextMenuContent>
-          <ContextMenuItem onClick={() => window.open(bookmark.url, "_blank")}>Open Link</ContextMenuItem>
-          <ContextMenuItem onClick={() => onEdit(bookmark)}>Edit</ContextMenuItem>
-          <ContextMenuItem onClick={() => onMove(bookmark)}>Move</ContextMenuItem>
-          <ContextMenuItem className="text-destructive" onClick={() => onDelete(bookmark.id)}>Delete</ContextMenuItem>
-        </ContextMenuContent>
-      </ContextMenu>
-    );
-  }
-  
-  // List view
-  return (
-    <ContextMenu>
-      <ContextMenuTrigger>
-        <div className="flex items-center p-2 hover:bg-accent rounded-md cursor-pointer transition-colors">
-          <div className="flex-shrink-0 mr-3">
-            {bookmark.thumbnail_url ? (
-              <img 
-                src={bookmark.thumbnail_url} 
-                alt={bookmark.title} 
-                className="w-6 h-6 rounded-sm object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = "https://placehold.co/60x60/9ca3af/ffffff?text=●";
-                }}
-              />
-            ) : (
-              <Globe className="w-5 h-5 text-muted-foreground" />
-            )}
-          </div>
-          <div className="flex-grow min-w-0">
-            <h3 className="text-sm font-medium truncate">{bookmark.title}</h3>
-            <p className="text-xs text-muted-foreground truncate">{new URL(bookmark.url).hostname.replace('www.', '')}</p>
-          </div>
-          <div className="flex-shrink-0 text-xs text-muted-foreground">
-            {new Date(bookmark.created_at).toLocaleDateString()}
-          </div>
-        </div>
-      </ContextMenuTrigger>
-      <ContextMenuContent>
-        <ContextMenuItem onClick={() => window.open(bookmark.url, "_blank")}>Open Link</ContextMenuItem>
-        <ContextMenuItem onClick={() => onEdit(bookmark)}>Edit</ContextMenuItem>
-        <ContextMenuItem onClick={() => onMove(bookmark)}>Move</ContextMenuItem>
-        <ContextMenuItem className="text-destructive" onClick={() => onDelete(bookmark.id)}>Delete</ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
-  );
-};
-
-// Component for Folder Tree Item
-const FolderTreeItem = ({ folder, bookmarks, activeFolderId, onFolderClick, onAddBookmark, onAddFolder, viewMode, onEditBookmark, onDeleteBookmark, onMoveBookmark, allFolders }) => {
-  const folderBookmarks = bookmarks.filter(b => b.folder_id === folder.id);
-  const hasChildren = allFolders.some(f => f.parent_id === folder.id);
-  
-  const childFolders = allFolders
-    .filter(f => f.parent_id === folder.id)
-    .sort((a, b) => a.order - b.order);
-
-  return (
-    <div className="folder-item">
-      <div 
-        className={`flex items-center p-2 rounded-md cursor-pointer ${activeFolderId === folder.id ? 'bg-accent' : 'hover:bg-accent/50'}`}
-        onClick={() => onFolderClick(folder.id)}
-      >
-        <Folder className={`mr-2 h-4 w-4 ${activeFolderId === folder.id ? 'text-primary' : 'text-muted-foreground'}`} />
-        <span className="text-sm flex-grow truncate">{folder.name}</span>
-        <div className="flex space-x-1">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-6 w-6" 
-            title="Add bookmark"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddBookmark(folder.id);
-            }}
-          >
-            <BookmarkIcon className="h-3 w-3" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-6 w-6" 
-            title="Add subfolder"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddFolder(folder.id);
-            }}
-          >
-            <FolderPlus className="h-3 w-3" />
-          </Button>
-        </div>
-      </div>
-      
-      {hasChildren && (
-        <Collapsible defaultOpen className="ml-4 mt-1 border-l pl-2 border-border">
-          <CollapsibleContent className="space-y-1">
-            {childFolders.map(childFolder => (
-              <FolderTreeItem
-                key={childFolder.id}
-                folder={childFolder}
-                bookmarks={bookmarks}
-                activeFolderId={activeFolderId}
-                onFolderClick={onFolderClick}
-                onAddBookmark={onAddBookmark}
-                onAddFolder={onAddFolder}
-                viewMode={viewMode}
-                onEditBookmark={onEditBookmark}
-                onDeleteBookmark={onDeleteBookmark}
-                onMoveBookmark={onMoveBookmark}
-                allFolders={allFolders}
-              />
-            ))}
-          </CollapsibleContent>
-        </Collapsible>
-      )}
-    </div>
-  );
-};
-
-// Main Bookmarks Page
-const BookmarksPage = () => {
+// Component
+const Bookmarks = () => {
   const { user } = useAuth();
-  const [folders, setFolders] = useState<BookmarkFolder[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-  const [activeFolderId, setActiveFolderId] = useState<string>("root");
-  const [viewMode, setViewMode] = useState<BookmarkViewMode>("grid");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  
-  // Modal states
-  const [showAddBookmarkModal, setShowAddBookmarkModal] = useState<boolean>(false);
-  const [showAddFolderModal, setShowAddFolderModal] = useState<boolean>(false);
-  const [showMoveBookmarkModal, setShowMoveBookmarkModal] = useState<boolean>(false);
-  const [currentFolder, setCurrentFolder] = useState<string | null>(null);
-  const [editBookmark, setEditBookmark] = useState<Bookmark | null>(null);
-  const [moveBookmark, setMoveBookmark] = useState<Bookmark | null>(null);
-  
-  // Form states
-  const [newBookmarkTitle, setNewBookmarkTitle] = useState<string>("");
-  const [newBookmarkUrl, setNewBookmarkUrl] = useState<string>("");
-  const [newBookmarkDescription, setNewBookmarkDescription] = useState<string>("");
-  const [newFolderName, setNewFolderName] = useState<string>("");
-  const [selectedFolderId, setSelectedFolderId] = useState<string>("");
+  const [selectedFolderId, setSelectedFolderId] = useState<string>('root');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [isAddBookmarkOpen, setIsAddBookmarkOpen] = useState(false);
+  const [isEditBookmarkOpen, setIsEditBookmarkOpen] = useState(false);
+  const [isAddFolderOpen, setIsAddFolderOpen] = useState(false);
+  const [currentBookmark, setCurrentBookmark] = useState<Bookmark | null>(null);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [formData, setFormData] = useState({
+    title: '',
+    url: '',
+    description: '',
+    tags: '',
+    folderId: '',
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [parentFolderId, setParentFolderId] = useState<string | null>('root');
+  const draggedItemRef = useRef<{ id: string; type: 'bookmark' | 'folder' } | null>(null);
 
-  // Initialize data from localStorage or create new data if not exists
+  // Set up DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Load data from localStorage or initialize with mock data
   useEffect(() => {
-    if (user) {
-      const storedFolders = getFromLocalStorage<BookmarkFolder[]>(STORAGE_KEYS.FOLDERS, []);
-      const storedBookmarks = getFromLocalStorage<Bookmark[]>(STORAGE_KEYS.BOOKMARKS, []);
-      const storedActiveFolderId = getFromLocalStorage<string>(STORAGE_KEYS.ACTIVE_FOLDER, "root");
-      const storedViewMode = getFromLocalStorage<BookmarkViewMode>(STORAGE_KEYS.VIEW_MODE, "grid");
+    const storedFolders = getFromStorage<Folder[]>(STORAGE_KEYS.FOLDERS, []);
+    const storedBookmarks = getFromStorage<Bookmark[]>(STORAGE_KEYS.BOOKMARKS, []);
 
-      // If there's no data in localStorage, create initial demo data
-      if (storedFolders.length === 0 || (isDemoMode && storedFolders.length === 0)) {
-        const { folders, bookmarks } = createInitialData(user.id);
-        setFolders(folders);
-        setBookmarks(bookmarks);
-        saveToLocalStorage(STORAGE_KEYS.FOLDERS, folders);
-        saveToLocalStorage(STORAGE_KEYS.BOOKMARKS, bookmarks);
-      } else {
-        setFolders(storedFolders);
-        setBookmarks(storedBookmarks);
-      }
-
-      setActiveFolderId(storedActiveFolderId);
-      setViewMode(storedViewMode);
-      setIsLoading(false);
+    if (storedFolders.length === 0 || storedBookmarks.length === 0) {
+      // Initialize with mock data if no data exists
+      const { folders: mockFolders, bookmarks: mockBookmarks } = createMockData();
+      setFolders(mockFolders);
+      setBookmarks(mockBookmarks);
+      saveToStorage(STORAGE_KEYS.FOLDERS, mockFolders);
+      saveToStorage(STORAGE_KEYS.BOOKMARKS, mockBookmarks);
+    } else {
+      setFolders(storedFolders);
+      setBookmarks(storedBookmarks);
     }
-  }, [user]);
+  }, []);
 
-  // Save changes to localStorage whenever state changes
+  // Save changes to localStorage whenever state updates
   useEffect(() => {
-    if (!isLoading) {
-      saveToLocalStorage(STORAGE_KEYS.FOLDERS, folders);
-      saveToLocalStorage(STORAGE_KEYS.BOOKMARKS, bookmarks);
-      saveToLocalStorage(STORAGE_KEYS.ACTIVE_FOLDER, activeFolderId);
-      saveToLocalStorage(STORAGE_KEYS.VIEW_MODE, viewMode);
+    if (folders.length > 0) {
+      saveToStorage(STORAGE_KEYS.FOLDERS, folders);
     }
-  }, [folders, bookmarks, activeFolderId, viewMode, isLoading]);
+  }, [folders]);
 
-  // Get current folder bookmarks
-  const getCurrentFolderBookmarks = useCallback(() => {
-    return bookmarks.filter(b => b.folder_id === activeFolderId)
-      .sort((a, b) => a.order - b.order);
-  }, [bookmarks, activeFolderId]);
+  useEffect(() => {
+    if (bookmarks.length > 0) {
+      saveToStorage(STORAGE_KEYS.BOOKMARKS, bookmarks);
+    }
+  }, [bookmarks]);
 
-  // Get active folder
-  const getActiveFolder = useCallback(() => {
-    return folders.find(f => f.id === activeFolderId);
-  }, [folders, activeFolderId]);
+  // Filter bookmarks by search term and folder
+  const filteredBookmarks = bookmarks.filter(bookmark => {
+    const matchesSearch = searchTerm === '' || 
+      bookmark.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      bookmark.url.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (bookmark.description && bookmark.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesFolder = bookmark.folderId === selectedFolderId || 
+      // Include child folder bookmarks when parent folder is selected
+      (getChildFolderIds(selectedFolderId).includes(bookmark.folderId));
+    
+    return matchesSearch && matchesFolder;
+  });
 
-  // Handle adding new bookmark
-  const handleAddBookmark = useCallback((folderId: string) => {
-    setCurrentFolder(folderId);
-    setEditBookmark(null);
-    setNewBookmarkTitle("");
-    setNewBookmarkUrl("");
-    setNewBookmarkDescription("");
-    setShowAddBookmarkModal(true);
-  }, []);
+  // Get all child folder IDs for a given folder
+  const getChildFolderIds = useCallback((folderId: string): string[] => {
+    const childFolders = folders.filter(f => f.parentId === folderId);
+    const childIds = childFolders.map(f => f.id);
+    
+    // Recursively get children of children
+    const grandchildIds = childFolders.flatMap(f => getChildFolderIds(f.id));
+    
+    return [...childIds, ...grandchildIds];
+  }, [folders]);
 
-  // Handle editing bookmark
-  const handleEditBookmark = useCallback((bookmark: Bookmark) => {
-    setEditBookmark(bookmark);
-    setNewBookmarkTitle(bookmark.title);
-    setNewBookmarkUrl(bookmark.url);
-    setNewBookmarkDescription(bookmark.description || "");
-    setShowAddBookmarkModal(true);
-  }, []);
+  // Get folder path for display (breadcrumbs)
+  const getFolderPath = useCallback((folderId: string, path: Folder[] = []): Folder[] => {
+    const folder = folders.find(f => f.id === folderId);
+    if (!folder) return path;
+    
+    const newPath = [folder, ...path];
+    
+    if (folder.parentId === null) return newPath;
+    return getFolderPath(folder.parentId, newPath);
+  }, [folders]);
 
-  // Handle moving bookmark
-  const handleMoveBookmark = useCallback((bookmark: Bookmark) => {
-    setMoveBookmark(bookmark);
-    setSelectedFolderId(bookmark.folder_id);
-    setShowMoveBookmarkModal(true);
-  }, []);
+  // Handle expanding/collapsing folders
+  const toggleFolderExpanded = (folderId: string) => {
+    setFolders(prev => 
+      prev.map(folder => 
+        folder.id === folderId 
+          ? { ...folder, isExpanded: !folder.isExpanded } 
+          : folder
+      )
+    );
+  };
 
-  // Handle adding new folder
-  const handleAddFolder = useCallback((parentId: string) => {
-    setCurrentFolder(parentId);
-    setNewFolderName("");
-    setShowAddFolderModal(true);
-  }, []);
+  // Handle selecting a folder
+  const handleSelectFolder = (folderId: string) => {
+    setSelectedFolderId(folderId);
+  };
 
-  // Handle deleting bookmark
-  const handleDeleteBookmark = useCallback((bookmarkId: string) => {
-    setBookmarks(prev => prev.filter(b => b.id !== bookmarkId));
-    toast.success("Bookmark deleted");
-  }, []);
-
-  // Save new bookmark
-  const saveBookmark = useCallback(() => {
-    if (!newBookmarkTitle || !newBookmarkUrl) {
-      toast.error("Title and URL are required");
+  // Handle adding a new folder
+  const handleAddFolder = () => {
+    if (!newFolderName.trim()) {
+      toast.error('Folder name cannot be empty');
       return;
     }
 
-    try {
-      // Validate URL
-      new URL(newBookmarkUrl);
-      
-      if (editBookmark) {
-        // Update existing bookmark
-        const updatedBookmarks = bookmarks.map(b => 
-          b.id === editBookmark.id 
-            ? { 
-                ...b, 
-                title: newBookmarkTitle, 
-                url: newBookmarkUrl, 
-                description: newBookmarkDescription,
-                updated_at: new Date().toISOString()
-              } 
-            : b
-        );
-        setBookmarks(updatedBookmarks);
-        saveToLocalStorage(STORAGE_KEYS.BOOKMARKS, updatedBookmarks);
-        toast.success("Bookmark updated");
-      } else {
-        // Add new bookmark
-        const folderBookmarks = bookmarks.filter(b => b.folder_id === currentFolder);
-        const newOrder = folderBookmarks.length > 0 
-          ? Math.max(...folderBookmarks.map(b => b.order)) + 1 
-          : 0;
-        
-        const newBookmark: Bookmark = {
-          id: uuidv4(),
-          title: newBookmarkTitle,
-          url: newBookmarkUrl,
-          description: newBookmarkDescription,
-          folder_id: currentFolder || activeFolderId,
-          user_id: user?.id || "",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          order: newOrder,
-          source: "personal"
-        };
-        
-        const updatedBookmarks = [...bookmarks, newBookmark];
-        setBookmarks(updatedBookmarks);
-        saveToLocalStorage(STORAGE_KEYS.BOOKMARKS, updatedBookmarks);
-        toast.success("Bookmark added");
-      }
-      
-      setShowAddBookmarkModal(false);
-    } catch (error) {
-      toast.error("Please enter a valid URL");
-    }
-  }, [newBookmarkTitle, newBookmarkUrl, newBookmarkDescription, editBookmark, currentFolder, activeFolderId, bookmarks, user?.id]);
-
-  // Save new folder
-  const saveFolder = useCallback(() => {
-    if (!newFolderName) {
-      toast.error("Folder name is required");
-      return;
-    }
-    
-    const childFolders = folders.filter(f => f.parent_id === currentFolder);
-    const newOrder = childFolders.length > 0 
-      ? Math.max(...childFolders.map(f => f.order)) + 1 
-      : 0;
-    
-    const newFolder: BookmarkFolder = {
+    const newFolder: Folder = {
       id: uuidv4(),
       name: newFolderName,
-      parent_id: currentFolder,
-      user_id: user?.id || "",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      order: newOrder
+      parentId: parentFolderId,
+      isExpanded: false,
+      createdAt: new Date().toISOString(),
     };
-    
-    const updatedFolders = [...folders, newFolder];
-    setFolders(updatedFolders);
-    saveToLocalStorage(STORAGE_KEYS.FOLDERS, updatedFolders);
-    
-    setShowAddFolderModal(false);
-    toast.success("Folder created");
-    
-    console.log("New folder added:", newFolder);
-    console.log("Updated folders list:", updatedFolders);
-  }, [newFolderName, currentFolder, folders, user?.id]);
 
-  // Move bookmark to another folder
-  const moveBookmarkToFolder = useCallback(() => {
-    if (!moveBookmark || !selectedFolderId) return;
+    setFolders(prev => [...prev, newFolder]);
+    setNewFolderName('');
+    setIsAddFolderOpen(false);
+    toast.success(`Folder "${newFolderName}" created`);
+  };
+
+  // Handle adding a new bookmark
+  const handleAddBookmark = () => {
+    const { title, url, description, tags } = formData;
     
-    const folderBookmarks = bookmarks.filter(b => b.folder_id === selectedFolderId);
-    const newOrder = folderBookmarks.length > 0 
-      ? Math.max(...folderBookmarks.map(b => b.order)) + 1 
-      : 0;
+    if (!title.trim() || !url.trim()) {
+      toast.error('Title and URL are required');
+      return;
+    }
+
+    const folderId = formData.folderId || selectedFolderId;
+
+    const newBookmark: Bookmark = {
+      id: uuidv4(),
+      title,
+      url,
+      description,
+      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+      folderId,
+      createdAt: new Date().toISOString(),
+    };
+
+    setBookmarks(prev => [newBookmark, ...prev]);
+    setFormData({
+      title: '',
+      url: '',
+      description: '',
+      tags: '',
+      folderId: '',
+    });
+    setIsAddBookmarkOpen(false);
+    toast.success(`Bookmark "${title}" added`);
+  };
+
+  // Handle bookmark edit
+  const handleEditBookmark = () => {
+    if (!currentBookmark) return;
     
-    const updatedBookmarks = bookmarks.map(b => 
-      b.id === moveBookmark.id 
-        ? { 
-            ...b, 
-            folder_id: selectedFolderId,
-            order: newOrder,
-            updated_at: new Date().toISOString()
-          } 
-        : b
+    const { title, url, description, tags, folderId } = formData;
+    
+    if (!title.trim() || !url.trim()) {
+      toast.error('Title and URL are required');
+      return;
+    }
+
+    const updatedBookmark: Bookmark = {
+      ...currentBookmark,
+      title,
+      url,
+      description,
+      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+      folderId: folderId || currentBookmark.folderId,
+    };
+
+    setBookmarks(prev => 
+      prev.map(bookmark => 
+        bookmark.id === currentBookmark.id ? updatedBookmark : bookmark
+      )
     );
     
-    setBookmarks(updatedBookmarks);
-    saveToLocalStorage(STORAGE_KEYS.BOOKMARKS, updatedBookmarks);
-    
-    setShowMoveBookmarkModal(false);
-    toast.success("Bookmark moved");
-  }, [moveBookmark, selectedFolderId, bookmarks]);
+    setCurrentBookmark(null);
+    setIsEditBookmarkOpen(false);
+    toast.success(`Bookmark "${title}" updated`);
+  };
 
-  // Handle drag and drop
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
+  // Handle bookmark delete
+  const handleDeleteBookmark = (id: string) => {
+    setBookmarks(prev => prev.filter(bookmark => bookmark.id !== id));
+    toast.success('Bookmark deleted');
+  };
+
+  // Open edit bookmark modal
+  const openEditBookmarkModal = (bookmark: Bookmark) => {
+    setCurrentBookmark(bookmark);
+    setFormData({
+      title: bookmark.title,
+      url: bookmark.url,
+      description: bookmark.description || '',
+      tags: bookmark.tags ? bookmark.tags.join(', ') : '',
+      folderId: bookmark.folderId,
+    });
+    setIsEditBookmarkOpen(true);
+  };
+
+  // Handle drag end for bookmarks and folders
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
-    if (over && active.id !== over.id) {
-      setBookmarks(prev => {
-        const items = prev.filter(b => b.folder_id === activeFolderId);
-        const oldIndex = items.findIndex(b => b.id === active.id);
-        const newIndex = items.findIndex(b => b.id === over.id);
+    if (!over) return;
+    
+    // Handle dragging bookmarks
+    if (active.id !== over.id) {
+      // Move bookmark to another bookmark's position
+      if (draggedItemRef.current?.type === 'bookmark' && over.id.toString().includes('bookmark:')) {
+        const targetId = over.id.toString().replace('bookmark:', '');
+        const bookmarkId = active.id.toString().replace('bookmark:', '');
         
-        if (oldIndex === -1 || newIndex === -1) return prev;
+        // Rearrange bookmarks in the same folder
+        const activeIndex = bookmarks.findIndex(b => b.id === bookmarkId);
+        const overIndex = bookmarks.findIndex(b => b.id === targetId);
         
-        const reordered = arrayMove(items, oldIndex, newIndex);
+        setBookmarks(prev => arrayMove(prev, activeIndex, overIndex));
+      }
+      
+      // Move bookmark to a folder
+      if (draggedItemRef.current?.type === 'bookmark' && over.id.toString().includes('folder:')) {
+        const folderId = over.id.toString().replace('folder:', '');
+        const bookmarkId = active.id.toString().replace('bookmark:', '');
         
-        // Update order values
-        const updated = reordered.map((item, index) => ({
-          ...item,
-          order: index
-        }));
+        // Update bookmark's folder
+        setBookmarks(prev => 
+          prev.map(bookmark => 
+            bookmark.id === bookmarkId 
+              ? { ...bookmark, folderId } 
+              : bookmark
+          )
+        );
         
-        // Replace the bookmarks in the current folder with the updated ones
-        const updatedBookmarks = prev.map(bookmark => {
-          const updatedBookmark = updated.find(u => u.id === bookmark.id);
-          return updatedBookmark || bookmark;
-        });
-        
-        // Save to localStorage
-        saveToLocalStorage(STORAGE_KEYS.BOOKMARKS, updatedBookmarks);
-        
-        return updatedBookmarks;
-      });
+        toast.success('Bookmark moved to folder');
+      }
     }
-  }, [activeFolderId]);
+    
+    draggedItemRef.current = null;
+  };
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
-  }
+  // Set dragged item ref when drag starts
+  const handleDragStart = (event: any) => {
+    const id = event.active.id.toString();
+    
+    if (id.includes('bookmark:')) {
+      draggedItemRef.current = {
+        id: id.replace('bookmark:', ''),
+        type: 'bookmark'
+      };
+    } else if (id.includes('folder:')) {
+      draggedItemRef.current = {
+        id: id.replace('folder:', ''),
+        type: 'folder'
+      };
+    }
+  };
 
-  const currentBookmarks = getCurrentFolderBookmarks();
-  const activeFolder = getActiveFolder();
+  // Render folder tree recursively
+  const renderFolders = (parentId: string | null, depth = 0) => {
+    const childFolders = folders.filter(folder => folder.parentId === parentId);
+    
+    return childFolders.map(folder => {
+      const isExpanded = folder.isExpanded ?? false;
+      const hasChildren = folders.some(f => f.parentId === folder.id);
+      
+      return (
+        <div key={folder.id}>
+          <div 
+            className={`flex items-center py-1 px-2 rounded-md cursor-pointer ${
+              selectedFolderId === folder.id ? 'bg-primary/10 text-primary' : 'hover:bg-muted'
+            }`}
+            style={{ 
+              paddingLeft: `${depth * 16 + 8}px`,
+            }}
+            onClick={() => handleSelectFolder(folder.id)}
+          >
+            {hasChildren && (
+              <button
+                className="w-6 h-6 flex items-center justify-center"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFolderExpanded(folder.id);
+                }}
+              >
+                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </button>
+            )}
+            {!hasChildren && <div className="w-6" />}
+            <Folder className="mr-2 h-4 w-4" />
+            <span className="truncate">{folder.name}</span>
+            {folder.isSpecial && <div className="ml-auto w-1 h-1 bg-primary rounded-full" />}
+          </div>
+          
+          {isExpanded && hasChildren && renderFolders(folder.id, depth + 1)}
+        </div>
+      );
+    });
+  };
+
+  // Breadcrumb for current folder
+  const folderPath = getFolderPath(selectedFolderId);
+  
+  // Get current folder name
+  const currentFolder = folders.find(f => f.id === selectedFolderId);
 
   return (
-    <div className="page-container py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Bookmarks</h1>
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className={viewMode === "grid" ? "bg-accent" : ""}
-            onClick={() => setViewMode("grid")}
-          >
-            <Grid2X2 className="h-4 w-4 mr-1" />
-            Grid
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className={viewMode === "list" ? "bg-accent" : ""}
-            onClick={() => setViewMode("list")}
-          >
-            <LayoutList className="h-4 w-4 mr-1" />
-            List
-          </Button>
-          <Button 
-            variant="default" 
-            size="sm"
-            onClick={() => handleAddBookmark(activeFolderId)}
-          >
-            <BookmarkIcon className="h-4 w-4 mr-1" />
-            Add Bookmark
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-12 gap-6">
-        {/* Sidebar with folders */}
-        <div className="col-span-12 md:col-span-3">
-          <Card className="h-full">
-            <CardContent className="p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-medium">Folders</h2>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => handleAddFolder("root")}
-                >
-                  <FolderPlus className="h-4 w-4 mr-1" />
-                  New
-                </Button>
-              </div>
-              
-              <ScrollArea className="h-[calc(100vh-220px)]">
-                <div className="space-y-1">
-                  {folders
-                    .filter(f => f.parent_id === null)
-                    .sort((a, b) => a.order - b.order)
-                    .map(folder => (
-                      <FolderTreeItem
-                        key={folder.id}
-                        folder={folder}
-                        bookmarks={bookmarks}
-                        activeFolderId={activeFolderId}
-                        onFolderClick={setActiveFolderId}
-                        onAddBookmark={handleAddBookmark}
-                        onAddFolder={handleAddFolder}
-                        viewMode={viewMode}
-                        onEditBookmark={handleEditBookmark}
-                        onDeleteBookmark={handleDeleteBookmark}
-                        onMoveBookmark={handleMoveBookmark}
-                        allFolders={folders}
-                      />
-                    ))}
+    <PageTransition>
+      <div className="container py-6">
+        <div className="flex flex-wrap items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">{currentFolder?.name || 'Bookmarks'}</h1>
+            <div className="flex items-center text-sm text-muted-foreground mt-1">
+              {folderPath.map((folder, index) => (
+                <div key={folder.id} className="flex items-center">
+                  {index > 0 && <ChevronRight size={12} className="mx-1" />}
+                  <button 
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => handleSelectFolder(folder.id)}
+                  >
+                    {folder.name}
+                  </button>
                 </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+              ))}
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2 mt-4 sm:mt-0">
+            <Input
+              placeholder="Search bookmarks..."
+              className="w-full sm:w-64"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => {
+                  setFormData({...formData, folderId: selectedFolderId});
+                  setIsAddBookmarkOpen(true);
+                }}>
+                  <Link className="mr-2 h-4 w-4" />
+                  Add Bookmark
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {
+                  setParentFolderId(selectedFolderId);
+                  setIsAddFolderOpen(true);
+                }}>
+                  <Folder className="mr-2 h-4 w-4" />
+                  New Folder
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <Tabs defaultValue={viewMode} onValueChange={(value) => setViewMode(value as 'grid' | 'list')}>
+              <TabsList className="grid w-[80px] grid-cols-2">
+                <TabsTrigger value="grid"><Grid className="h-4 w-4" /></TabsTrigger>
+                <TabsTrigger value="list"><List className="h-4 w-4" /></TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
-
-        {/* Main content with bookmarks */}
-        <div className="col-span-12 md:col-span-9">
-          <Card className="h-full">
-            <CardContent className="p-4">
-              <h2 className="text-lg font-medium mb-4">
-                {activeFolder?.name || "All Bookmarks"}
-                <span className="text-muted-foreground ml-2 text-sm">
-                  ({currentBookmarks.length} bookmark{currentBookmarks.length !== 1 ? 's' : ''})
-                </span>
-              </h2>
-
-              <DndContext
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Sidebar */}
+          <div className="md:col-span-1 border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold">Folders</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setParentFolderId('root');
+                  setIsAddFolderOpen(true);
+                }}
+                className="h-8 px-2"
               >
-                <SortableContext
-                  items={currentBookmarks.map(b => b.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {viewMode === "grid" ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {currentBookmarks.map(bookmark => (
-                        <BookmarkItem
-                          key={bookmark.id}
-                          bookmark={bookmark}
-                          viewMode={viewMode}
-                          onEdit={handleEditBookmark}
-                          onDelete={handleDeleteBookmark}
-                          onMove={handleMoveBookmark}
-                        />
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="space-y-1 max-h-[calc(100vh-300px)] overflow-y-auto">
+              {renderFolders(null)}
+            </div>
+          </div>
+          
+          {/* Main content */}
+          <div className="md:col-span-3">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+              onDragStart={handleDragStart}
+            >
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredBookmarks.length > 0 ? (
+                    filteredBookmarks.map(bookmark => (
+                      <div
+                        key={`bookmark:${bookmark.id}`}
+                        id={`bookmark:${bookmark.id}`}
+                        className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start justify-between">
+                          <h3 className="font-medium truncate">{bookmark.title}</h3>
+                          <div className="flex space-x-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => openEditBookmarkModal(bookmark)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-destructive/80 hover:text-destructive"
+                              onClick={() => handleDeleteBookmark(bookmark.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <a
+                          href={bookmark.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-muted-foreground hover:text-primary truncate block mt-1"
+                        >
+                          {bookmark.url}
+                        </a>
+                        
+                        {bookmark.description && (
+                          <p className="text-sm mt-2 line-clamp-2">{bookmark.description}</p>
+                        )}
+                        
+                        {bookmark.tags && bookmark.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-3">
+                            {bookmark.tags.map(tag => (
+                              <span
+                                key={tag}
+                                className="px-2 py-0.5 bg-muted text-xs rounded-full"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-full py-12 text-center text-muted-foreground">
+                      {searchTerm ? 'No bookmarks match your search' : 'No bookmarks in this folder'}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="border rounded-lg overflow-hidden">
+                  {filteredBookmarks.length > 0 ? (
+                    <div className="divide-y">
+                      {filteredBookmarks.map(bookmark => (
+                        <div
+                          key={`bookmark:${bookmark.id}`}
+                          id={`bookmark:${bookmark.id}`}
+                          className="flex items-center justify-between p-4 hover:bg-muted/50"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium truncate">{bookmark.title}</h3>
+                            <a
+                              href={bookmark.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-muted-foreground hover:text-primary truncate block"
+                            >
+                              {bookmark.url}
+                            </a>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2 ml-4">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => openEditBookmarkModal(bookmark)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive/80 hover:text-destructive"
+                              onClick={() => handleDeleteBookmark(bookmark.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="space-y-1">
-                      {currentBookmarks.map(bookmark => (
-                        <BookmarkItem
-                          key={bookmark.id}
-                          bookmark={bookmark}
-                          viewMode={viewMode}
-                          onEdit={handleEditBookmark}
-                          onDelete={handleDeleteBookmark}
-                          onMove={handleMoveBookmark}
-                        />
-                      ))}
+                    <div className="py-12 text-center text-muted-foreground">
+                      {searchTerm ? 'No bookmarks match your search' : 'No bookmarks in this folder'}
                     </div>
                   )}
-                </SortableContext>
-              </DndContext>
-
-              {currentBookmarks.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <BookmarkIcon className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-1">No bookmarks yet</h3>
-                  <p className="text-muted-foreground mb-4">Add your first bookmark to this folder</p>
-                  <Button onClick={() => handleAddBookmark(activeFolderId)}>
-                    <PlusCircle className="h-4 w-4 mr-2" />
-                    Add Bookmark
-                  </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </DndContext>
+          </div>
         </div>
       </div>
 
-      {/* Add/Edit Bookmark Modal */}
-      <Dialog open={showAddBookmarkModal} onOpenChange={setShowAddBookmarkModal}>
+      {/* Add Bookmark Dialog */}
+      <Dialog open={isAddBookmarkOpen} onOpenChange={setIsAddBookmarkOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editBookmark ? "Edit Bookmark" : "Add New Bookmark"}</DialogTitle>
+            <DialogTitle>Add Bookmark</DialogTitle>
           </DialogHeader>
-          
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 pt-4">
             <div className="grid gap-2">
               <label htmlFor="title" className="text-sm font-medium">Title</label>
               <Input
                 id="title"
-                value={newBookmarkTitle}
-                onChange={(e) => setNewBookmarkTitle(e.target.value)}
                 placeholder="Bookmark title"
+                value={formData.title}
+                onChange={(e) => setFormData({...formData, title: e.target.value})}
               />
             </div>
-            
             <div className="grid gap-2">
               <label htmlFor="url" className="text-sm font-medium">URL</label>
               <Input
                 id="url"
-                value={newBookmarkUrl}
-                onChange={(e) => setNewBookmarkUrl(e.target.value)}
                 placeholder="https://example.com"
+                value={formData.url}
+                onChange={(e) => setFormData({...formData, url: e.target.value})}
               />
             </div>
-            
             <div className="grid gap-2">
               <label htmlFor="description" className="text-sm font-medium">Description (optional)</label>
               <Input
                 id="description"
-                value={newBookmarkDescription}
-                onChange={(e) => setNewBookmarkDescription(e.target.value)}
-                placeholder="Brief description"
+                placeholder="A brief description"
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
               />
             </div>
+            <div className="grid gap-2">
+              <label htmlFor="tags" className="text-sm font-medium">Tags (optional, comma separated)</label>
+              <Input
+                id="tags"
+                placeholder="tag1, tag2, tag3"
+                value={formData.tags}
+                onChange={(e) => setFormData({...formData, tags: e.target.value})}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="folder" className="text-sm font-medium">Folder</label>
+              <select
+                id="folder"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={formData.folderId || selectedFolderId}
+                onChange={(e) => setFormData({...formData, folderId: e.target.value})}
+              >
+                {folders.map(folder => (
+                  <option key={folder.id} value={folder.id}>
+                    {folder.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddBookmarkModal(false)}>Cancel</Button>
-            <Button onClick={saveBookmark}>{editBookmark ? "Save Changes" : "Add Bookmark"}</Button>
+            <Button variant="outline" onClick={() => setIsAddBookmarkOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddBookmark}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Add Folder Modal */}
-      <Dialog open={showAddFolderModal} onOpenChange={setShowAddFolderModal}>
+      {/* Edit Bookmark Dialog */}
+      <Dialog open={isEditBookmarkOpen} onOpenChange={setIsEditBookmarkOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Folder</DialogTitle>
+            <DialogTitle>Edit Bookmark</DialogTitle>
           </DialogHeader>
-          
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 pt-4">
+            <div className="grid gap-2">
+              <label htmlFor="edit-title" className="text-sm font-medium">Title</label>
+              <Input
+                id="edit-title"
+                placeholder="Bookmark title"
+                value={formData.title}
+                onChange={(e) => setFormData({...formData, title: e.target.value})}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="edit-url" className="text-sm font-medium">URL</label>
+              <Input
+                id="edit-url"
+                placeholder="https://example.com"
+                value={formData.url}
+                onChange={(e) => setFormData({...formData, url: e.target.value})}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="edit-description" className="text-sm font-medium">Description (optional)</label>
+              <Input
+                id="edit-description"
+                placeholder="A brief description"
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="edit-tags" className="text-sm font-medium">Tags (optional, comma separated)</label>
+              <Input
+                id="edit-tags"
+                placeholder="tag1, tag2, tag3"
+                value={formData.tags}
+                onChange={(e) => setFormData({...formData, tags: e.target.value})}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="edit-folder" className="text-sm font-medium">Folder</label>
+              <select
+                id="edit-folder"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={formData.folderId}
+                onChange={(e) => setFormData({...formData, folderId: e.target.value})}
+              >
+                {folders.map(folder => (
+                  <option key={folder.id} value={folder.id}>
+                    {folder.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditBookmarkOpen(false)}>Cancel</Button>
+            <Button onClick={handleEditBookmark}>Update</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Folder Dialog */}
+      <Dialog open={isAddFolderOpen} onOpenChange={setIsAddFolderOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Folder</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
             <div className="grid gap-2">
               <label htmlFor="folderName" className="text-sm font-medium">Folder Name</label>
               <Input
                 id="folderName"
+                placeholder="Enter folder name"
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
-                placeholder="New folder name"
               />
             </div>
+            <div className="grid gap-2">
+              <label htmlFor="parentFolder" className="text-sm font-medium">Parent Folder</label>
+              <select
+                id="parentFolder"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={parentFolderId || 'root'}
+                onChange={(e) => setParentFolderId(e.target.value)}
+              >
+                {folders.map(folder => (
+                  <option key={folder.id} value={folder.id}>
+                    {folder.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddFolderModal(false)}>Cancel</Button>
-            <Button onClick={saveFolder}>Create Folder</Button>
+            <Button variant="outline" onClick={() => setIsAddFolderOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddFolder}>Create Folder</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Move Bookmark Modal */}
-      <Dialog open={showMoveBookmarkModal} onOpenChange={setShowMoveBookmarkModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Move Bookmark</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-2">
-            <p className="text-sm">Select a folder to move "{moveBookmark?.title}" to:</p>
-            
-            <ScrollArea className="h-[300px]">
-              <Accordion type="single" collapsible className="w-full">
-                {folders
-                  .filter(f => f.parent_id === null)
-                  .sort((a, b) => a.order - b.order)
-                  .map(folder => (
-                    <FolderSelectItem
-                      key={folder.id}
-                      folder={folder}
-                      allFolders={folders}
-                      selectedFolderId={selectedFolderId}
-                      onSelect={setSelectedFolderId}
-                    />
-                  ))}
-              </Accordion>
-            </ScrollArea>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowMoveBookmarkModal(false)}>Cancel</Button>
-            <Button onClick={moveBookmarkToFolder}>Move Bookmark</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+    </PageTransition>
   );
 };
 
-// Component for folder selection in the move modal
-const FolderSelectItem = ({ folder, allFolders, selectedFolderId, onSelect }) => {
-  const hasChildren = allFolders.some(f => f.parent_id === folder.id);
-  
-  const childFolders = allFolders
-    .filter(f => f.parent_id === folder.id)
-    .sort((a, b) => a.order - b.order);
-  
-  if (!hasChildren) {
-    return (
-      <div 
-        className={`p-2 mb-1 rounded flex items-center cursor-pointer ${selectedFolderId === folder.id ? 'bg-accent' : 'hover:bg-accent/50'}`}
-        onClick={() => onSelect(folder.id)}
-      >
-        <Folder className="h-4 w-4 mr-2" />
-        <span className="text-sm">{folder.name}</span>
-      </div>
-    );
-  }
-  
-  return (
-    <AccordionItem value={folder.id} className="border-0">
-      <div className="flex">
-        <div 
-          className={`flex-grow p-2 flex items-center cursor-pointer ${selectedFolderId === folder.id ? 'bg-accent' : 'hover:bg-accent/50'} rounded-l`}
-          onClick={() => onSelect(folder.id)}
-        >
-          <Folder className="h-4 w-4 mr-2" />
-          <span className="text-sm">{folder.name}</span>
-        </div>
-        <AccordionTrigger className="px-2 border-l" />
-      </div>
-      <AccordionContent className="pb-0 pl-6">
-        {childFolders.map(childFolder => (
-          <FolderSelectItem
-            key={childFolder.id}
-            folder={childFolder}
-            allFolders={allFolders}
-            selectedFolderId={selectedFolderId}
-            onSelect={onSelect}
-          />
-        ))}
-      </AccordionContent>
-    </AccordionItem>
-  );
-};
-
-export default BookmarksPage;
+export default Bookmarks;

@@ -53,25 +53,23 @@ const AnimatedRoutes = () => {
   
   return (
     <AnimatePresence mode="wait">
-      <Layout>
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/bits" element={<Bits />} />
-          <Route path="/posts" element={<Posts />} />
-          <Route path="/post/:postId" element={<PostDetail />} />
-          <Route path="/friends" element={<Friends />} />
-          <Route path="/friends/:friendId/bits" element={<FriendBits />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/bookmarks" element={<Bookmarks />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/company-settings" element={<CompanySettings />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Layout>
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<Layout><Index /></Layout>} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+        <Route path="/bits" element={<Layout><Bits /></Layout>} />
+        <Route path="/posts" element={<Layout><Posts /></Layout>} />
+        <Route path="/post/:postId" element={<Layout><PostDetail /></Layout>} />
+        <Route path="/friends" element={<Layout><Friends /></Layout>} />
+        <Route path="/friends/:friendId/bits" element={<Layout><FriendBits /></Layout>} />
+        <Route path="/profile" element={<Layout><Profile /></Layout>} />
+        <Route path="/bookmarks" element={<Layout><Bookmarks /></Layout>} />
+        <Route path="/contact" element={<Layout><Contact /></Layout>} />
+        <Route path="/admin" element={<Layout><AdminDashboard /></Layout>} />
+        <Route path="/settings" element={<Layout><Settings /></Layout>} />
+        <Route path="/company-settings" element={<Layout><CompanySettings /></Layout>} />
+        <Route path="*" element={<Layout><NotFound /></Layout>} />
+      </Routes>
     </AnimatePresence>
   );
 };
