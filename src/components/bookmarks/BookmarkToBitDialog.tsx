@@ -157,6 +157,42 @@ export const BookmarkToBitDialog = ({ bookmark, isOpen, onClose }: BookmarkToBit
               </DialogDescription>
             </DialogHeader>
             
+            <div className="mb-6 bg-muted/50 p-4 rounded-lg">
+              <h3 className="text-sm font-semibold mb-2">Generated Information Preview:</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-xs text-muted-foreground font-medium">Title</h4>
+                  <p className="text-sm">{generatedData?.title}</p>
+                </div>
+                
+                <div>
+                  <h4 className="text-xs text-muted-foreground font-medium">Tags</h4>
+                  {generatedData?.tags ? (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {generatedData.tags.split(',').map((tag: string, i: number) => (
+                        <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                          {tag.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">No tags generated</p>
+                  )}
+                </div>
+                
+                {generatedData?.image_url && (
+                  <div className="col-span-full">
+                    <h4 className="text-xs text-muted-foreground font-medium mb-1">Image</h4>
+                    <img 
+                      src={generatedData.image_url} 
+                      alt="Generated preview" 
+                      className="h-28 object-cover rounded-md"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            
             <BitForm 
               onSubmit={handleBitSubmit} 
               onCancel={handleCancelDialog} 
