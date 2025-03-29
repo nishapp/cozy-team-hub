@@ -55,7 +55,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [progress, setProgress] = useState(67);
   const [currentBit, setCurrentBit] = useState<any | null>(null);
   const [bitDetailOpen, setBitDetailOpen] = useState(false);
@@ -137,9 +137,62 @@ const Dashboard: React.FC = () => {
     created_at: "2025-03-15T10:00:00Z",
     shared_by: "You",
     link: "https://www.typescriptlang.org/docs/handbook/2/generics.html",
-    author_avatar: user?.avatar_url || undefined,
+    author_avatar: profile?.avatar_url || undefined,
     friend_count: 3,
   };
+
+  // Sample mock data for featured bits categories
+  const categoryImages = [
+    "https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2831&q=80",
+    "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2787&q=80",
+    "https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2940&q=80",
+    "https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2940&q=80",
+    "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2835&q=80",
+    "https://images.unsplash.com/photo-1458398421798-821b986a889f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2786&q=80",
+  ];
+
+  const categoryTitles = [
+    "Coding",
+    "Reading",
+    "Fitness",
+    "Travel",
+    "Finance",
+    "Productivity",
+  ];
+
+  // Mock data for daily learning
+  const learningData = [
+    {
+      id: "1",
+      date: new Date().toISOString(),
+      content: "Learned about React's useEffect hook and how to properly clean up side effects",
+      tags: ["react", "hooks", "frontend"],
+      title: "React Hooks Deep Dive",
+    },
+    {
+      id: "2",
+      date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+      content: "Explored how TypeScript interfaces can be extended for more flexible type definitions",
+      tags: ["typescript", "programming"],
+      title: "TypeScript Interface Extensions",
+      relatedBitId: "bit123",
+    },
+  ];
+
+  // Mock data for badges
+  const userBadges = [
+    { id: "1", name: "Early Adopter" },
+    { id: "2", name: "5-Day Streak" },
+    { id: "3", name: "Content Creator" },
+  ];
+
+  // Mock activity dates
+  const activityDates = [
+    new Date(),
+    new Date(Date.now() - 86400000), // yesterday
+    new Date(Date.now() - 86400000 * 3), // 3 days ago
+    new Date(Date.now() - 86400000 * 5), // 5 days ago
+  ];
 
   const openBitDetail = (bit: any) => {
     setCurrentBit(bit);
@@ -184,13 +237,24 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
-      <GamificationTopBar />
+      <GamificationTopBar 
+        points={1250} 
+        level={5} 
+        currentStreak={streakData.currentStreak} 
+        badges={userBadges} 
+        activityDates={activityDates} 
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left column */}
         <div className="md:col-span-2 space-y-6">
           {/* What did you learn today section */}
-          <DailyLearningSection />
+          <DailyLearningSection 
+            learnings={learningData}
+            friendName={profile?.full_name || "You"}
+            friendAvatar={profile?.avatar_url}
+            onBitClick={openBitDetail}
+          />
 
           {/* Featured Bit */}
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
@@ -269,13 +333,24 @@ const Dashboard: React.FC = () => {
           <SharedBitsCarousel />
 
           {/* Recent Bits */}
-          <FeaturedBits />
+          <FeaturedBits 
+            images={categoryImages} 
+            titles={categoryTitles} 
+          />
         </div>
 
         {/* Right sidebar */}
         <div className="space-y-6">
           {/* User Points Card */}
-          <UserPointsCard />
+          <UserPointsCard 
+            userName={profile?.full_name || "User"} 
+            userAvatar={profile?.avatar_url} 
+            points={1250}
+            level={5}
+            currentStreak={streakData.currentStreak}
+            longestStreak={streakData.longestStreak}
+            isCurrentUser={true}
+          />
 
           {/* Recent Activity */}
           <Card>

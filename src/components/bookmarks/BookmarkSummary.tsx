@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Bookmark, Copy, Volume2, VolumeX, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
+import { convertTextToSpeech, revokeAudioUrl } from "@/services/textToSpeechService";
 
 interface BookmarkSummaryProps {
   summary: string;
@@ -39,44 +39,20 @@ const BookmarkSummary: React.FC<BookmarkSummaryProps> = ({
         textToConvert = textToConvert.substring(0, 3000) + "...";
       }
       
-      const { data, error } = await supabase.functions.invoke('text-to-speech', {
-        body: { text: textToConvert }
-      });
+      // Use the textToSpeechService to handle conversion
+      const newAudioUrl = await convertTextToSpeech(textToConvert);
       
-      if (error) {
-        throw new Error(error.message || 'Failed to convert text to speech');
-      }
-      
-      if (data && data.audio) {
-        // Convert base64 to Blob
-        const byteCharacters = atob(data.audio);
-        const byteArrays = [];
-        
-        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-          const slice = byteCharacters.slice(offset, offset + 512);
-          
-          const byteNumbers = new Array(slice.length);
-          for (let i = 0; i < slice.length; i++) {
-            byteNumbers[i] = slice.charCodeAt(i);
-          }
-          
-          const byteArray = new Uint8Array(byteNumbers);
-          byteArrays.push(byteArray);
-        }
-        
-        const blob = new Blob(byteArrays, { type: 'audio/mpeg' });
-        
-        // Create audio URL
+      if (newAudioUrl) {
+        // Clean up previous audio URL if exists
         if (audioUrl) {
-          URL.revokeObjectURL(audioUrl);
+          revokeAudioUrl(audioUrl);
         }
         
-        const url = URL.createObjectURL(blob);
-        setAudioUrl(url);
+        setAudioUrl(newAudioUrl);
         
-        // Auto-play if needed
+        // Auto-load if needed
         if (audioRef.current) {
-          audioRef.current.src = url;
+          audioRef.current.src = newAudioUrl;
           audioRef.current.load();
         }
         
@@ -103,6 +79,15 @@ const BookmarkSummary: React.FC<BookmarkSummaryProps> = ({
     
     setIsPlaying(!isPlaying);
   };
+
+  // Cleanup audio URL when component unmounts
+  React.useEffect(() => {
+    return () => {
+      if (audioUrl) {
+        revokeAudioUrl(audioUrl);
+      }
+    };
+  }, [audioUrl]);
 
   return (
     <div className="flex flex-col space-y-4 p-4">
